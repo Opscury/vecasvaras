@@ -1,0 +1,465 @@
+import Phaser from 'phaser';
+import { type Loc, t, i18n } from '../core/i18n';
+import { Hex, Fonts, Layout, Palette, Timing } from '../core/theme';
+import { audio } from '../core/audio';
+import { ignoreKey, isAdvanceKey, keysOf, markHandled } from './keys';
+import { setHotspotGate } from './Hotspot';
+
+/**
+ * The bottom narration panel: a parchment band that types out a line, waits
+ * for a click, and moves on. Also renders the choice list when a beat ends in
+ * a decision.
+ *
+ * Everything it displays is held as a `Loc`, so a language switch mid-sentence
+ * re-renders in place rather than losing the player's position.
+ *
+ * Keyboard: Space or Enter does what a click does, and the number keys pick
+ * from a choice list in the order it is shown (unless the bag is open, which
+ * then owns them).
+ */
+
+export interface Choice {
+  label: Loc;
+  onPick: () => void;
+}
+
+/** How many lines the history keeps. */
+const HISTORY_CAP = 30;
+
+export class Narration {
+  private scene: Phaser.Scene;
+  private root: Phaser.GameObjects.Container;
+  private plate: Phaser.GameObjects.Graphics;
+  private label: Phaser.GameObjects.Text;
+  private hint: Phaser.GameObjects.Text;
+  private hintPulse: Phaser.Tweens.Tween | null = null;
+  private choiceBox: Phaser.GameObjects.Container;
+
+  private queue: Loc[] = [];
+  private current: Loc | null = null;
+  private onDone: (() => void) | null = null;
+  private typer: Phaser.Time.TimerEvent | null = null;
+  private typing = false;
+  private choices: Choice[] = [];
+  /**
+   * Whether the panel is *meant* to be visible. Never read `root.alpha` to
+   * decide this: alpha is mid-tween most of the time, and a show() that reads
+   * an alpha still on its way down concludes the panel is already up, does
+   * nothing, and lets the in-flight hide finish — the panel then speaks a whole
+   * line invisibly. Reachable in normal play by clicking a hotspot within a
+   * quarter second of the panel folding away.
+   */
+  private wantVisible = false;
+  /** The game frame in which the panel last started saying something — see `advance`. */
+  private openedFrame = -1;
+  /** Where `mutter` is in its rotation. */
+  private mutterAt = 0;
+  /** The hotspot whose click opened the line on screen, if one did. */
+  private speaker: unknown = null;
+  /** A hotspot just let through by the gate, and the frame it happened in. */
+  private caller: { from: unknown; frame: number } | null = null;
+  private offLang: () => void;
+
+  /** Every line shown in this scene, oldest first — read by the history panel. */
+  readonly history: Loc[] = [];
+
+  constructor(scene: Phaser.Scene) {
+    this.scene = scene;
+
+    const { width, height, panelH, panelPad } = Layout;
+    const top = height - panelH;
+
+    // The panel has no hard top edge — a straight black line cutting across a
+    // painting is the fastest way to make a game look like a slideshow. Instead
+    // the darkness ramps in over ~150px and the painting dissolves into it.
+    const rampH = 150;
+    this.plate = scene.add.graphics();
+    this.plate.fillGradientStyle(Palette.ink, Palette.ink, Palette.ink, Palette.ink, 0, 0, 0.9, 0.9);
+    this.plate.fillRect(0, top - rampH, width, rampH);
+    this.plate.fillStyle(Palette.ink, 0.9);
+    this.plate.fillRect(0, top, width, panelH + 2);
+
+    this.label = scene.add.text(panelPad, top + 52, '', {
+      fontFamily: Fonts.body,
+      fontSize: '34px',
+      color: Hex.parchment,
+      wordWrap: { width: width - panelPad * 2 },
+      lineSpacing: 12,
+    });
+
+    // The "there is more" mark. It pulses, like the one on the cards, and sits
+    // clear of the bag in the corner — a 20px dot tucked under the bag read as
+    // the game having hung.
+    this.hint = scene.add
+      .text(width - 260, height - 34, '', {
+        fontFamily: Fonts.body,
+        fontSize: '26px',
+        color: Hex.rye,
+      })
+      .setOrigin(1, 1);
+
+    this.choiceBox = scene.add.container(0, 0);
+
+    this.root = scene.add.container(0, 0, [this.plate, this.label, this.hint, this.choiceBox]);
+    this.root.setDepth(500).setAlpha(0);
+
+    this.offLang = i18n.onChange(() => this.redraw());
+    scene.input.keyboard?.on('keydown', this.onKey, this);
+    setHotspotGate(scene, (from) => this.claimHotspotClick(from));
+
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.destroy());
+  }
+
+  /**
+   * True while a run of lines or a decision is under way. Anything said on a
+   * timer must check this first: `flash` replaces whatever is up, callback and
+   * all, so a timed line landing mid-sequence silently cancels whatever that
+   * sequence was going to do next. At the bog, that was the rest of the
+   * encounter.
+   */
+  get busy(): boolean {
+    return this.queue.length > 0 || this.onDone !== null || this.choices.length > 0;
+  }
+
+  /** True when the panel is folded away with nothing on it. */
+  get idle(): boolean {
+    return !this.wantVisible;
+  }
+
+  /** Play a run of lines, then call `after`. Clicking advances or skips typing. */
+  say(lines: Loc[], after?: () => void): void {
+    this.clearChoices();
+    this.queue = [...lines];
+    this.onDone = after ?? null;
+    this.markOpened();
+    this.show();
+    this.next();
+  }
+
+  /** Show a decision. Lines are optional lead-in text shown above the options. */
+  ask(prompt: Loc | null, choices: Choice[]): void {
+    this.clearChoices();
+    this.queue = [];
+    this.onDone = null;
+    this.markOpened();
+    this.show();
+    if (prompt) {
+      this.current = prompt;
+      this.renderLine(prompt, false);
+    } else {
+      this.current = null;
+      this.label.setText('');
+    }
+    this.choices = choices;
+    this.buildChoices();
+    this.setHint(false);
+  }
+
+  /**
+   * A single line with no click-through — the reply when the player looks at
+   * or tries something. It replaces whatever is showing, pending callback
+   * included, so lines on a timer should check `busy` or `idle` first.
+   */
+  flash(line: Loc): void {
+    this.clearChoices();
+    this.queue = [];
+    this.onDone = null;
+    this.markOpened();
+    this.show();
+    this.current = line;
+    this.renderLine(line, false);
+    this.setHint(false);
+  }
+
+  /**
+   * One of a rotation of short asides, for a click on nothing in particular —
+   * only when the panel has nothing else to say. In a game whose only verb is
+   * "click the picture", silence reads as broken before it reads as "nothing
+   * there".
+   */
+  mutter(lines: readonly Loc[]): void {
+    if (!this.idle || !lines.length) return;
+    this.flash(lines[this.mutterAt++ % lines.length]);
+  }
+
+  hide(): void {
+    if (!this.wantVisible) return;
+    this.wantVisible = false;
+    this.fade(0, 260, 'Quad.easeIn');
+  }
+
+  /** Takes everything down — lines, choices, callback — and folds the panel away. */
+  dismiss(): void {
+    this.clearChoices();
+    this.stopTyper();
+    this.queue = [];
+    this.onDone = null;
+    this.current = null;
+    this.typing = false;
+    this.label.setText('');
+    this.setHint(false);
+    this.hide();
+  }
+
+  private show(): void {
+    if (this.wantVisible) return;
+    this.wantVisible = true;
+    this.fade(1, Timing.beat, 'Quad.easeOut');
+  }
+
+  /** Both directions go through here, killing the other so they never race. */
+  private fade(to: number, duration: number, ease: string): void {
+    this.scene.tweens.killTweensOf(this.root);
+    this.scene.tweens.add({ targets: this.root, alpha: to, duration, ease });
+  }
+
+  /** Called by the scene's global click handler. Returns true if it consumed the click. */
+  advance(): boolean {
+    // The click that opened a line is never also a click on it. Using an item
+    // on the world starts the outcome text, and the scene's own click handler
+    // may call this on the very same click — which used to skip the first
+    // line's typing, or dismiss a one-line reply before it was ever on screen.
+    if (this.scene.game.loop.frame === this.openedFrame) return true;
+    if (this.choices.length) return false; // choices need a real button press
+    if (this.typing) {
+      this.finishTyping();
+      return true;
+    }
+    if (this.current || this.queue.length) {
+      this.next();
+      return true;
+    }
+    return false;
+  }
+
+  private markOpened(): void {
+    const frame = this.scene.game.loop.frame;
+    this.openedFrame = frame;
+    // If a hotspot's click opened this line, remember which one.
+    this.speaker = this.caller && this.caller.frame === frame ? this.caller.from : null;
+    this.caller = null;
+  }
+
+  /**
+   * A click on a hotspot while text is up. The natural move after reading a
+   * line is to click again where the mouse already is — usually on the very
+   * thing that produced it — and that used to restart the same line instead of
+   * moving on, until the player dragged the mouse off it. Returns true if the
+   * click belongs to the text.
+   */
+  private claimHotspotClick(from: unknown): boolean {
+    if (this.idle) {
+      // Nothing up: let the hotspot speak, and remember that it did.
+      this.caller = { from, frame: this.scene.game.loop.frame };
+      return false;
+    }
+    // A decision is on screen: it wants one of its own answers.
+    if (this.choices.length) return true;
+    // Mid-run or still typing: the click is for the text, wherever it lands.
+    if (this.typing || this.queue.length > 0 || this.onDone !== null) {
+      this.advance();
+      return true;
+    }
+    // A one-line reply. The same thing clicked again dismisses it; something
+    // else answers for itself.
+    if (this.current && from === this.speaker) {
+      this.advance();
+      return true;
+    }
+    this.caller = { from, frame: this.scene.game.loop.frame };
+    return false;
+  }
+
+  private onKey(ev: KeyboardEvent): void {
+    if (ignoreKey(this.scene, ev)) return;
+    if (isAdvanceKey(ev)) {
+      if (this.advance()) markHandled(ev);
+      return;
+    }
+    if (keysOf(this.scene).bagOpen) return;
+    const n = Number(ev.key);
+    if (Number.isInteger(n) && n >= 1 && n <= this.choices.length) {
+      markHandled(ev);
+      this.pick(this.choices[n - 1]);
+    }
+  }
+
+  private next(): void {
+    const line = this.queue.shift();
+    if (!line) {
+      this.current = null;
+      this.label.setText('');
+      this.setHint(false);
+      const cb = this.onDone;
+      this.onDone = null;
+      if (cb) {
+        cb();
+      } else {
+        // Nothing follows: get the panel out of the way. Half the clickable
+        // world lives in the bottom third of these paintings.
+        this.hide();
+      }
+      return;
+    }
+    this.current = line;
+    this.renderLine(line, true);
+  }
+
+  private remember(line: Loc): void {
+    if (this.history[this.history.length - 1] === line) return;
+    this.history.push(line);
+    if (this.history.length > HISTORY_CAP) this.history.shift();
+  }
+
+  private renderLine(line: Loc, animate: boolean): void {
+    this.stopTyper();
+    this.remember(line);
+    const full = t(line);
+    // An empty line cannot be typed: a timer with `repeat: -1` never stops.
+    if (!animate || full.length === 0) {
+      this.label.setText(full);
+      this.typing = false;
+      this.updateHint();
+      return;
+    }
+    this.label.setText('');
+    this.typing = true;
+    let i = 0;
+    this.typer = this.scene.time.addEvent({
+      delay: Timing.typeSpeed,
+      repeat: full.length - 1,
+      callback: () => {
+        i++;
+        this.label.setText(full.slice(0, i));
+        if (i >= full.length) {
+          this.typing = false;
+          this.typer = null;
+          this.updateHint();
+        }
+      },
+    });
+    this.setHint(false);
+  }
+
+  private finishTyping(): void {
+    this.stopTyper();
+    if (this.current) this.label.setText(t(this.current));
+    this.typing = false;
+    this.updateHint();
+  }
+
+  private updateHint(): void {
+    this.setHint(!this.choices.length && (this.queue.length > 0 || this.onDone !== null));
+  }
+
+  private setHint(on: boolean): void {
+    const want = on ? '▸' : '';
+    if (this.hint.text === want) return;
+    this.hint.setText(want);
+    this.hintPulse?.remove();
+    this.hintPulse = null;
+    this.hint.setAlpha(1);
+    if (on) {
+      this.hintPulse = this.scene.tweens.add({
+        targets: this.hint,
+        alpha: 0.35,
+        duration: 1100,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+  }
+
+  private buildChoices(): void {
+    const { width, height, panelPad } = Layout;
+    const gap = 58;
+    // Rows start under the lead-in line, however many lines it wrapped to.
+    const labelBottom = this.label.text ? this.label.y + this.label.height + 14 : height - Layout.panelH + 40;
+    const startY = Math.min(Math.max(height - 210, labelBottom), height - this.choices.length * gap - 6);
+    // The hit area is the whole ROW, not the glyphs — a short option like "The
+    // wind." is barely a hundred pixels of text. But it stops short of the bag
+    // in the bottom-right corner, which used to catch clicks meant for the
+    // third option. No option's text reaches that far.
+    const rowW = width - panelPad * 2 - 260;
+
+    this.choices.forEach((c, idx) => {
+      const y = startY + idx * gap;
+      const txt = this.scene.add.text(panelPad + 26, y, '— ' + t(c.label), {
+        fontFamily: Fonts.body,
+        fontSize: '27px',
+        color: Hex.parchmentDim,
+        wordWrap: { width: rowW - 60 },
+      });
+
+      // Rows tile: each hit box is exactly one row tall, so there is no gap
+      // between options to click into and no overlap to click the wrong one.
+      const pad = (gap - txt.height) / 2;
+      txt.setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(-26, -pad, rowW, Math.max(gap, txt.height)),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true,
+      });
+
+      // Hover changes the mark and nudges the row as well as the colour, so it
+      // does not depend on telling two colours apart.
+      txt.on('pointerover', () => {
+        audio.play('hover');
+        txt.setColor(Hex.ryeBright).setText('▸ ' + t(c.label)).setX(panelPad + 34);
+      });
+      txt.on('pointerout', () => {
+        txt.setColor(Hex.parchmentDim).setText('— ' + t(c.label)).setX(panelPad + 26);
+      });
+      txt.on(
+        'pointerdown',
+        (p: Phaser.Input.Pointer, _x: number, _y: number, ev: Phaser.Types.Input.EventData) => {
+          // A right-click is the player putting something back, not choosing.
+          if (p.button !== 0) return;
+          ev?.stopPropagation?.();
+          this.pick(c);
+        },
+      );
+      this.choiceBox.add(txt);
+    });
+    // Nudge the lead-in text up so it never collides with the option list.
+    if (this.choices.length) {
+      this.label.setY(height - Layout.panelH + 30);
+    }
+  }
+
+  private pick(c: Choice): void {
+    audio.play('click', { volume: 0.6 });
+    const onPick = c.onPick;
+    this.clearChoices();
+    onPick();
+  }
+
+  private clearChoices(): void {
+    this.choices = [];
+    this.choiceBox.removeAll(true);
+    this.label.setY(Layout.height - Layout.panelH + 52);
+  }
+
+  private redraw(): void {
+    // Language changed: re-render whatever is on screen right now.
+    if (this.typing) this.finishTyping();
+    else if (this.current) this.label.setText(t(this.current));
+    if (this.choices.length) {
+      const keep = this.choices;
+      this.choiceBox.removeAll(true);
+      this.choices = keep;
+      this.buildChoices();
+    }
+  }
+
+  private stopTyper(): void {
+    this.typer?.remove(false);
+    this.typer = null;
+  }
+
+  private destroy(): void {
+    this.stopTyper();
+    this.offLang();
+    this.scene.input.keyboard?.off('keydown', this.onKey, this);
+  }
+}

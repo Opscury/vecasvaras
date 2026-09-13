@@ -1,0 +1,15 @@
+node_modules
+dist
+.DS_Store
+*.local
+.vite
+
+# Vite writes these while resolving the config on Windows
+vite.config.ts.timestamp-*
+
+# Screenshot drop from the Claude desktop app
+Claude outputs/
+
+# Freesound API credential — never commit
+.freesound-key
+
