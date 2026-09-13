@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Vecās Varas</title>
     <meta name="description" content="Vecās Varas — a point-and-click game of Latvian folklore. Meet the old powers, and give each its due." />
+    <meta name="theme-color" content="#14161a" />
+    <!-- iPhone Safari has no Fullscreen API. Added to the home screen, though,
+         the page launches without browser chrome — which is the same thing. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Vecās Varas" />
     <style>
       html, body {
         margin: 0; padding: 0; width: 100%; height: 100%;
@@ -44,6 +51,38 @@
       @media (orientation: portrait) and (max-width: 900px) {
         #rotate { display: flex; }
       }
+
+      /*
+        Fullscreen toggle. On a phone the browser chrome eats a third of a
+        landscape screen, and nothing on the page said the game could take
+        it back. Top-left, because the language and log buttons the game
+        draws itself live top-right. Hidden unless the browser actually
+        supports the Fullscreen API — iPhone Safari does not, and a button
+        that does nothing is worse than no button.
+      */
+      #fs {
+        position: fixed; top: 10px; left: 10px; z-index: 11;
+        display: none; align-items: center; justify-content: center;
+        width: 44px; height: 44px; padding: 0;
+        background: rgba(20, 22, 26, 0.66);
+        border: 1px solid rgba(201, 162, 74, 0.5);
+        border-radius: 4px;
+        color: #c9a24a; cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 160ms ease, border-color 160ms ease, opacity 400ms ease;
+      }
+      #fs[data-supported="true"] { display: flex; }
+      #fs:hover, #fs:focus-visible {
+        background: rgba(20, 22, 26, 0.9);
+        border-color: rgba(224, 189, 104, 0.9);
+        outline: none;
+      }
+      #fs svg { width: 20px; height: 20px; display: block; }
+      #fs .exit { display: none; }
+      #fs[data-on="true"] .enter { display: none; }
+      #fs[data-on="true"] .exit { display: block; }
+      /* Fades back once play has started, so it stops competing with the art. */
+      #fs[data-idle="true"] { opacity: 0.28; }
     </style>
   </head>
   <body>
@@ -54,6 +93,71 @@
       <p lang="lv">Pagriez ierīci</p>
       <p lang="en">Turn your device</p>
     </div>
+    <button id="fs" type="button" aria-label="Pilnekrāna režīms / Fullscreen" title="Pilnekrāna režīms · Fullscreen">
+      <svg class="enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+      </svg>
+      <svg class="exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" />
+      </svg>
+    </button>
+    <script>
+      /*
+        Plain script, outside the bundle, so the control exists before Phaser
+        boots. Phaser's Scale.FIT listens for resize on its own, so entering
+        fullscreen re-fits the canvas without anything else being told.
+      */
+      (function () {
+        var btn = document.getElementById('fs');
+        var root = document.documentElement;
+        var supported =
+          document.fullscreenEnabled ||
+          document.webkitFullscreenEnabled ||
+          !!root.webkitRequestFullscreen;
+        if (!supported) return;
+
+        btn.dataset.supported = 'true';
+
+        function isOn() {
+          return !!(document.fullscreenElement || document.webkitFullscreenElement);
+        }
+
+        btn.addEventListener('click', function () {
+          if (isOn()) {
+            (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+            return;
+          }
+          var req = root.requestFullscreen || root.webkitRequestFullscreen;
+          var p = req.call(root, { navigationUI: 'hide' });
+          // Landscape is the only sensible orientation for a 16:9 scene, and
+          // the lock is only permitted once we are actually fullscreen.
+          if (p && p.then) {
+            p.then(function () {
+              var o = screen.orientation;
+              if (o && o.lock) o.lock('landscape').catch(function () {});
+            }).catch(function () {});
+          }
+        });
+
+        function sync() {
+          btn.dataset.on = isOn() ? 'true' : 'false';
+        }
+        document.addEventListener('fullscreenchange', sync);
+        document.addEventListener('webkitfullscreenchange', sync);
+
+        // Obvious at first, then it gets out of the way.
+        setTimeout(function () {
+          btn.dataset.idle = 'true';
+        }, 6000);
+        ['pointerenter', 'focus'].forEach(function (e) {
+          btn.addEventListener(e, function () {
+            btn.dataset.idle = 'false';
+          });
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
