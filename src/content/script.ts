@@ -296,12 +296,13 @@ export const velns = {
   wade: {
     prompt: L('Ej pa laipu. Ne katrs dēlis tur.', 'Walk out along the planks. Not every one will hold.'),
     plank: L('Dēlis', 'A plank'),
+    hummock: L('Cinis', 'A hummock'),
     step: [
       L('Dēlis notur. Zem tā kaut kas mierīgi aizslīd.', 'The plank holds. Something slides away underneath it, unhurried.'),
       L('Ūdens ir melns un nekustīgs kā darva.', 'The water is black and as still as tar.'),
       L('Vēl viens. Tālāk laipa beidzas.', 'One more. After that the causeway stops.'),
     ],
-    rotten: L('Tas ir satrunējis. Zem tā ir tikai purvs.', 'That one is rotten. There is only bog under it.'),
+    rotten: L('Tas neturēs. Zem tā ir tikai purvs.', 'That will not hold. There is only bog under it.'),
   },
   riddle: L(
     '„Bez rokām, bez kājām, bet durvis ver. Kas tas ir?“',

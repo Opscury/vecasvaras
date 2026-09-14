@@ -38,16 +38,16 @@ import { textureFor } from '../core/itemArt';
 const VELNS_POS = { x: 1330, y: 700 } as const;
 
 /**
- * The causeway out, read off bog.jpg. The three with an `order` are the ones
- * that hold, and they run up the painted planks from the near bank; the other
- * two are boards lying in the water on either side, which look like a way
- * across right up until you put your weight on them.
+ * The causeway out, read off bog.jpg. The three with an `order` sit on the
+ * painted boards and run from the near bank towards him; the other two are
+ * moss hummocks on either side, which look like somewhere to put a foot and
+ * are not.
  */
 const PLANKS: readonly { x: number; y: number; order?: number }[] = [
   { x: 880, y: 960, order: 0 },
-  { x: 700, y: 800 },
+  { x: 470, y: 620 },
   { x: 1080, y: 790, order: 1 },
-  { x: 1440, y: 610 },
+  { x: 1500, y: 800 },
   { x: 1160, y: 630, order: 2 },
 ];
 /** Same cooling as the Devil, so the cat walks in the bog's own light. */
@@ -253,7 +253,7 @@ export class VelnsScene extends Phaser.Scene {
           x: p.x,
           y: p.y,
           r: 96,
-          label: velns.wade.plank,
+          label: p.order === undefined ? velns.wade.hummock : velns.wade.plank,
           onClick: () => (p.order === undefined ? this.rottenPlank() : this.stepOut(p.order)),
         }),
       );
