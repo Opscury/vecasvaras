@@ -9,7 +9,7 @@
  * She also holds the rewards. The loaf used to appear in the bag the instant
  * the rye went down, in the middle of the outcome text, where nobody noticed
  * it. Now the field gives you a result and Anna gives you the bread, which is
- * how a debt actually gets settled: in front of somebody.
+ * how a share actually gets settled: in front of somebody.
  */
 
 import { L } from '../core/i18n';
@@ -53,7 +53,7 @@ export const elder = {
     takeSickle: L('«Vispirms sirpi, puis. Ar rokām nerauj.»', '“The sickle first. You do not pull it up by hand.”'),
     harvest: L('«Lauks pats sevi nenopļaus.»', '“The field will not cut itself.”'),
     crossBog: L('«Pāreja pār purvu. Un neej tukšām rokām.»', '“The crossing over the bog. And do not go empty-handed.”'),
-    done: L('«Tagad ej pie akmens. Tas zina rēķinu labāk par mani.»', '“Go to the stone now. It keeps the account better than I do.”'),
+    done: L('«Tagad ej pie akmens. Tas atceras labāk par mani.»', '“Go to the stone now. It remembers better than I do.”'),
   },
 
   /** Coming back from the field. */
@@ -77,11 +77,11 @@ export const elder = {
     ),
   },
 
-  /** The second errand, given once the first is paid. */
+  /** The second errand, given once the first has been brought home. */
   bog: [
     L(
-      '«Un vēl viens parāds. Strauts aiznesa tiltu, un aiz purva sēž tas, kas to var uzcelt.»',
-      '“And one more debt. The stream took the bridge, and the one who can build it sits out past the bog.”',
+      '«Un vēl viena daļa jāatstāj. Strauts aiznesa tiltu, un aiz purva sēž tas, kas to var uzcelt.»',
+      '“And one more share to leave. The stream took the bridge, and the one who can build it sits out past the bog.”',
     ),
     L('«Neej tukšām rokām. Un neej viens.»', '“Do not go empty-handed. And do not go alone.”'),
   ],
@@ -103,8 +103,8 @@ export const elder = {
     ],
   },
   toStone: L(
-    '«Ej pie akmens. Tas zina rēķinu labāk par mani.»',
-    '“Go to the stone. It keeps the account better than I do.”',
+    '«Ej pie akmens. Tas atceras labāk par mani.»',
+    '“Go to the stone. It remembers better than I do.”',
   ),
   farewell: L('«Ej nu.»', '“Go on, then.”'),
 };

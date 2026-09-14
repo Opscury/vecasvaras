@@ -29,17 +29,17 @@ export const ui = {
  * The opening. It was five long lines, and the first playtester met all of
  * them before she had touched anything — the game's own best writing, standing
  * between her and the game. Three short ones now: what is owed, who stopped
- * paying it, and what that has cost. The rest is out in the field.
+ * leaving it, and what that has cost. The rest is out in the field.
  */
 export const intro = {
   lines: [
     L(
-      'Vecie ļaudis to sauca vienā vārdā: parāds. Ne naudā — nekas laukā vai purvā nav vienkārši tavs, ko ņemt.',
-      'The old people had one word for it: a debt. Not money — nothing in the field or the bog is simply yours for the taking.',
+      'Vecie ļaudis to sauca vienā vārdā: daļa. Ne nodeva — laukam un purvam pienākas sava daļa, un tu to atstāj.',
+      'The old people had one word for it: a share. Not a tax — the field and the bog have a share coming to them, and you leave it.',
     ),
     L(
-      'Vectēvs to turēja. Tēvs — pa pusei. Tu ne reizi neesi par to domājis.',
-      'Your grandfather kept it. Your father half-kept it. You have never once thought about it.',
+      'Vectēvs savu daļu atstāja. Tēvs — pusi no tās. Tu ne reizi neesi par to domājis.',
+      'Your grandfather left his. Your father left half of his. You have never once thought about it.',
     ),
     L(
       'Šogad rudzi plāni, tilta nav, un ciems ir sācis uz tevi skatīties.',
@@ -57,8 +57,8 @@ export const village = {
    * her answer "was that better or worse than it could have been".
    */
   measures: {
-    grain: L('Maize', 'Grain'),
-    crossing: L('Ceļš', 'Crossing'),
+    grain: L('Maize', 'Bread'),
+    roads: L('Ceļi', 'Roads'),
   },
   stone: {
     label: L('Akmens', 'The stone'),
@@ -426,8 +426,8 @@ export const outro = {
       'The granary stands full, and a bridge crosses the bog that will hold a cart.',
     ),
     L(
-      'Ciems vēl neprot to pateikt, bet visi to redz: parāds ir samaksāts pareizā valūtā. Ne ar darbu. Ar to, ka kāds beidzot atcerējās, ko atstāt.',
-      'The village has no words for it yet, but everyone can see it: the debt was paid in the right currency. Not with labour. With somebody finally remembering what to leave behind.',
+      'Ciems vēl neprot to pateikt, bet visi to redz: katrs ir dabūjis savu daļu. Ne ar darbu. Ar to, ka kāds beidzot atcerējās, ko atstāt.',
+      'The village has no words for it yet, but everyone can see it: each of them got its share. Not with labour. With somebody finally remembering what to leave behind.',
     ),
     L(
       'Aiz jaunā tilta sākas zeme, kurā neviens nav gājis. Tur arī kaut kas ir. Tur vienmēr kaut kas ir.',
@@ -505,7 +505,7 @@ export const reckoning = {
   },
   velns: {
     good: {
-      verdict: L('Velnam ir samaksāts.', 'The Devil has been paid.'),
+      verdict: L('Velns dabūja savu daļu.', 'The Devil got his share.'),
       gain: L(
         'Pāreja: akmens un ozola tilts. Aiz tā — jauna zeme.',
         'Crossing: a bridge of stone and oak. Beyond it, new ground.',
@@ -542,26 +542,26 @@ export const reckoning = {
 
 /** The closing tally — the player's whole record, said plainly. */
 export const tally = {
-  heading: L('Divi parādi', 'Two debts'),
+  heading: L('Divas daļas', 'Two shares'),
   both: L(
-    'Abi samaksāti pilnā mērā.',
-    'Both paid in full.',
+    'Abas atstātas veselas.',
+    'Both left whole.',
   ),
   half: L(
-    'Viens samaksāts pilnā mērā. Viens ne.',
-    'One paid in full. One not.',
+    'Viena atstāta vesela. Otra ne.',
+    'One left whole. One not.',
   ),
   neither: L(
-    'Neviens nav samaksāts pilnā mērā.',
-    'Neither paid in full.',
+    'Neviena nav atstāta vesela.',
+    'Neither was left whole.',
   ),
   rowJumis: {
-    good: L('Jumis — pilnā mērā', 'Jumis — paid in full'),
-    poor: L('Jumis — pa daļai', 'Jumis — part paid'),
+    good: L('Jumis — vesela daļa', 'Jumis — a whole share'),
+    poor: L('Jumis — tikai puse', 'Jumis — only half'),
   },
   rowVelns: {
-    good: L('Pāreja — pilnā mērā', 'The crossing — paid in full'),
-    poor: L('Pāreja — pa daļai', 'The crossing — part paid'),
+    good: L('Pāreja — vesela daļa', 'The crossing — a whole share'),
+    poor: L('Pāreja — tikai puse', 'The crossing — only half'),
   },
   again: L(
     'Otrā reizē var labāk.',
@@ -667,8 +667,8 @@ export const items = {
   // Said every time something is taken in hand. Without a mouse cursor there is
   // nothing on screen that says the game is now waiting for you to point.
   inHand: L(
-    'Rokā. Tagad pieskaries tam, uz ko to lietot.',
-    'In hand. Now touch what to use it on.',
+    '{} rokā. Pieskaries tam, uz ko to lietot.',
+    '{} in hand. Touch what to use it on.',
   ),
   // The way back out of holding something, for a screen with no right button.
   putBack: L('Nolikt atpakaļ', 'Put it back'),

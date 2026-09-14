@@ -16,6 +16,16 @@ export interface Loc {
 /** Convenience constructor so content files read as `L('latviski', 'english')`. */
 export const L = (lv: string, en: string): Loc => ({ lv, en });
 
+/**
+ * Fills a single `{}` slot in a line with another Loc, each language with its
+ * own. For lines that have to name a thing — "Sirpis rokā." — without the
+ * Latvian sentence ending up with the English word in it.
+ */
+export const fillLoc = (loc: Loc, value: Loc): Loc => ({
+  lv: loc.lv.replace('{}', value.lv),
+  en: loc.en.replace('{}', value.en),
+});
+
 /** Several lines run together as one sentence-run, in each language. */
 export const joinLoc = (...parts: Loc[]): Loc => ({
   lv: parts.map((p) => p.lv).join(' '),

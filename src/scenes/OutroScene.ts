@@ -20,11 +20,11 @@ import { audio } from '../core/audio';
  *
  *   1. closing narration over the village as the player actually left it
  *   2. THE TALLY — both marks side by side, each whole or unfinished, with a
- *      one-line record of each debt and a plain statement of the total
+ *      one-line record of each share and a plain statement of the total
  *   3. the title card
  *
  * Movement 2 is the part that was missing. A player who reaches the end of a
- * game about paying debts should not have to guess whether they paid them, and
+ * game about what you leave behind should not have to guess what they left, and
  * the two marks answer that in a single glance before a word is read.
  */
 export class OutroScene extends Phaser.Scene {
@@ -81,7 +81,7 @@ export class OutroScene extends Phaser.Scene {
     goTo(this, 'Title');
   }
 
-  /** Both debts, marked and named. */
+  /** Both shares, marked and named. */
   private showTally(): void {
     const { width, height } = Layout;
     const run = state.get();
@@ -177,12 +177,12 @@ export class OutroScene extends Phaser.Scene {
     again.on('pointerdown', () => this.restart());
 
     // Carve the marks one after the other, then let the words follow. Staggering
-    // them means the player watches each debt being scored rather than reading
+    // them means the player watches each share being scored rather than reading
     // a results table.
     const fadeUp = (target: Phaser.GameObjects.Text, delay: number, duration = 700, onComplete?: () => void) =>
       this.tweens.add({ targets: target, alpha: 1, duration, delay, ease: 'Quad.easeOut', onComplete });
     fadeUp(heading, 300, 600);
-    // One knock per mark, on the beat the row appears: the sound of a debt
+    // One knock per mark, on the beat the row appears: the sound of a share
     // being written off, twice.
     this.time.delayedCall(700, () => {
       mJ.carve(this, () => {

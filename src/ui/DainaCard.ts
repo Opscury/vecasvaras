@@ -6,18 +6,18 @@ import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { ignoreKey, isAdvanceKey, markHandled } from './keys';
 
 /**
- * The epigraph that opens each encounter: the daina in Latvian, with the
- * English sense underneath it.
+ * The epigraph that opens each encounter: the verse, in the language being
+ * played.
  *
- * Both languages are always shown, whichever UI language is selected — the
- * original is the point, and the translation is a crutch for the player who
- * needs one. Only the ORDER changes with the language setting, so the reader's
- * own language comes first.
+ * It used to print the Latvian and the English together, on the argument that
+ * the original is the point and the translation is a crutch. On a phone that
+ * was two stacked blocks of verse before the encounter had started, and the
+ * reader's eye had to find its own half first. One verse, in one language, is
+ * the version people actually read.
  */
 export class DainaCard {
   private root: Phaser.GameObjects.Container;
-  private primary: Phaser.GameObjects.Text;
-  private secondary: Phaser.GameObjects.Text;
+  private verse: Phaser.GameObjects.Text;
   /** "Next ▸" at the foot of the card — a word, because a lone glyph read as decoration. */
   private go!: Phaser.GameObjects.Text;
   private key: keyof typeof dainas;
@@ -35,26 +35,17 @@ export class DainaCard {
     rule.lineStyle(2, Palette.rye, 0.7);
     rule.lineBetween(width / 2 - 90, height * 0.32, width / 2 + 90, height * 0.32);
 
-    this.primary = scene.add
-      .text(width / 2, height * 0.38, '', {
+    // Centred on the card rather than hung from a fixed top, now that there is
+    // only one block: a four-line verse and a two-line one both sit right.
+    this.verse = scene.add
+      .text(width / 2, height * 0.52, '', {
         fontFamily: Fonts.display,
         fontSize: px(40),
         color: Hex.parchment,
         align: 'center',
         lineSpacing: scaled(16),
       })
-      .setOrigin(0.5, 0);
-
-    this.secondary = scene.add
-      .text(width / 2, height * 0.62, '', {
-        fontFamily: Fonts.body,
-        fontSize: px(26),
-        color: Hex.parchmentDim,
-        align: 'center',
-        lineSpacing: scaled(10),
-        fontStyle: 'italic',
-      })
-      .setOrigin(0.5, 0);
+      .setOrigin(0.5, 0.5);
 
     const go = (this.go = scene.add
       .text(width / 2, height * 0.86, t(ui.next) + '  ▸', {
@@ -67,7 +58,7 @@ export class DainaCard {
       .setOrigin(0.5));
 
     this.root = scene.add
-      .container(0, 0, [veil, rule, this.primary, this.secondary, go])
+      .container(0, 0, [veil, rule, this.verse, go])
       .setDepth(800)
       .setAlpha(0);
 
@@ -137,17 +128,8 @@ export class DainaCard {
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.offLang());
   }
 
-  /** Latvian on top when playing in Latvian; English on top when in English. */
   private refresh(): void {
     this.go.setText(t(ui.next) + '  ▸');
-    const d = dainaText(this.key);
-    if (i18n.lang === 'lv') {
-      this.primary.setText(d.lv);
-      this.secondary.setText(d.en);
-    } else {
-      this.primary.setText(d.en);
-      this.secondary.setText(d.lv);
-    }
-    this.secondary.setY(this.primary.y + this.primary.height + scaled(46));
+    this.verse.setText(t(dainaText(this.key)));
   }
 }

@@ -7,8 +7,8 @@ import { audio } from '../core/audio';
  *
  * The design problem: the player needs to know whether they did well, and a
  * score or a green tick would wreck the tone in one frame. The answer is that
- * the mark itself carries the verdict — a debt paid in full gets a whole sign,
- * cut deep and warm; a debt half paid gets the same sign left unfinished, cold
+ * the mark itself carries the verdict — a share left whole gets a whole sign,
+ * cut deep and warm; a half share gets the same sign left unfinished, cold
  * and broken off mid-stroke. You do not need to be told which one is better.
  *
  * `jumis` is the Jumja zīme, a real and very well attested Latvian ornament:
@@ -86,7 +86,7 @@ function paths(key: SignKey): Path[] {
       [0.8, 0.18],
       [0.8, -0.2],
     ],
-    // raised ends, cut last: the finish a half-paid debt never gets
+    // raised ends, cut last: the finish a half share never gets
     [
       [-1.06, -0.52],
       [-0.72, -0.2],
@@ -135,7 +135,7 @@ export class SignMark {
   }
 
   /**
-   * Animates the mark being cut. A finished debt draws all the way and then
+   * Animates the mark being cut. A whole share draws all the way and then
    * warms; an unfinished one stops short and stays cold — the stroke that never
    * arrives is the whole message.
    */

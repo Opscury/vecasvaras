@@ -56,7 +56,7 @@ describe('the run, one step at a time', () => {
     expect(currentStep()).toBe('returnBog');
   });
 
-  it('only reaches the stone once both debts have been reported', () => {
+  it('only reaches the stone once both errands have been reported', () => {
     state.set('metElder', true);
     state.set('jumis', 'good');
     state.set('jumisPaid', true);

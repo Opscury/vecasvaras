@@ -7,6 +7,7 @@ import { Layout, Palette } from '../core/theme';
 import { Narration } from '../ui/Narration';
 import { Hotspot } from '../ui/Hotspot';
 import { Chrome } from '../ui/Chrome';
+import { Holdings } from '../ui/Holdings';
 import { DainaCard } from '../ui/DainaCard';
 import { Reckoning } from '../ui/Reckoning';
 import { Atmosphere } from '../fx/Atmosphere';
@@ -40,7 +41,8 @@ import { audio } from '../core/audio';
  *           practice, and still taking rather than leaving.
  *
  * There is no timer. Nothing here can fail you — the game has never had a fail
- * state, and a clock would be the wrong kind of pressure in a game about debts.
+ * state, and a clock would be the wrong kind of pressure in a game about what
+ * you leave standing.
  */
 
 /**
@@ -254,6 +256,10 @@ export class JumisScene extends Phaser.Scene {
 
     this.narration = new Narration(this);
     new Chrome(this, { log: () => this.narration.history });
+    // The village's standing rides along into the encounter: it is what the
+    // walk is for, and seeing it sit unchanged while the field is still
+    // standing is the argument for cutting it properly.
+    new Holdings(this);
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
       if (p.button !== 0) return;

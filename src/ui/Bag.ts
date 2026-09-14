@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
-import { type Loc, i18n, t } from '../core/i18n';
+import { type Loc, fillLoc, i18n, t } from '../core/i18n';
 import { bag, ITEMS, type ItemId } from '../core/inventory';
 import { textureFor } from '../core/itemArt';
 import { state } from '../core/state';
 import { items } from '../content/script';
-import { Hex, Fonts, Layout, Palette, Touch, px, scaled } from '../core/theme';
+import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { SPEAKING } from './Hotspot';
 import { Notice } from './Notice';
 import { ignoreKey, keysOf, markHandled } from './keys';
@@ -68,6 +68,9 @@ export class Bag {
   /** The way out of holding something on a screen with no right mouse button. */
   private cancel: Phaser.GameObjects.Text;
   private held: ItemId | null = null;
+  /** Height of the hover label's plate, so the line above it can clear it. */
+  private labelH = 0;
+  private labelShown = false;
   private ghost: Phaser.GameObjects.Image | null = null;
   private open = false;
   /** Whether the bag is meant to be on screen. Never read this off a mid-tween alpha. */
@@ -127,6 +130,10 @@ export class Bag {
       .container(scaled(64), -scaled(104), [this.labelPlate, this.labelName, this.labelNote])
       .setAlpha(0);
 
+    // The aside and the ✕ chip used to sit at fixed heights above the bag,
+    // chosen on a desktop. At mobile type scale the item name, its description
+    // and the chip all grew into each other and the corner became unreadable.
+    // Both are positioned from measured heights now, by `restack`.
     this.teach = scene.add
       .text(scaled(64), -scaled(210), '', {
         fontFamily: Fonts.body,
@@ -144,7 +151,7 @@ export class Bag {
     // is the same escape, spelled out, and it only exists while something is
     // actually in hand.
     this.cancel = scene.add
-      .text(scaled(64), -scaled(150), '✕  ' + t(items.putBack), {
+      .text(scaled(64), -scaled(104), '✕  ' + t(items.putBack), {
         fontFamily: Fonts.body,
         fontSize: px(21),
         color: Hex.parchmentDim,
@@ -361,6 +368,7 @@ export class Bag {
   private setHeld(id: ItemId | null): void {
     this.held = id;
     keysOf(this.scene).holding = id !== null;
+    this.restack();
     this.scene.tweens.killTweensOf(this.cancel);
     this.scene.tweens.add({
       targets: this.cancel,
@@ -381,6 +389,7 @@ export class Bag {
   /** A line beside the bag, for a few seconds. Used by the teach and by `take`. */
   private aside(line: Loc, ms = 3200): void {
     this.teach.setText(t(line));
+    this.restack();
     this.scene.tweens.killTweensOf(this.teach);
     this.scene.tweens.add({ targets: this.teach, alpha: 1, duration: 220, ease: 'Quad.easeOut' });
     this.scene.time.delayedCall(ms, () => {
@@ -406,10 +415,12 @@ export class Bag {
       .setAlpha(0.75)
       .setDepth(960);
     this.ghost.setScale(scaled(96) / this.ghost.height);
-    this.showLabel(t(ITEMS[id].name), t(noteFor(id)));
-    // On a phone nothing follows the finger once it lifts, so the only sign
-    // that the game is waiting to be pointed at something has to be words.
-    if (Touch) this.aside(items.inHand);
+    // Deliberately no name plate here. While something is in hand the corner
+    // has to hold the chip that puts it back, and a name, a description and a
+    // chip stacked together was the pile the playtester ran into. The aside
+    // below says the name and the verb in one line instead.
+    this.hideLabel();
+    this.aside(fillLoc(items.inHand, ITEMS[id].name));
   }
 
   private onKey(ev: KeyboardEvent): void {
@@ -532,6 +543,25 @@ export class Bag {
     });
   }
 
+  /**
+   * Stacks the corner from the bag upward: the chip or the hover label sits
+   * directly above the bag, and the aside above whichever of them is there.
+   * Called from everything that changes what is in the corner, so nothing can
+   * be drawn on top of anything else whatever the type scale.
+   */
+  private restack(): void {
+    const base = -scaled(104);
+    const gap = scaled(12);
+    let top = base;
+    if (this.held) {
+      this.cancel.setY(base);
+      top = base - this.cancel.height - gap;
+    } else if (this.labelShown) {
+      top = base - this.labelH - gap;
+    }
+    this.teach.setY(top);
+  }
+
   private showLabel(name: string, note = ''): void {
     this.labelName.setText(name);
     this.labelNote.setText(note);
@@ -543,11 +573,16 @@ export class Bag {
     const w = Math.max(this.labelName.width, note ? this.labelNote.width : 0) + scaled(24);
     const h = this.labelName.height + (note ? this.labelNote.height + gap : 0) + scaled(16);
     this.labelPlate.clear().fillStyle(Palette.ink, 0.82).fillRect(-w, -h, w, h);
+    this.labelH = h;
+    this.labelShown = true;
+    this.restack();
     this.scene.tweens.killTweensOf(this.label);
     this.scene.tweens.add({ targets: this.label, alpha: 1, duration: 140, ease: 'Quad.easeOut' });
   }
 
   private hideLabel(): void {
+    this.labelShown = false;
+    this.restack();
     this.scene.tweens.killTweensOf(this.label);
     this.scene.tweens.add({ targets: this.label, alpha: 0, duration: 140, ease: 'Quad.easeIn' });
   }

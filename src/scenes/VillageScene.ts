@@ -4,15 +4,15 @@ import { arrival, items, village } from '../content/script';
 import { elder } from '../content/elder';
 import { state, type Outcome } from '../core/state';
 import { currentStep } from '../core/quest';
-import { scaled } from '../core/theme';
 import { Narration } from '../ui/Narration';
 import { Hotspot } from '../ui/Hotspot';
 import { Chrome } from '../ui/Chrome';
 import { Objective } from '../ui/Objective';
-import { Measures } from '../ui/Measures';
+import { Holdings } from '../ui/Holdings';
 import { Atmosphere } from '../fx/Atmosphere';
 import { Bag } from '../ui/Bag';
 import { Painting } from '../ui/Painting';
+import { Palette } from '../core/theme';
 import { bag } from '../core/inventory';
 import { textureFor } from '../core/itemArt';
 import { fadeIn, goTo } from './transition';
@@ -49,11 +49,17 @@ const CAT = { x: 1222, y: 522 };
 const CAT_H = 52;
 
 /**
- * Vecā Anna, on the open ground between her cottage and the rune stone.
- * `y` is the ground her feet stand on; `h` is her drawn height, scaled to the
- * cottages at that depth (a little over three times the sitting cat).
+ * Vecā Anna, in the yard outside her own door.
+ *
+ * She used to stand at (700, 596) at 178 high, which was two mistakes at once:
+ * out in the middle of the bare common with nothing behind her to be standing
+ * in front of, and drawn nearly as tall as the cottage wall. This painting is
+ * seen from well above, so a figure's scale falls away fast with depth — a
+ * woman on this ground line is about the height of the porch opening behind
+ * her, and no more. Set against the cottage she reads as somebody who lives
+ * there rather than a cutout dropped on the square.
  */
-const ELDER = { x: 700, y: 596, h: 178 };
+const ELDER = { x: 706, y: 582, h: 104 };
 
 /** How long after arriving the "what changed" line is said: once the building has settled. */
 const ARRIVAL_LINE_MS = 2600;
@@ -64,7 +70,7 @@ export class VillageScene extends Phaser.Scene {
   private spots: Hotspot[] = [];
   private catSprite: Phaser.GameObjects.Image | null = null;
   private objective!: Objective;
-  private measures!: Measures;
+  private holdings!: Holdings;
   /** The outcomes the player was last shown here, so the marks can catch up on screen. */
   private lastSeen: { jumis: Outcome; velns: Outcome } = { jumis: 'none', velns: 'none' };
 
@@ -107,7 +113,7 @@ export class VillageScene extends Phaser.Scene {
     // the player last saw, so the one they just earned is still empty when
     // they walk in and fills a moment later, in front of them.
     const news = this.arrivalLine();
-    this.measures = new Measures(this, this.objective.bottom + scaled(10), this.lastSeen);
+    this.holdings = new Holdings(this, this.lastSeen);
 
     // Registered before the bag's own handler, so it sees what was in hand at
     // the moment of the click rather than after the bag has put it back.
@@ -128,7 +134,7 @@ export class VillageScene extends Phaser.Scene {
       h: 220,
       label: village.stone.label,
       onClick: () => {
-        // The stone only ends the run once Anna has heard about both debts.
+        // The stone only ends the run once Anna has heard about both errands.
         // Walking straight from the bog into the ending skipped the only
         // person who had been keeping the account.
         if (currentStep() === 'done') {
@@ -303,7 +309,7 @@ export class VillageScene extends Phaser.Scene {
     // says it out loud to anyone who asks her.
     if (news) {
       this.time.delayedCall(ARRIVAL_LINE_MS, () => {
-        this.measures.refresh(true);
+        this.holdings.refresh(true);
         if (this.narration.busy) return;
         this.narration.say([news]);
       });
@@ -340,6 +346,15 @@ export class VillageScene extends Phaser.Scene {
    * still there an hour later.
    */
   private addElder(painting: Painting): void {
+    // A soft patch of shade where she meets the ground. The light here is flat
+    // overcast, so there is no cast shadow to draw — but without something
+    // under her boots she hovers a few centimetres above the yard, which is
+    // most of what made the old placement look pasted on.
+    const shade = this.add.graphics();
+    shade.fillStyle(Palette.ink, 0.28);
+    shade.fillEllipse(ELDER.x, ELDER.y - 2, ELDER.h * 0.36, ELDER.h * 0.1);
+    painting.add(shade);
+
     const anna = painting.add(this.add.image(ELDER.x, ELDER.y, 'elder').setOrigin(0.5, 1));
     anna.setScale(ELDER.h / anna.height);
     // Cooled a shade, the way the Devil is cooled into the bog. Straight out of
@@ -365,15 +380,17 @@ export class VillageScene extends Phaser.Scene {
       ease: 'Sine.easeInOut',
     });
 
+    // The hotspot stays a comfortable thumb regardless of how small she is
+    // drawn: shrinking her must not shrink the thing you have to hit.
     this.spot({
       x: ELDER.x,
       y: ELDER.y - ELDER.h / 2,
       w: 150,
-      h: ELDER.h + 30,
+      h: Math.max(ELDER.h + 30, 170),
       label: elder.label,
       // On the ground in front of her boots. Centred on the hotspot the mark
       // lands on her apron and reads as something she is holding.
-      markAt: { x: ELDER.x, y: ELDER.y + 16 },
+      markAt: { x: ELDER.x, y: ELDER.y + 6 },
       onClick: () => this.talkTo(),
     });
   }

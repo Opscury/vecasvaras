@@ -6,6 +6,7 @@ import { joinLoc, type Loc } from '../core/i18n';
 import { Narration, type Choice } from '../ui/Narration';
 import { Hotspot } from '../ui/Hotspot';
 import { Chrome } from '../ui/Chrome';
+import { Holdings } from '../ui/Holdings';
 import { DainaCard } from '../ui/DainaCard';
 import { Reckoning } from '../ui/Reckoning';
 import { Atmosphere } from '../fx/Atmosphere';
@@ -190,6 +191,10 @@ export class VelnsScene extends Phaser.Scene {
 
     this.narration = new Narration(this);
     new Chrome(this, { log: () => this.narration.history });
+    // The village's standing rides along into the encounter: it is what the
+    // walk is for, and seeing it sit unchanged while the field is still
+    // standing is the argument for cutting it properly.
+    new Holdings(this);
 
     // Registered before the bag's own handler, so it sees what was in hand at
     // the moment of the click.

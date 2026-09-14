@@ -48,5 +48,5 @@ export const fieldOpen = (): boolean => currentStep() === 'harvest';
 /** True while the bog is the thing to be doing. */
 export const bogReady = (): boolean => currentStep() === 'crossBog';
 
-/** True once both debts are settled and reported. */
+/** True once both errands are finished and reported. */
 export const runComplete = (): boolean => currentStep() === 'done';
