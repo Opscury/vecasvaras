@@ -506,6 +506,11 @@ export class JumisScene extends Phaser.Scene {
     this.paint(TITHE_ISLAND.x, TITHE_ISLAND.y);
     this.paint(TITHE_ISLAND.x, TITHE_ISLAND.y - TITHE_ISLAND.ry * 0.6);
     this.swish();
+    // And then the rest of it. A player who puts the blade through the double
+    // ear on the first swing has said what they are doing, and the outcome
+    // text says the field went flat in one afternoon — so it does. Without
+    // this the prose described a harvest the picture had not had.
+    this.fellTheRest();
     this.cameras.main.flash(90, 240, 232, 208, false);
     this.cameras.main.shake(140, 0.002);
     this.tweens.killTweensOf(this.stalk);
@@ -567,14 +572,7 @@ export class JumisScene extends Phaser.Scene {
    */
   private finishCut(): void {
     this.cutting = false;
-    // Everything left over goes down on its own. A player hunting the last two
-    // patches around the frame is doing bookkeeping, not harvesting.
-    for (const key of this.workCells) {
-      if (this.done.has(key)) continue;
-      this.done.add(key);
-      const [col, row] = key.split(',').map(Number);
-      this.paint(col * CELL_W + CELL_W / 2, row * CELL_H + CELL_H / 2);
-    }
+    this.fellTheRest();
     this.settle(() => {
       this.narration.say(jumis.standing, () => {
         this.narration.ask(jumis.question, [
@@ -582,6 +580,26 @@ export class JumisScene extends Phaser.Scene {
           { label: jumis.choices.take, onPick: () => this.resolve('take') },
         ]);
       });
+    });
+  }
+
+  /**
+   * Everything still standing goes down. A player hunting the last two patches
+   * around the frame is doing bookkeeping, not harvesting.
+   *
+   * Whatever is left is spread over the same second and a bit however much of
+   * it there is — two patches or the whole field — so the end of the harvest
+   * reads as a sweep rather than as the picture changing in one frame.
+   */
+  private fellTheRest(totalMs = 1100): void {
+    const left = this.workCells.filter((k) => !this.done.has(k));
+    const step = left.length > 1 ? totalMs / left.length : 0;
+    left.forEach((key, i) => {
+      this.done.add(key);
+      const [col, row] = key.split(',').map(Number);
+      const x = col * CELL_W + CELL_W / 2;
+      const y = row * CELL_H + CELL_H / 2;
+      this.time.delayedCall(step * i, () => this.paint(x, y));
     });
   }
 
@@ -603,7 +621,9 @@ export class JumisScene extends Phaser.Scene {
         },
       });
     }
-    this.time.delayedCall(900, after);
+    // Long enough for the last of the crop to have gone down before anyone
+    // starts talking about it.
+    this.time.delayedCall(1500, after);
   }
 
   /**
