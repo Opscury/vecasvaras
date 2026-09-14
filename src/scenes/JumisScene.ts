@@ -14,7 +14,7 @@ import { Bag } from '../ui/Bag';
 import { Painting } from '../ui/Painting';
 import { Prompt } from '../ui/Prompt';
 import { attachWind, type WindPipeline } from '../fx/WindPipeline';
-import { makeSwathBrush } from '../fx/textures';
+import { makeIslandEraser, makeSwathBrush } from '../fx/textures';
 import { fadeIn, goTo } from './transition';
 import { audio } from '../core/audio';
 
@@ -340,9 +340,10 @@ export class JumisScene extends Phaser.Scene {
     this.cutImg.setMask(new Phaser.Display.Masks.BitmapMask(this, this.maskRT));
 
     makeSwathBrush(this);
+    makeIslandEraser(this);
     this.brush = this.make.image({ key: 'fx-swath' }, false).setOrigin(0.5).setDisplaySize(SWATH_W, SWATH_H);
     this.island = this.make
-      .image({ key: 'fx-swath' }, false)
+      .image({ key: 'fx-island' }, false)
       .setOrigin(0.5)
       .setDisplaySize(TITHE_ISLAND.rx * 2, TITHE_ISLAND.ry * 2);
 
@@ -400,13 +401,17 @@ export class JumisScene extends Phaser.Scene {
   private protectIsland(): void {
     if (!this.islandDirty || this.titheCut) return;
     this.islandDirty = false;
-    for (const lobe of ISLAND_LOBES) {
-      this.island.setDisplaySize(TITHE_ISLAND.rx * 2 * lobe.sx, TITHE_ISLAND.ry * 2 * lobe.sy);
-      this.maskRT.erase(
-        this.island,
-        TITHE_ISLAND.x + TITHE_ISLAND.rx * lobe.dx,
-        TITHE_ISLAND.y + TITHE_ISLAND.ry * lobe.dy,
-      );
+    // Twice over: one pass of a gradient this gentle leaves the middle of the
+    // patch half-cut, which shows as a ghost of stubble through the rye.
+    for (let pass = 0; pass < 2; pass++) {
+      for (const lobe of ISLAND_LOBES) {
+        this.island.setDisplaySize(TITHE_ISLAND.rx * 2 * lobe.sx, TITHE_ISLAND.ry * 2 * lobe.sy);
+        this.maskRT.erase(
+          this.island,
+          TITHE_ISLAND.x + TITHE_ISLAND.rx * lobe.dx,
+          TITHE_ISLAND.y + TITHE_ISLAND.ry * lobe.dy,
+        );
+      }
     }
   }
 
