@@ -3,7 +3,7 @@ import { i18n, t, type Loc } from '../core/i18n';
 import { outro, tally, ui } from '../content/script';
 import { state } from '../core/state';
 import { ending } from '../core/rules';
-import { Hex, Fonts, Layout, Palette, Timing } from '../core/theme';
+import { Hex, Fonts, Layout, Palette, Timing, px, scaled } from '../core/theme';
 import { Narration } from '../ui/Narration';
 import { Chrome } from '../ui/Chrome';
 import { Atmosphere } from '../fx/Atmosphere';
@@ -116,7 +116,7 @@ export class OutroScene extends Phaser.Scene {
     };
 
     const heading = add(width / 2, height * 0.16, tally.heading, {
-      size: '30px',
+      size: px(30),
       colour: Hex.parchmentDim,
     });
 
@@ -142,29 +142,29 @@ export class OutroScene extends Phaser.Scene {
       depth: 720,
     });
 
-    const rowJ = add(leftX, markY + 150, jGood ? tally.rowJumis.good : tally.rowJumis.poor, {
-      size: '26px',
+    const rowJ = add(leftX, markY + scaled(150), jGood ? tally.rowJumis.good : tally.rowJumis.poor, {
+      size: px(26),
       colour: jGood ? Hex.parchment : Hex.mist,
     });
-    const rowV = add(rightX, markY + 150, vGood ? tally.rowVelns.good : tally.rowVelns.poor, {
-      size: '26px',
+    const rowV = add(rightX, markY + scaled(150), vGood ? tally.rowVelns.good : tally.rowVelns.poor, {
+      size: px(26),
       colour: vGood ? Hex.parchment : Hex.mist,
     });
 
     const verdict = add(width / 2, height * 0.63, tally[kind], {
-      size: '42px',
+      size: px(42),
       colour: kind === 'both' ? Hex.parchment : Hex.parchmentDim,
     });
 
-    const note = add(width / 2, height * 0.63 + 62, kind === 'both' ? tally.perfect : tally.again, {
-      size: '24px',
+    const note = add(width / 2, height * 0.63 + scaled(62), kind === 'both' ? tally.perfect : tally.again, {
+      size: px(24),
       colour: Hex.rye,
     });
 
     const again = this.add
       .text(width / 2, height * 0.82, t(ui.restart), {
         fontFamily: Fonts.body,
-        fontSize: '28px',
+        fontSize: px(28),
         color: Hex.rye,
       })
       .setOrigin(0.5)

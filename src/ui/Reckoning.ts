@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { type Loc, i18n, t } from '../core/i18n';
-import { reckoning } from '../content/script';
-import { Hex, Fonts, Layout, Palette } from '../core/theme';
+import { reckoning, ui } from '../content/script';
+import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { SignMark, type SignKey } from './Sign';
 import { ignoreKey, isAdvanceKey, markHandled } from './keys';
 
@@ -90,18 +90,18 @@ export class Reckoning {
     });
 
     const verdict = this.line(width / 2, height * 0.52, opts.verdict, {
-      size: '46px',
+      size: px(46),
       colour: opts.good ? Hex.parchment : Hex.mist,
     });
 
-    const gain = this.line(width / 2, height * 0.52 + 74, opts.gain, {
-      size: '27px',
+    const gain = this.line(width / 2, height * 0.52 + scaled(74), opts.gain, {
+      size: px(27),
       colour: Hex.parchmentDim,
     });
 
     const missed = opts.missed
-      ? this.line(width / 2, height * 0.52 + 152, opts.missed, {
-          size: '25px',
+      ? this.line(width / 2, height * 0.52 + scaled(152), opts.missed, {
+          size: px(25),
           colour: Hex.rye,
           italic: true,
           wrap: 980,
@@ -109,10 +109,12 @@ export class Reckoning {
       : null;
 
     this.go = scene.add
-      .text(width / 2, height * 0.87, '▸', {
+      .text(width / 2, height * 0.88, t(ui.next) + '  ▸', {
         fontFamily: Fonts.body,
-        fontSize: '30px',
+        fontSize: px(26),
         color: Hex.rye,
+        backgroundColor: 'rgba(20,22,26,0.6)',
+        padding: { x: scaled(22), y: scaled(14) },
       })
       .setOrigin(0.5)
       .setDepth(830)
@@ -165,7 +167,10 @@ export class Reckoning {
     scene.input.keyboard?.on('keydown', onKey);
     this.offKey = () => scene.input.keyboard?.off('keydown', onKey);
 
-    this.offLang = i18n.onChange(() => this.texts.forEach((x) => x.obj.setText(t(x.loc))));
+    this.offLang = i18n.onChange(() => {
+      this.texts.forEach((x) => x.obj.setText(t(x.loc)));
+      this.go.setText(t(ui.next) + '  ▸');
+    });
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.offLang();
       this.offKey();
@@ -186,7 +191,7 @@ export class Reckoning {
         align: 'center',
         fontStyle: o.italic ? 'italic' : 'normal',
         wordWrap: { width: o.wrap ?? 1300 },
-        lineSpacing: 8,
+        lineSpacing: scaled(8),
       })
       .setOrigin(0.5, 0)
       .setDepth(825)

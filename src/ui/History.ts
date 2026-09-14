@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { type Loc, i18n, t } from '../core/i18n';
 import { ui } from '../content/script';
-import { Hex, Fonts, Layout, Palette } from '../core/theme';
+import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { keysOf } from './keys';
 
 /**
@@ -64,9 +64,9 @@ export class History {
     });
 
     const heading = this.scene.add
-      .text(width / 2, 70, t(ui.history), {
+      .text(width / 2, scaled(70), t(ui.history), {
         fontFamily: Fonts.body,
-        fontSize: '28px',
+        fontSize: px(28),
         color: Hex.parchmentDim,
       })
       .setOrigin(0.5, 0);
@@ -75,24 +75,24 @@ export class History {
 
     // Newest at the bottom, stacking upward until the page is full.
     const all = this.lines();
-    let y = height - 70;
+    let y = height - scaled(70);
     for (let i = all.length - 1; i >= 0; i--) {
       const line = this.scene.add
         .text(width / 2, y, t(all[i]), {
           fontFamily: Fonts.body,
-          fontSize: '26px',
+          fontSize: px(26),
           color: i === all.length - 1 ? Hex.parchment : Hex.parchmentDim,
           align: 'center',
           wordWrap: { width: 1400 },
-          lineSpacing: 6,
+          lineSpacing: scaled(6),
         })
         .setOrigin(0.5, 1);
-      if (y - line.height < 130) {
+      if (y - line.height < scaled(130)) {
         line.destroy();
         break;
       }
       parts.push(line);
-      y -= line.height + 18;
+      y -= line.height + scaled(18);
     }
 
     this.root = this.scene.add.container(0, 0, parts).setDepth(850);

@@ -13,3 +13,6 @@ Claude outputs/
 # Freesound API credential — never commit
 .freesound-key
 
+
+# scratch archive used to mirror the repo into a screenshot sandbox
+_vv_snapshot.zip

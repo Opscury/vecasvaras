@@ -36,6 +36,54 @@ export function makeBlob(scene: Phaser.Scene, key = 'fx-blob', size = 128): stri
 }
 
 /**
+ * The mark one sweep of a sickle leaves, as a mask stamp.
+ *
+ * Solid through the middle so overlapping strokes reach full opacity in one
+ * pass, then falling away over the outer third — which is what stops a cut
+ * field from looking like it was assembled out of rectangles.
+ */
+export function makeSwathBrush(scene: Phaser.Scene, key = 'fx-swath', size = 256): string {
+  const tex = canvas(scene, key, size, size);
+  if (!tex) return key;
+  const ctx = tex.getContext();
+  const r = size / 2;
+  const g = ctx.createRadialGradient(r, r, 0, r, r, r);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.62, 'rgba(255,255,255,1)');
+  g.addColorStop(0.82, 'rgba(255,255,255,0.55)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  tex.refresh();
+  return key;
+}
+
+/**
+ * The counterpart to the swath brush: what puts standing crop back.
+ *
+ * Much gentler than the brush it undoes. Erasing is multiplicative, so a stamp
+ * that is opaque most of the way out cuts a hole with a hard rim — which in the
+ * field read as a rectangle of rye sitting in the stubble. This ramps from the
+ * middle so one pass leaves a patch with an edge you cannot point at.
+ */
+export function makeIslandEraser(scene: Phaser.Scene, key = 'fx-island', size = 256): string {
+  const tex = canvas(scene, key, size, size);
+  if (!tex) return key;
+  const ctx = tex.getContext();
+  const r = size / 2;
+  const g = ctx.createRadialGradient(r, r, 0, r, r, r);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.3, 'rgba(255,255,255,0.92)');
+  g.addColorStop(0.6, 'rgba(255,255,255,0.5)');
+  g.addColorStop(0.85, 'rgba(255,255,255,0.12)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  tex.refresh();
+  return key;
+}
+
+/**
  * A wide, lumpy, very soft band — one drifting sheet of mist. Several of these
  * at different speeds and opacities is what sells weather on a still painting.
  */

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { audio } from '../core/audio';
+import { scaled } from '../core/theme';
 
 /**
  * Gives a text button a fixed-size hit area centred on its glyphs.
@@ -16,9 +17,14 @@ import { audio } from '../core/audio';
  * it per caller means the next button someone adds is silent.
  */
 export function padHit(txt: Phaser.GameObjects.Text, w: number, h: number): () => void {
-  const rect = new Phaser.Geom.Rectangle(0, 0, w, h);
+  const rect = new Phaser.Geom.Rectangle(0, 0, scaled(w), scaled(h));
   const place = () => {
-    rect.setPosition(txt.width / 2 - w / 2, txt.height / 2 - h / 2);
+    // The box has to be at least as big as the words inside it. Compact type is
+    // half again as wide, and a fixed box quietly clipped the ends of the
+    // longer Latvian labels.
+    rect.width = Math.max(scaled(w), txt.width + scaled(40));
+    rect.height = Math.max(scaled(h), txt.height + scaled(24));
+    rect.setPosition(txt.width / 2 - rect.width / 2, txt.height / 2 - rect.height / 2);
   };
   place();
   txt.setInteractive({

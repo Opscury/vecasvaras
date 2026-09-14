@@ -17,41 +17,49 @@ export const ui = {
   resume: L('Turpināt', 'Continue'),
   restart: L('Sākt no jauna', 'Start over'),
   subtitle: L('Latviešu folkloras spēle', 'A game of Latvian folklore'),
-  clickAnywhere: L('Meklē. Aplūko lauku.', 'Search. Look the field over.'),
-  skip: L('Izlaist', 'Skip'),
+  /** The button that moves the narration on. */
+  next: L('Tālāk', 'Next'),
   // Heading of the page that shows everything said so far (⟲ / H).
   history: L('Teiktais', 'Said so far'),
   loadFailed: L('Neizdevās ielādēt zīmējumus.', 'Some of the pictures did not load.'),
   retry: L('Mēģināt vēlreiz', 'Try again'),
-  examine: L('Aplūkot', 'Look'),
 };
 
+/**
+ * The opening. It was five long lines, and the first playtester met all of
+ * them before she had touched anything — the game's own best writing, standing
+ * between her and the game. Three short ones now: what is owed, who stopped
+ * paying it, and what that has cost. The rest is out in the field.
+ */
 export const intro = {
   lines: [
     L(
-      'Vecie ļaudis to sauca vienā vārdā: parāds.',
-      'The old people had one word for it: a debt.',
+      'Vecie ļaudis to sauca vienā vārdā: parāds. Ne naudā — nekas laukā vai purvā nav vienkārši tavs, ko ņemt.',
+      'The old people had one word for it: a debt. Not money — nothing in the field or the bog is simply yours for the taking.',
     ),
     L(
-      'Ne naudā. Kaut kas vecāks — saprašana, ka nekas laukā vai purvā nav vienkārši tavs, ko ņemt.',
-      'Not money. Something older — the understanding that nothing in the field or the bog is simply yours for the taking.',
+      'Vectēvs to turēja. Tēvs — pa pusei. Tu ne reizi neesi par to domājis.',
+      'Your grandfather kept it. Your father half-kept it. You have never once thought about it.',
     ),
     L(
-      'Vectēvs to turēja. Tēvs — pa pusei. Tu par to neesi domājis nemaz.',
-      'Your grandfather kept it. Your father half-kept it. You have not thought about it at all.',
-    ),
-    L(
-      'Šogad rudzi izauga plāni, strauts aiznesa tiltu, un ciems ir sācis uz tevi skatīties.',
-      'This year the rye came up thin, the stream took the bridge, and the village has begun to look at you.',
-    ),
-    L(
-      'Tāpēc tu iesi aiz sētas — un uzzināsi, kas vēl ir parādā.',
-      'So you will go out past the fence — and find out what is still owed.',
+      'Šogad rudzi plāni, tilta nav, un ciems ir sācis uz tevi skatīties.',
+      'This year the rye is thin, the bridge is gone, and the village has begun to look at you.',
     ),
   ],
 };
 
 export const village = {
+  /**
+   * The two things the village has more or less of, shown as filled marks in
+   * the corner. The playtester could not tell what she had gained from an
+   * encounter — the granary and the bridge change, but only if you happen to
+   * be looking at them, and only once. Two counters that tick up in front of
+   * her answer "was that better or worse than it could have been".
+   */
+  measures: {
+    grain: L('Maize', 'Grain'),
+    crossing: L('Ceļš', 'Crossing'),
+  },
   stone: {
     label: L('Akmens', 'The stone'),
     lines: [
@@ -121,18 +129,10 @@ export const village = {
       'The bog road. There is nothing waiting out there for you any more.',
     ),
   },
-  nudgeFirst: L(
-    'Ej aiz sētas. Sāc ar lauku.',
-    'Go out past the fence. Start with the field.',
-  ),
-  nudgeBog: L(
-    'Ar maizi kulē vari iet uz purvu.',
-    'With bread in your bag you can go to the bog.',
-  ),
-  nudgeDone: L(
-    'Abi parādi nokārtoti. Ej pie akmens.',
-    'Both debts are settled. Go to the stone.',
-  ),
+  // The three `nudge` lines that used to live here are gone. They were the
+  // game's entire answer to "what now", they fired once, and the corner of the
+  // screen and Anna both do the job properly now.
+  //
   // A click on nothing in particular gets one of these, in rotation, rather
   // than silence — which in a click-the-picture game reads as broken.
   nothing: [
@@ -151,10 +151,23 @@ export const jumis = {
     ),
     L(
       // Sirpis, not izkapts: the tool in the bag is a sickle, not a scythe.
-      'Kaut kur šeit viens stiebrs nes divas vārpas. Atrodi to, pirms liec sirpi klāt.',
-      'Somewhere in here one stem carries two ears. Find it before you put a blade to anything.',
+      'Tur, labajā malā, viens stiebrs nes divas vārpas. To tu redzi jau no vārtiem.',
+      'There, over on the right, one stem carries two ears. You can see it from the gate.',
     ),
   ],
+  /** Said once the field is down and the one thing left standing is the point. */
+  standing: [
+    L(
+      'Lauks ir nopļauts. Divvārpa stāv maza rugāju saliņā, tur, kur tu to atstāji.',
+      'The field is down. The double ear stands in a small island of stubble, where you left it.',
+    ),
+  ],
+  /** Top-of-frame lines during the cutting itself. */
+  almost: L('Vēl mazliet.', 'Not much left.'),
+  titheWarn: L(
+    'Tur ir divvārpa. Nocērt to, un tā ir prom.',
+    'The double ear is there. Cut it and it is gone.',
+  ),
   hintStone: {
     label: L('Lauka akmens', 'The field stone'),
     text: L(
@@ -162,50 +175,17 @@ export const jumis = {
       'A boundary stone, grown over with lichen. Your grandmother’s words come by themselves: of what the field gives, leave the field a share. Never take the last of it.',
     ),
   },
-  decoys: [
-    L(
-      'Smaga, laba vārpa. Viena vārpa. Tu to atstāj mierā.',
-      'A good heavy ear. One ear. You leave it be.',
-    ),
-    L(
-      'Lietus to noguldījis gar zemi. Te nekā nav.',
-      'The rain has laid this one flat. Nothing here.',
-    ),
-    L(
-      'Dadzis, izziedējis rudzu vidū. Ne tas, ko tu meklē.',
-      'A thistle, gone to seed in the middle of the rye. Not what you are after.',
-    ),
-    L(
-      'Divi stiebri saslējušies kopā. No tālienes gandrīz. Gandrīz nav tas pats.',
-      'Two stems leaning together. From a distance, almost. Almost is not it.',
-    ),
-    L(
-      'Tīteņi uzkāpuši pa stiebru augšā. Zem tiem — viena vārpa.',
-      'Bindweed has climbed this stem. Under it, one ear.',
-    ),
-  ],
-  found: [
-    L(
-      'Tur. Viens stiebrs, un tas izdzinis divas vārpas, abas pilnas, viena pret otru kā pāris vēršu jūgā.',
-      'There. One stem, and it has put out two ears, both full, leaning on each other like a pair of oxen in a yoke.',
-    ),
-    L(
-      'Jumis. Lauka laime, sēž tieši tajā, ko tu būtu nopļāvis pēdējo un nemaz nepamanījis.',
-      'Jumis. The luck of the field, sitting in the very thing you would have cut last and never noticed.',
-    ),
-  ],
-  question: L('Ko tu dari?', 'What do you do?'),
+  question: L('Ko tu dari ar to?', 'What do you do with it?'),
+  // Only two options now. The third — cutting it with the rest — is not a line
+  // on a list any more; it is something the player does with the blade, out in
+  // the field, and the game asks them once whether they meant it.
   choices: {
-    all: L(
-      'Pļaut visu lauku, arī šo stiebru. Graudi ir graudi.',
-      'Cut the whole field, this stem with it. Grain is grain.',
-    ),
     leave: L(
-      'Pļaut apkārt. Divvārpu atstāt stāvam un pieliekt pie rugājiem.',
-      'Cut around it. Leave the double ear standing and bind it down into the stubble.',
+      'Pieliekt to pie zemes un piesiet pie rugājiem.',
+      'Bend it down and tie it into the stubble.',
     ),
     take: L(
-      'Izraut to ar visām saknēm un nest mājās klētī.',
+      'Izraut to ar saknēm un nest mājās klētī.',
       'Pull it up by the roots and carry it home to the granary.',
     ),
   },
@@ -308,6 +288,22 @@ export const velns = {
       '“But first — a riddle. I am bored. Get it right and we will talk man to man.”',
     ),
   ],
+  /**
+   * Getting out to him. The causeway is half rotten and the encounter used to
+   * begin with the player already standing in front of the Devil, having done
+   * nothing — the whole scene was a conversation you arrived in the middle of.
+   */
+  wade: {
+    prompt: L('Ej pa laipu. Ne katrs dēlis tur.', 'Walk out along the planks. Not every one will hold.'),
+    plank: L('Dēlis', 'A plank'),
+    hummock: L('Cinis', 'A hummock'),
+    step: [
+      L('Dēlis notur. Zem tā kaut kas mierīgi aizslīd.', 'The plank holds. Something slides away underneath it, unhurried.'),
+      L('Ūdens ir melns un nekustīgs kā darva.', 'The water is black and as still as tar.'),
+      L('Vēl viens. Tālāk laipa beidzas.', 'One more. After that the causeway stops.'),
+    ],
+    rotten: L('Tas neturēs. Zem tā ir tikai purvs.', 'That will not hold. There is only bog under it.'),
+  },
   riddle: L(
     '„Bez rokām, bez kājām, bet durvis ver. Kas tas ir?“',
     '“Without hands, without feet, and yet it opens doors. What is it?”',
@@ -332,6 +328,15 @@ export const velns = {
     ),
   ],
   question: L('Kā tu to izkārto?', 'How do you settle it?'),
+  /**
+   * The bargain is settled by handing something over, not by picking a line.
+   * The list below is still there, but it only comes up once the player has
+   * had a moment to work out that the bag is the answer.
+   */
+  bargainPrompt: L(
+    'Dod viņam kaut ko. Paņem to no kules un liec uz dēļiem.',
+    'Give him something. Take it out of your bag and put it on the planks.',
+  ),
   choices: {
     self: L(
       'Piekrist un iet pāri pašam.',
@@ -635,10 +640,12 @@ export const items = {
     'Uz purvu tukšām rokām neiet. Paņem maizi — un neej viens.',
     'You do not go to the bog empty-handed. Take the bread — and do not go alone.',
   ),
-  // Field: the harvest is an action, not a menu entry.
+  // Field: the harvest is an action, not a menu entry. The wording has to say
+  // "sweep", not "tap" — the drag is the verb, and a player who only taps will
+  // be at it all afternoon.
   cutPrompt: L(
-    'Ņem sirpi no kules un sāc pļaut rudzus.',
-    'Take the sickle from your bag and start on the standing rye.',
+    'Ņem sirpi no kules un velc to pāri rudziem.',
+    'Take the sickle from your bag and sweep it across the rye.',
   ),
   cutWrongTool: L(
     'Ar to te nav ko darīt.',
@@ -657,6 +664,28 @@ export const items = {
     'Paņem lietu rokā, tad norādi, kur to likt.',
     'Take a thing in hand, then point at where it goes.',
   ),
+  // Said every time something is taken in hand. Without a mouse cursor there is
+  // nothing on screen that says the game is now waiting for you to point.
+  inHand: L(
+    'Rokā. Tagad pieskaries tam, uz ko to lietot.',
+    'In hand. Now touch what to use it on.',
+  ),
+  // The way back out of holding something, for a screen with no right button.
+  putBack: L('Nolikt atpakaļ', 'Put it back'),
+  /**
+   * The bag's own introduction, shown as a card the first time something goes
+   * into it. It used to be one line beside the bag on first OPEN — which the
+   * first playtester never did, so she met the bag as an unexplained object
+   * appearing in the corner and asked out loud what it was.
+   */
+  intro: {
+    title: L('Tava kule', 'Your bag'),
+    body: L(
+      'Viss, ko atrodi, nonāk šeit. Pieskaries kulei, lai to atvērtu, tad paņem lietu rokā un norādi, kur to likt.',
+      'Everything you find goes in here. Touch the bag to open it, take a thing in hand, then point at where it goes.',
+    ),
+    ok: L('Sapratu', 'Got it'),
+  },
   // The loaf says what kind of year it came from — the one fact the bread
   // argument at the bog turns on. Shown under its name in the bag.
   breadNote: {

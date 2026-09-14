@@ -4,12 +4,17 @@ import { bag, ITEMS, type ItemId } from '../core/inventory';
 import { textureFor } from '../core/itemArt';
 import { state } from '../core/state';
 import { items } from '../content/script';
-import { Hex, Fonts, Layout, Palette } from '../core/theme';
+import { Hex, Fonts, Layout, Palette, Touch, px, scaled } from '../core/theme';
+import { SPEAKING } from './Hotspot';
+import { Notice } from './Notice';
 import { ignoreKey, keysOf, markHandled } from './keys';
 import { audio } from '../core/audio';
 
-/** Registry flag: the one-line teach has been shown this session. */
+/** Registry flag: the bag has introduced itself this session. */
 const TAUGHT = 'bagTaught';
+
+/** How far a finger must travel for a tray press to count as a drag rather than a tap. */
+const DRAG_SLOP = 40;
 
 /**
  * What an item's label says underneath its name. The loaf says what kind of
@@ -60,6 +65,8 @@ export class Bag {
   private labelName: Phaser.GameObjects.Text;
   private labelNote: Phaser.GameObjects.Text;
   private teach: Phaser.GameObjects.Text;
+  /** The way out of holding something on a screen with no right mouse button. */
+  private cancel: Phaser.GameObjects.Text;
   private held: ItemId | null = null;
   private ghost: Phaser.GameObjects.Image | null = null;
   private open = false;
@@ -71,8 +78,12 @@ export class Bag {
   private flying = 0;
   /** Guards against the click that took an item also spending it. */
   private tookAt = -9999;
+  /** Where the finger was when the current item was taken, for drag-to-use. */
+  private tookFrom = { x: 0, y: 0 };
   /** True only while `take` is shutting the tray as a side effect. */
   private closingToTake = false;
+  /** Set while the narration is mid-sentence; the bag steps out of the corner. */
+  private muted = false;
   private offBag: () => void;
   private offLang: () => void;
 
@@ -86,55 +97,85 @@ export class Bag {
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     // Bottom-RIGHT, because the choice list runs along the bottom-left.
-    const x = Layout.width - 132;
-    const y = Layout.height - 108;
+    const x = Layout.width - scaled(132);
+    const y = Layout.height - scaled(108);
 
     this.bagImg = scene.add
       .image(0, 0, 'item-bag')
       .setOrigin(0.5, 0.5)
       .setInteractive({ useHandCursor: true });
-    this.baseScale = 122 / this.bagImg.height;
+    this.baseScale = scaled(122) / this.bagImg.height;
     this.bagImg.setScale(this.baseScale);
 
     // Name over note, anchored at the bag's right edge and growing up and to
     // the left, so a two-line note never runs off the side of the screen.
     this.labelPlate = scene.add.graphics();
     this.labelName = scene.add
-      .text(0, 0, '', { fontFamily: Fonts.body, fontSize: '22px', color: Hex.parchment, align: 'right' })
+      .text(0, 0, '', { fontFamily: Fonts.body, fontSize: px(22), color: Hex.parchment, align: 'right' })
       .setOrigin(1, 1);
     this.labelNote = scene.add
       .text(0, 0, '', {
         fontFamily: Fonts.body,
-        fontSize: '18px',
+        fontSize: px(18),
         color: Hex.parchmentDim,
         fontStyle: 'italic',
         align: 'right',
-        wordWrap: { width: 420 },
+        wordWrap: { width: scaled(420) },
       })
       .setOrigin(1, 1);
-    this.label = scene.add.container(64, -104, [this.labelPlate, this.labelName, this.labelNote]).setAlpha(0);
+    this.label = scene.add
+      .container(scaled(64), -scaled(104), [this.labelPlate, this.labelName, this.labelNote])
+      .setAlpha(0);
 
     this.teach = scene.add
-      .text(64, -210, '', {
+      .text(scaled(64), -scaled(210), '', {
         fontFamily: Fonts.body,
-        fontSize: '21px',
+        fontSize: px(21),
         color: Hex.parchment,
         backgroundColor: 'rgba(20,22,26,0.88)',
-        padding: { x: 14, y: 9 },
+        padding: { x: scaled(14), y: scaled(9) },
         align: 'right',
-        wordWrap: { width: 460 },
+        wordWrap: { width: scaled(460) },
       })
       .setOrigin(1, 1)
       .setAlpha(0);
+
+    // Right-click puts a held item back, and a phone has no right click. This
+    // is the same escape, spelled out, and it only exists while something is
+    // actually in hand.
+    this.cancel = scene.add
+      .text(scaled(64), -scaled(150), '✕  ' + t(items.putBack), {
+        fontFamily: Fonts.body,
+        fontSize: px(21),
+        color: Hex.parchmentDim,
+        backgroundColor: 'rgba(20,22,26,0.88)',
+        padding: { x: scaled(16), y: scaled(12) },
+      })
+      .setOrigin(1, 1)
+      .setAlpha(0);
+    this.cancel.setInteractive({ useHandCursor: true });
+    this.cancel.on('pointerover', () => this.cancel.setColor(Hex.ryeBright));
+    this.cancel.on('pointerout', () => this.cancel.setColor(Hex.parchmentDim));
+    this.cancel.on('pointerdown', (_p: unknown, _x: unknown, _y: unknown, ev: Phaser.Types.Input.EventData) => {
+      ev?.stopPropagation?.();
+      this.putBack();
+    });
 
     this.tray = scene.add.container(0, 0);
 
     // A soft glow behind the bag, pulsed by `attention`.
     this.halo = scene.add.graphics();
-    this.halo.fillStyle(Palette.ryeBright, 1).fillCircle(0, 0, 74);
+    this.halo.fillStyle(Palette.ryeBright, 1).fillCircle(0, 0, scaled(74));
     this.halo.setAlpha(0);
 
-    this.root = scene.add.container(x, y, [this.halo, this.tray, this.bagImg, this.label, this.teach]);
+    this.root = scene.add.container(x, y, [
+      this.halo,
+      this.tray,
+      this.bagImg,
+      this.label,
+      this.teach,
+      this.cancel,
+    ]);
     // Above the narration panel (500), below the full-screen cards (800+).
     this.root.setDepth(700).setAlpha(0);
 
@@ -173,14 +214,29 @@ export class Bag {
       if (this.ghost) this.ghost.setPosition(p.worldX, p.worldY);
     });
 
+    // Drag straight out of the tray and onto the thing. With no cursor to
+    // follow, pressing an item and letting go somewhere else is the gesture a
+    // phone player reaches for first; a press and a separate tap still works.
+    scene.input.on('pointerup', (p: Phaser.Input.Pointer) => {
+      if (!this.held || p.button !== 0) return;
+      const moved = Phaser.Math.Distance.Between(this.tookFrom.x, this.tookFrom.y, p.worldX, p.worldY);
+      if (moved < scaled(DRAG_SLOP)) return;
+      this.offer(p.worldX, p.worldY);
+    });
+
     scene.input.mouse?.disableContextMenu();
     scene.input.keyboard?.on('keydown', this.onKey, this);
 
     this.offBag = bag.onChange(() => this.refresh());
-    this.offLang = i18n.onChange(() => this.rebuildTray());
+    this.offLang = i18n.onChange(() => {
+      this.cancel.setText('✕  ' + t(items.putBack));
+      this.rebuildTray();
+    });
+    scene.events.on(SPEAKING, this.onSpeaking, this);
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.offBag();
       this.offLang();
+      scene.events.off(SPEAKING, this.onSpeaking, this);
       scene.input.keyboard?.off('keydown', this.onKey, this);
     });
 
@@ -190,6 +246,24 @@ export class Bag {
   /** What the player currently has in hand, if anything. */
   get holding(): ItemId | null {
     return this.held;
+  }
+
+  /**
+   * The narration panel started or stopped a run of lines.
+   *
+   * The Next button now sits in the bottom-right corner, which is where the bag
+   * has always hung. Rather than move one of them somewhere worse, the bag
+   * stands down while there are words on screen — there is nothing to do with
+   * an item mid-sentence anyway. Holding something is the exception: the player
+   * is already aiming, and having the bag vanish under their thumb would be
+   * the game taking it out of their hand.
+   */
+  private onSpeaking(on: boolean): void {
+    const want = on && !this.held;
+    if (want === this.muted) return;
+    this.muted = want;
+    if (want && this.open) this.setOpen(false);
+    this.applyVisibility();
   }
 
   /**
@@ -223,7 +297,7 @@ export class Bag {
   fly(texture: string, fromX: number, fromY: number): void {
     this.flying++;
     const img = this.scene.add.image(fromX, fromY, texture).setDepth(960);
-    const s = 110 / Math.max(img.width, img.height);
+    const s = scaled(110) / Math.max(img.width, img.height);
     img.setScale(s);
     const toX = this.root.x;
     const toY = this.root.y;
@@ -287,6 +361,31 @@ export class Bag {
   private setHeld(id: ItemId | null): void {
     this.held = id;
     keysOf(this.scene).holding = id !== null;
+    this.scene.tweens.killTweensOf(this.cancel);
+    this.scene.tweens.add({
+      targets: this.cancel,
+      alpha: id ? 1 : 0,
+      duration: id ? 200 : 140,
+      ease: 'Quad.easeOut',
+    });
+    if (id) this.cancel.setInteractive({ useHandCursor: true });
+    else this.cancel.disableInteractive();
+    // Putting something back is also the moment the bag may need to come back:
+    // it stands down during narration, and holding an item overrode that.
+    if (!id && this.muted) {
+      this.muted = false;
+      this.applyVisibility();
+    }
+  }
+
+  /** A line beside the bag, for a few seconds. Used by the teach and by `take`. */
+  private aside(line: Loc, ms = 3200): void {
+    this.teach.setText(t(line));
+    this.scene.tweens.killTweensOf(this.teach);
+    this.scene.tweens.add({ targets: this.teach, alpha: 1, duration: 220, ease: 'Quad.easeOut' });
+    this.scene.time.delayedCall(ms, () => {
+      this.scene.tweens.add({ targets: this.teach, alpha: 0, duration: 420, ease: 'Quad.easeIn' });
+    });
   }
 
   /** Takes an item out of the bag and into the player's hand. */
@@ -298,14 +397,19 @@ export class Bag {
     this.setOpen(false);
     this.closingToTake = false;
     this.tookAt = this.scene.time.now;
+    const p = this.scene.input.activePointer;
+    this.tookFrom = { x: p.worldX, y: p.worldY };
     this.setHeld(id);
     this.ghost?.destroy();
     this.ghost = this.scene.add
-      .image(this.scene.input.activePointer.worldX, this.scene.input.activePointer.worldY, textureFor(id))
+      .image(p.worldX, p.worldY, textureFor(id))
       .setAlpha(0.75)
       .setDepth(960);
-    this.ghost.setScale(96 / this.ghost.height);
+    this.ghost.setScale(scaled(96) / this.ghost.height);
     this.showLabel(t(ITEMS[id].name), t(noteFor(id)));
+    // On a phone nothing follows the finger once it lifts, so the only sign
+    // that the game is waiting to be pointed at something has to be words.
+    if (Touch) this.aside(items.inHand);
   }
 
   private onKey(ev: KeyboardEvent): void {
@@ -348,22 +452,26 @@ export class Bag {
     if (v || !this.closingToTake) audio.play(v ? 'bagOpen' : 'bagClose');
     keysOf(this.scene).bagOpen = v;
     this.rebuildTray();
-    if (v) this.maybeTeach();
+    if (v) this.aside(items.teach, 4800);
   }
 
   /**
-   * The first time the bag is opened, one line on how it works. Said beside the
-   * bag rather than in the narration panel, which may be holding a decision
-   * that a flash would wipe.
+   * The bag's introduction, the first time anything lands in it.
+   *
+   * This used to be one line beside the bag on its first OPEN — which meant a
+   * player who never thought to open it was never told the bag existed. The
+   * first playtester watched it appear in the corner mid-sentence and asked
+   * what it was. It is a system, it arrives once, and it gets a card.
    */
-  private maybeTeach(): void {
+  private maybeIntroduce(): void {
     const reg = this.scene.registry;
     if (reg.get(TAUGHT)) return;
     reg.set(TAUGHT, true);
-    this.teach.setText(t(items.teach));
-    this.scene.tweens.add({ targets: this.teach, alpha: 1, duration: 300, ease: 'Quad.easeOut' });
-    this.scene.time.delayedCall(4800, () => {
-      this.scene.tweens.add({ targets: this.teach, alpha: 0, duration: 450, ease: 'Quad.easeIn' });
+    new Notice(this.scene, {
+      title: items.intro.title,
+      body: items.intro.body,
+      ok: items.intro.ok,
+      icon: 'item-bag',
     });
   }
 
@@ -379,22 +487,23 @@ export class Bag {
     ids.forEach((id, i) => {
       const def = ITEMS[id];
       // The tray opens leftward, away from the screen edge the bag sits on.
-      const step = 92;
-      const px = -100 - i * step;
-      const py = -34 - Math.sin((i + 1) / (ids.length + 1) * Math.PI) * 26;
+      const step = scaled(92);
+      const ix = -scaled(100) - i * step;
+      const iy = -scaled(34) - Math.sin((i + 1) / (ids.length + 1) * Math.PI) * scaled(26);
+      const half = scaled(40);
 
       // A warm timber ground rather than ink: the dark iron sickle vanished
       // against a near-black plate.
       const plate = this.scene.add.graphics();
       plate.fillStyle(Palette.timber, 0.35);
-      plate.fillRoundedRect(px - 40, py - 40, 80, 80, 10);
+      plate.fillRoundedRect(ix - half, iy - half, half * 2, half * 2, scaled(10));
       plate.lineStyle(1, Palette.timberLight, 0.6);
-      plate.strokeRoundedRect(px - 40, py - 40, 80, 80, 10);
+      plate.strokeRoundedRect(ix - half, iy - half, half * 2, half * 2, scaled(10));
 
       const icon = this.scene.add
-        .image(px, py, textureFor(id))
+        .image(ix, iy, textureFor(id))
         .setInteractive({ useHandCursor: true });
-      const size = 68 / Math.max(icon.width, icon.height);
+      const size = scaled(68) / Math.max(icon.width, icon.height);
       icon.setScale(size);
 
       icon.on('pointerover', () => {
@@ -417,20 +526,22 @@ export class Bag {
       this.tray.add([plate, icon]);
       // Tipped out, not faded in: a slight overshoot as each lands.
       plate.setAlpha(0);
-      icon.setAlpha(0).setY(py + 14);
+      icon.setAlpha(0).setY(iy + scaled(14));
       this.scene.tweens.add({ targets: plate, alpha: 1, duration: 200, delay: i * 60, ease: 'Quad.easeOut' });
-      this.scene.tweens.add({ targets: icon, alpha: 1, y: py, duration: 240, delay: i * 60, ease: 'Back.easeOut' });
+      this.scene.tweens.add({ targets: icon, alpha: 1, y: iy, duration: 240, delay: i * 60, ease: 'Back.easeOut' });
     });
   }
 
   private showLabel(name: string, note = ''): void {
     this.labelName.setText(name);
     this.labelNote.setText(note);
-    const gap = note ? 6 : 0;
-    this.labelNote.setPosition(-12, -8);
-    this.labelName.setPosition(-12, note ? -8 - this.labelNote.height - gap : -8);
-    const w = Math.max(this.labelName.width, note ? this.labelNote.width : 0) + 24;
-    const h = this.labelName.height + (note ? this.labelNote.height + gap : 0) + 16;
+    const gap = note ? scaled(6) : 0;
+    const edge = scaled(12);
+    const base = scaled(8);
+    this.labelNote.setPosition(-edge, -base);
+    this.labelName.setPosition(-edge, note ? -base - this.labelNote.height - gap : -base);
+    const w = Math.max(this.labelName.width, note ? this.labelNote.width : 0) + scaled(24);
+    const h = this.labelName.height + (note ? this.labelNote.height + gap : 0) + scaled(16);
     this.labelPlate.clear().fillStyle(Palette.ink, 0.82).fillRect(-w, -h, w, h);
     this.scene.tweens.killTweensOf(this.label);
     this.scene.tweens.add({ targets: this.label, alpha: 1, duration: 140, ease: 'Quad.easeOut' });
@@ -444,31 +555,46 @@ export class Bag {
   /** The bag is only on screen once it holds something. */
   private refresh(instant = false): void {
     const count = bag.count;
-    const want = count > 0;
-    if (instant) {
-      this.shown = want;
-      this.root.setAlpha(want ? 1 : 0);
-    } else {
-      if (want !== this.shown) {
-        this.shown = want;
-        this.scene.tweens.killTweensOf(this.root);
-        this.scene.tweens.add({
-          targets: this.root,
-          alpha: want ? 1 : 0,
-          duration: 500,
-          ease: want ? 'Quad.easeOut' : 'Quad.easeIn',
-        });
-      }
-      // A small nudge whenever something new lands in it — unless it is still
-      // in the air, in which case `fly` bumps on arrival.
-      if (count > this.lastCount && this.flying === 0) this.bump();
-    }
+    const arrived = count > this.lastCount;
+    this.shown = count > 0;
+    this.applyVisibility(instant);
+    // A small nudge whenever something new lands in it — unless it is still in
+    // the air, in which case `fly` bumps on arrival.
+    if (!instant && arrived && this.flying === 0) this.bump();
     this.lastCount = count;
     if (this.open) this.rebuildTray();
   }
 
+  /**
+   * One place that decides whether the bag is on screen, so the two reasons it
+   * can be hidden — nothing in it, and the narration using the corner — cannot
+   * fight over the same alpha tween and leave it stuck half-faded.
+   */
+  private applyVisibility(instant = false): void {
+    const want = this.shown && !this.muted;
+    this.scene.tweens.killTweensOf(this.root);
+    if (instant) {
+      this.root.setAlpha(want ? 1 : 0);
+    } else {
+      this.scene.tweens.add({
+        targets: this.root,
+        alpha: want ? 1 : 0,
+        duration: want ? 400 : 220,
+        ease: want ? 'Quad.easeOut' : 'Quad.easeIn',
+      });
+    }
+    // An invisible bag must not still answer clicks: the Next button sits on
+    // top of where it hangs.
+    if (want) this.bagImg.setInteractive({ useHandCursor: true });
+    else this.bagImg.disableInteractive();
+  }
+
   private bump(): void {
     audio.play('bag');
+    // Here rather than in `refresh`: with a pickup animation the item is still
+    // in the air when the bag's contents change, and a card that interrupts a
+    // thing mid-flight reads as a bug.
+    this.maybeIntroduce();
     this.scene.tweens.killTweensOf(this.bagImg);
     this.bagImg.setScale(this.baseScale);
     this.scene.tweens.add({

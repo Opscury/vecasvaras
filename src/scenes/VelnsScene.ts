@@ -4,6 +4,7 @@ import { state } from '../core/state';
 import { velnsMisses, velnsOutcome, type VelnsMiss, type VelnsPick } from '../core/rules';
 import { joinLoc, type Loc } from '../core/i18n';
 import { Narration, type Choice } from '../ui/Narration';
+import { Hotspot } from '../ui/Hotspot';
 import { Chrome } from '../ui/Chrome';
 import { DainaCard } from '../ui/DainaCard';
 import { Reckoning } from '../ui/Reckoning';
@@ -35,6 +36,20 @@ import { textureFor } from '../core/itemArt';
  * is not a separate level, it is the resource you argue with here.
  */
 const VELNS_POS = { x: 1330, y: 700 } as const;
+
+/**
+ * The causeway out, read off bog.jpg. The three with an `order` sit on the
+ * painted boards and run from the near bank towards him; the other two are
+ * moss hummocks on either side, which look like somewhere to put a foot and
+ * are not.
+ */
+const PLANKS: readonly { x: number; y: number; order?: number }[] = [
+  { x: 880, y: 960, order: 0 },
+  { x: 470, y: 620 },
+  { x: 1080, y: 790, order: 1 },
+  { x: 1500, y: 800 },
+  { x: 1160, y: 630, order: 2 },
+];
 /** Same cooling as the Devil, so the cat walks in the bog's own light. */
 const BOG_TINT = 0xa8b0b8;
 
@@ -106,6 +121,12 @@ export class VelnsScene extends Phaser.Scene {
   private prompt!: Prompt;
   private painting!: Painting;
   private bargainOpen = false;
+  private devil!: Phaser.GameObjects.Image;
+  private spots: Hotspot[] = [];
+  /** How many planks that hold have been stepped on. */
+  private stepsTaken = 0;
+  /** Set once the choice list has been offered as a way out of the bargain. */
+  private listedBargain = false;
 
   constructor() {
     super('Velns');
@@ -119,6 +140,9 @@ export class VelnsScene extends Phaser.Scene {
     // Phaser reuses this instance on every visit, so every field starts over.
     this.riddleRight = false;
     this.bargainOpen = false;
+    this.listedBargain = false;
+    this.stepsTaken = 0;
+    this.spots = [];
     state.set('scene', 'Velns');
 
     fadeIn(this);
@@ -173,7 +197,12 @@ export class VelnsScene extends Phaser.Scene {
       if (p.button !== 0) return;
       const holding = this.bagUi?.holding ?? null;
       if (this.narration.advance()) return;
-      if (!holding && !over.length) this.narration.mutter(velns.nothing);
+      // Poking at the bog with empty hands during the bargain is the shape of
+      // someone who does not know what is wanted. Bring the list forward.
+      if (!holding && !over.length) {
+        if (this.bargainOpen) this.listBargain();
+        else this.narration.mutter(velns.nothing);
+      }
     });
 
     this.bagUi = new Bag(this);
@@ -194,18 +223,84 @@ export class VelnsScene extends Phaser.Scene {
       return false;
     };
 
+    this.devil = devil;
+
     new DainaCard(this, 'velns', () => {
-      this.narration.say(velns.arrive, () => {
-        // He does not walk on. He is simply there, the way he always was.
-        this.tweens.add({
-          targets: devil,
-          alpha: 1,
-          duration: 1400,
-          ease: 'Sine.easeOut',
-          onComplete: () => this.greet(),
-        });
-      });
+      this.narration.say(velns.arrive, () => this.beginWade());
     });
+  }
+
+  /**
+   * Getting out to him.
+   *
+   * The encounter used to open with the player already standing in front of
+   * the Devil, having done nothing to get there — a conversation you arrived
+   * in the middle of. Now the half-rotten causeway is the way in: three planks
+   * hold and two do not, the camera creeps a little further out into the water
+   * with each one that does, and the Devil is only close enough to talk to
+   * once you have walked out to him.
+   *
+   * Nothing here can go wrong. Standing on a rotten plank costs a line and a
+   * splash, because a bog that drowns you would be a different game.
+   */
+  private beginWade(): void {
+    this.narration.hide();
+    this.prompt.show(velns.wade.prompt);
+
+    PLANKS.forEach((p) => {
+      this.spots.push(
+        new Hotspot(this, {
+          x: p.x,
+          y: p.y,
+          r: 96,
+          label: p.order === undefined ? velns.wade.hummock : velns.wade.plank,
+          onClick: () => (p.order === undefined ? this.rottenPlank() : this.stepOut(p.order)),
+        }),
+      );
+    });
+  }
+
+  private rottenPlank(): void {
+    audio.play('bag', { volume: 0.4 });
+    this.cameras.main.shake(140, 0.003);
+    this.tell(velns.wade.rotten);
+  }
+
+  /** One plank further out. They have to be taken in order; the bog is not a maze. */
+  private stepOut(order: number): void {
+    if (order !== this.stepsTaken) {
+      this.rottenPlank();
+      return;
+    }
+    this.stepsTaken++;
+    audio.play('click', { volume: 0.5 });
+    this.cameras.main.shake(90, 0.0015);
+    // The plank you are standing on is no longer somewhere to go. Deliberately
+    // not a camera push: this camera draws the narration panel and the corner
+    // chips as well, and zooming it walks them off the edge of the screen.
+    this.spots[PLANKS.findIndex((p) => p.order === order)]?.setEnabled(false);
+
+    const last = this.stepsTaken >= PLANKS.filter((p) => p.order !== undefined).length;
+    if (!last) {
+      this.prompt.flash(velns.wade.step[this.stepsTaken - 1], 2600);
+      return;
+    }
+    this.prompt.hide(300);
+    this.spots.forEach((s) => s.setEnabled(false));
+    // He does not walk on. He is simply there, the way he always was.
+    this.tweens.add({
+      targets: this.devil,
+      alpha: 1,
+      duration: 1400,
+      ease: 'Sine.easeOut',
+      onComplete: () => this.greet(),
+    });
+  }
+
+  update(): void {
+    // The bag glows while he is waiting to be paid, so the answer to "how do
+    // you settle it" has somewhere obvious to be looked for.
+    this.bagUi?.attention(this.bargainOpen && !this.listedBargain && !this.bagUi.holding);
   }
 
   /**
@@ -246,6 +341,25 @@ export class VelnsScene extends Phaser.Scene {
    */
   private askBargain(): void {
     this.bargainOpen = true;
+    this.listedBargain = false;
+    // The bag first. The whole beat is "outwit him with what you are carrying",
+    // and taking the cat out and putting it on his planks IS the trick — a
+    // list of three sentences describing the trick is a summary of the best
+    // moment in the game rather than the moment itself.
+    this.narration.hide();
+    this.prompt.show(velns.bargainPrompt);
+    // But it must not become a guessing game about what the game wants. If the
+    // player has not worked it out in twenty seconds, the old list comes up.
+    this.time.delayedCall(20000, () => {
+      if (this.bargainOpen) this.listBargain();
+    });
+  }
+
+  /** The bargain as a list of sentences — the fallback, not the first offer. */
+  private listBargain(): void {
+    if (!this.bargainOpen || this.listedBargain) return;
+    this.listedBargain = true;
+    this.prompt.hide(250);
     const hasCat = bag.has('cat');
     const choices: Choice[] = [];
     if (hasCat) choices.push({ label: velns.choices.cat, onPick: () => this.offer('cat') });
@@ -258,6 +372,7 @@ export class VelnsScene extends Phaser.Scene {
   private offer(pick: VelnsPick): void {
     if (!this.bargainOpen) return;
     this.bargainOpen = false;
+    this.prompt.hide(250);
     if (pick !== 'self' && this.bagUi.holding === pick) {
       this.bagUi.consumeHeld();
     } else {

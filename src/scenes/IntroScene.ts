@@ -1,12 +1,10 @@
 import Phaser from 'phaser';
-import { t, i18n } from '../core/i18n';
-import { intro, ui } from '../content/script';
+import { intro } from '../content/script';
 import { state } from '../core/state';
-import { Fonts, Hex, Layout, Palette, Timing } from '../core/theme';
+import { Layout, Palette, Timing } from '../core/theme';
 import { Narration } from '../ui/Narration';
 import { Chrome } from '../ui/Chrome';
 import { Atmosphere } from '../fx/Atmosphere';
-import { padHit } from '../ui/hit';
 import { ignoreKey, markHandled } from '../ui/keys';
 import { fadeIn, goTo } from './transition';
 import { CHIMNEYS } from './villageArt';
@@ -62,33 +60,15 @@ export class IntroScene extends Phaser.Scene {
 
     this.input.on('pointerdown', () => this.narration.advance());
 
-    // The intro is good writing, which is exactly why it should not stand
-    // between a returning or impatient player and the game. Escape does the same.
-    const skip = this.add
-      .text(Layout.margin - 8, height - 26, t(ui.skip), {
-        fontFamily: Fonts.body,
-        fontSize: '22px',
-        color: Hex.parchmentDim,
-      })
-      .setOrigin(0, 1)
-      .setDepth(600);
-    const placeSkip = padHit(skip, 200, 80);
-    skip.on('pointerover', () => skip.setColor(Hex.ryeBright));
-    skip.on('pointerout', () => skip.setColor(Hex.parchmentDim));
-    skip.on('pointerdown', (_p: unknown, _x: unknown, _y: unknown, ev: Phaser.Types.Input.EventData) => {
-      ev?.stopPropagation?.();
-      this.leave();
-    });
+    // There used to be a Skip control down here. The first playtester read it
+    // as a third thing competing with the text and the Next button, and could
+    // not tell what it would skip. Escape still does it for anyone impatient
+    // with a keyboard; nothing on screen offers it.
     this.input.keyboard?.on('keydown', (ev: KeyboardEvent) => {
       if (ignoreKey(this, ev) || ev.key !== 'Escape') return;
       markHandled(ev);
       this.leave();
     });
-    const off = i18n.onChange(() => {
-      skip.setText(t(ui.skip));
-      placeSkip();
-    });
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, off);
 
     this.narration.say(intro.lines, () => this.leave());
   }

@@ -28,6 +28,8 @@ export const GAME_ASSETS: readonly Asset[] = [
   ['jumis-stalk', 'jumis_stalk.png'],
   ['jumis-bound', 'jumis_bound.png'],
   ['velns', 'velns.png'],
+  // Vecā Anna, who stands in the hub and hands out the run's two errands.
+  ['elder', 'elder.png'],
   ['item-sickle', 'item_sickle.png'],
   // One loaf per kind of year. Same item, and the only way to see at a glance
   // whether the bread is worth anything before the Devil says so.

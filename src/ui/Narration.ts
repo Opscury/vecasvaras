@@ -1,9 +1,12 @@
 import Phaser from 'phaser';
 import { type Loc, t, i18n } from '../core/i18n';
-import { Hex, Fonts, Layout, Palette, Timing } from '../core/theme';
+import { Hex, Fonts, Layout, Palette, Timing, px, scaled } from '../core/theme';
+import { ui } from '../content/script';
 import { audio } from '../core/audio';
 import { ignoreKey, isAdvanceKey, keysOf, markHandled } from './keys';
-import { setHotspotGate } from './Hotspot';
+// SPEAKING is declared in Hotspot, which this module already depends on, so
+// that the hotspots can listen for it without importing back into here.
+import { SPEAKING, setHotspotGate } from './Hotspot';
 
 /**
  * The bottom narration panel: a parchment band that types out a line, waits
@@ -31,9 +34,14 @@ export class Narration {
   private root: Phaser.GameObjects.Container;
   private plate: Phaser.GameObjects.Graphics;
   private label: Phaser.GameObjects.Text;
-  private hint: Phaser.GameObjects.Text;
-  private hintPulse: Phaser.Tweens.Tween | null = null;
+  /** The "there is more" control — a real button, not a mark. See `buildNext`. */
+  private nextBtn: Phaser.GameObjects.Container;
+  private nextLabel: Phaser.GameObjects.Text;
+  private nextPulse: Phaser.Tweens.Tween | null = null;
+  private nextOn = false;
   private choiceBox: Phaser.GameObjects.Container;
+  /** Last value broadcast on SPEAKING, so the event only fires on a change. */
+  private spoke = false;
 
   private queue: Loc[] = [];
   private current: Loc | null = null;
@@ -72,35 +80,33 @@ export class Narration {
     // The panel has no hard top edge — a straight black line cutting across a
     // painting is the fastest way to make a game look like a slideshow. Instead
     // the darkness ramps in over ~150px and the painting dissolves into it.
-    const rampH = 150;
+    const rampH = scaled(150);
     this.plate = scene.add.graphics();
     this.plate.fillGradientStyle(Palette.ink, Palette.ink, Palette.ink, Palette.ink, 0, 0, 0.9, 0.9);
     this.plate.fillRect(0, top - rampH, width, rampH);
     this.plate.fillStyle(Palette.ink, 0.9);
     this.plate.fillRect(0, top, width, panelH + 2);
 
-    this.label = scene.add.text(panelPad, top + 52, '', {
+    this.label = scene.add.text(panelPad, top + scaled(44), '', {
       fontFamily: Fonts.body,
-      fontSize: '34px',
+      fontSize: px(34),
       color: Hex.parchment,
-      wordWrap: { width: width - panelPad * 2 },
-      lineSpacing: 12,
+      // The measure stops short of the bottom-right corner, where the Next
+      // button and the bag live. Text that ran under either was unreadable.
+      wordWrap: { width: width - panelPad * 2 - scaled(200) },
+      lineSpacing: scaled(12),
     });
 
-    // The "there is more" mark. It pulses, like the one on the cards, and sits
-    // clear of the bag in the corner — a 20px dot tucked under the bag read as
-    // the game having hung.
-    this.hint = scene.add
-      .text(width - 260, height - 34, '', {
-        fontFamily: Fonts.body,
-        fontSize: '26px',
-        color: Hex.rye,
-      })
-      .setOrigin(1, 1);
+    this.nextLabel = scene.add.text(0, 0, '', {
+      fontFamily: Fonts.body,
+      fontSize: px(25),
+      color: Hex.parchment,
+    });
+    this.nextBtn = this.buildNext();
 
     this.choiceBox = scene.add.container(0, 0);
 
-    this.root = scene.add.container(0, 0, [this.plate, this.label, this.hint, this.choiceBox]);
+    this.root = scene.add.container(0, 0, [this.plate, this.label, this.nextBtn, this.choiceBox]);
     this.root.setDepth(500).setAlpha(0);
 
     this.offLang = i18n.onChange(() => this.redraw());
@@ -198,6 +204,7 @@ export class Narration {
     this.typing = false;
     this.label.setText('');
     this.setHint(false);
+    this.signal();
     this.hide();
   }
 
@@ -294,11 +301,19 @@ export class Narration {
       this.onDone = null;
       if (cb) {
         cb();
+        // A callback that does something other than talk — refreshing the
+        // objective, handing over an item — used to leave the panel sitting
+        // empty over the bottom third of the painting, because only the
+        // no-callback branch below ever folded it away.
+        if (!this.queue.length && !this.onDone && !this.choices.length && !this.current) this.hide();
       } else {
         // Nothing follows: get the panel out of the way. Half the clickable
         // world lives in the bottom third of these paintings.
         this.hide();
       }
+      // After the callback, not before: it very often starts the next run, and
+      // announcing a stop the panel is about to contradict makes the bag flicker.
+      this.signal();
       return;
     }
     this.current = line;
@@ -350,53 +365,119 @@ export class Narration {
 
   private updateHint(): void {
     this.setHint(!this.choices.length && (this.queue.length > 0 || this.onDone !== null));
+    this.signal();
+  }
+
+  /**
+   * The button that moves the text on.
+   *
+   * This used to be a small pulsing ▸ in the corner. On a phone it was about
+   * six real pixels of glyph, and the first playtester had no idea it was a
+   * control at all — she waited for the game to continue by itself. A labelled
+   * button in the corner where a thumb already rests is not elegant, but it is
+   * the difference between a game and a screen that appears to have frozen.
+   */
+  private buildNext(): Phaser.GameObjects.Container {
+    const { width, height } = Layout;
+    const w = scaled(210);
+    const h = Math.max(scaled(74), Layout.tap);
+    const scene = this.scene;
+
+    const plate = scene.add.graphics();
+    plate.fillStyle(Palette.timber, 0.92).fillRoundedRect(-w, -h, w, h, scaled(9));
+    plate.lineStyle(2, Palette.rye, 0.85).strokeRoundedRect(-w, -h, w, h, scaled(9));
+
+    this.nextLabel.setText(t(ui.next) + '  ▸').setOrigin(0.5).setPosition(-w / 2, -h / 2);
+
+    // A zone rather than the container's own hit area: it is laid out in the
+    // container's local space and Phaser transforms it for free.
+    const zone = scene.add.zone(-w / 2, -h / 2, w, h).setInteractive({ useHandCursor: true });
+    zone.on('pointerover', () => {
+      audio.play('hover');
+      this.nextLabel.setColor(Hex.ryeBright);
+    });
+    zone.on('pointerout', () => this.nextLabel.setColor(Hex.parchment));
+    zone.on('pointerdown', (p: Phaser.Input.Pointer, _x: number, _y: number, ev: Phaser.Types.Input.EventData) => {
+      if (p.button !== 0) return;
+      // Without this the scene's own pointerdown advances a second time and
+      // the player skips a line every time they use the button.
+      ev?.stopPropagation?.();
+      this.advance();
+    });
+
+    return scene.add
+      .container(width - scaled(34), height - scaled(26), [plate, this.nextLabel, zone])
+      .setAlpha(0);
   }
 
   private setHint(on: boolean): void {
-    const want = on ? '▸' : '';
-    if (this.hint.text === want) return;
-    this.hint.setText(want);
-    this.hintPulse?.remove();
-    this.hintPulse = null;
-    this.hint.setAlpha(1);
-    if (on) {
-      this.hintPulse = this.scene.tweens.add({
-        targets: this.hint,
-        alpha: 0.35,
-        duration: 1100,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
-      });
-    }
+    if (on === this.nextOn) return;
+    this.nextOn = on;
+    this.nextPulse?.remove();
+    this.nextPulse = null;
+    this.scene.tweens.killTweensOf(this.nextBtn);
+    this.scene.tweens.add({
+      targets: this.nextBtn,
+      alpha: on ? 1 : 0,
+      duration: on ? 180 : 120,
+      ease: 'Quad.easeOut',
+      onComplete: () => {
+        if (!on) return;
+        this.nextPulse = this.scene.tweens.add({
+          targets: this.nextBtn,
+          alpha: 0.62,
+          duration: 1200,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
+      },
+    });
+  }
+
+  /**
+   * Tells the scene whether a run of lines is under way, so the bag can get out
+   * of the corner the Next button needs. A decision does not count: the bag is
+   * a legitimate way to answer one.
+   */
+  private signal(): void {
+    const speaking = this.typing || this.queue.length > 0 || this.onDone !== null;
+    if (speaking === this.spoke) return;
+    this.spoke = speaking;
+    this.scene.events.emit(SPEAKING, speaking);
   }
 
   private buildChoices(): void {
     const { width, height, panelPad } = Layout;
-    const gap = 58;
+    const gap = Math.max(scaled(58), Layout.tap);
     // Rows start under the lead-in line, however many lines it wrapped to.
-    const labelBottom = this.label.text ? this.label.y + this.label.height + 14 : height - Layout.panelH + 40;
-    const startY = Math.min(Math.max(height - 210, labelBottom), height - this.choices.length * gap - 6);
+    const labelBottom = this.label.text
+      ? this.label.y + this.label.height + scaled(14)
+      : height - Layout.panelH + scaled(40);
+    const startY = Math.min(
+      Math.max(height - scaled(210), labelBottom),
+      height - this.choices.length * gap - scaled(6),
+    );
     // The hit area is the whole ROW, not the glyphs — a short option like "The
     // wind." is barely a hundred pixels of text. But it stops short of the bag
     // in the bottom-right corner, which used to catch clicks meant for the
     // third option. No option's text reaches that far.
-    const rowW = width - panelPad * 2 - 260;
+    const rowW = width - panelPad * 2 - scaled(260);
 
     this.choices.forEach((c, idx) => {
       const y = startY + idx * gap;
-      const txt = this.scene.add.text(panelPad + 26, y, '— ' + t(c.label), {
+      const txt = this.scene.add.text(panelPad + scaled(26), y, '— ' + t(c.label), {
         fontFamily: Fonts.body,
-        fontSize: '27px',
+        fontSize: px(27),
         color: Hex.parchmentDim,
-        wordWrap: { width: rowW - 60 },
+        wordWrap: { width: rowW - scaled(60) },
       });
 
       // Rows tile: each hit box is exactly one row tall, so there is no gap
       // between options to click into and no overlap to click the wrong one.
       const pad = (gap - txt.height) / 2;
       txt.setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(-26, -pad, rowW, Math.max(gap, txt.height)),
+        hitArea: new Phaser.Geom.Rectangle(-scaled(26), -pad, rowW, Math.max(gap, txt.height)),
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true,
       });
@@ -405,10 +486,10 @@ export class Narration {
       // does not depend on telling two colours apart.
       txt.on('pointerover', () => {
         audio.play('hover');
-        txt.setColor(Hex.ryeBright).setText('▸ ' + t(c.label)).setX(panelPad + 34);
+        txt.setColor(Hex.ryeBright).setText('▸ ' + t(c.label)).setX(panelPad + scaled(34));
       });
       txt.on('pointerout', () => {
-        txt.setColor(Hex.parchmentDim).setText('— ' + t(c.label)).setX(panelPad + 26);
+        txt.setColor(Hex.parchmentDim).setText('— ' + t(c.label)).setX(panelPad + scaled(26));
       });
       txt.on(
         'pointerdown',
@@ -423,7 +504,7 @@ export class Narration {
     });
     // Nudge the lead-in text up so it never collides with the option list.
     if (this.choices.length) {
-      this.label.setY(height - Layout.panelH + 30);
+      this.label.setY(height - Layout.panelH + scaled(26));
     }
   }
 
@@ -437,10 +518,11 @@ export class Narration {
   private clearChoices(): void {
     this.choices = [];
     this.choiceBox.removeAll(true);
-    this.label.setY(Layout.height - Layout.panelH + 52);
+    this.label.setY(Layout.height - Layout.panelH + scaled(44));
   }
 
   private redraw(): void {
+    this.nextLabel.setText(t(ui.next) + '  ▸');
     // Language changed: re-render whatever is on screen right now.
     if (this.typing) this.finishTyping();
     else if (this.current) this.label.setText(t(this.current));
