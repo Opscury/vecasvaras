@@ -152,10 +152,23 @@ export const jumis = {
     ),
     L(
       // Sirpis, not izkapts: the tool in the bag is a sickle, not a scythe.
-      'Kaut kur šeit viens stiebrs nes divas vārpas. Atrodi to, pirms liec sirpi klāt.',
-      'Somewhere in here one stem carries two ears. Find it before you put a blade to anything.',
+      'Tur, labajā malā, viens stiebrs nes divas vārpas. To tu redzi jau no vārtiem.',
+      'There, over on the right, one stem carries two ears. You can see it from the gate.',
     ),
   ],
+  /** Said once the field is down and the one thing left standing is the point. */
+  standing: [
+    L(
+      'Lauks ir nopļauts. Divvārpa stāv maza rugāju saliņā, tur, kur tu to atstāji.',
+      'The field is down. The double ear stands in a small island of stubble, where you left it.',
+    ),
+  ],
+  /** Top-of-frame lines during the cutting itself. */
+  almost: L('Vēl mazliet.', 'Not much left.'),
+  titheWarn: L(
+    'Tur ir divvārpa. Nocērt to, un tā ir prom.',
+    'The double ear is there. Cut it and it is gone.',
+  ),
   hintStone: {
     label: L('Lauka akmens', 'The field stone'),
     text: L(
@@ -163,50 +176,17 @@ export const jumis = {
       'A boundary stone, grown over with lichen. Your grandmother’s words come by themselves: of what the field gives, leave the field a share. Never take the last of it.',
     ),
   },
-  decoys: [
-    L(
-      'Smaga, laba vārpa. Viena vārpa. Tu to atstāj mierā.',
-      'A good heavy ear. One ear. You leave it be.',
-    ),
-    L(
-      'Lietus to noguldījis gar zemi. Te nekā nav.',
-      'The rain has laid this one flat. Nothing here.',
-    ),
-    L(
-      'Dadzis, izziedējis rudzu vidū. Ne tas, ko tu meklē.',
-      'A thistle, gone to seed in the middle of the rye. Not what you are after.',
-    ),
-    L(
-      'Divi stiebri saslējušies kopā. No tālienes gandrīz. Gandrīz nav tas pats.',
-      'Two stems leaning together. From a distance, almost. Almost is not it.',
-    ),
-    L(
-      'Tīteņi uzkāpuši pa stiebru augšā. Zem tiem — viena vārpa.',
-      'Bindweed has climbed this stem. Under it, one ear.',
-    ),
-  ],
-  found: [
-    L(
-      'Tur. Viens stiebrs, un tas izdzinis divas vārpas, abas pilnas, viena pret otru kā pāris vēršu jūgā.',
-      'There. One stem, and it has put out two ears, both full, leaning on each other like a pair of oxen in a yoke.',
-    ),
-    L(
-      'Jumis. Lauka laime, sēž tieši tajā, ko tu būtu nopļāvis pēdējo un nemaz nepamanījis.',
-      'Jumis. The luck of the field, sitting in the very thing you would have cut last and never noticed.',
-    ),
-  ],
-  question: L('Ko tu dari?', 'What do you do?'),
+  question: L('Ko tu dari ar to?', 'What do you do with it?'),
+  // Only two options now. The third — cutting it with the rest — is not a line
+  // on a list any more; it is something the player does with the blade, out in
+  // the field, and the game asks them once whether they meant it.
   choices: {
-    all: L(
-      'Pļaut visu lauku, arī šo stiebru. Graudi ir graudi.',
-      'Cut the whole field, this stem with it. Grain is grain.',
-    ),
     leave: L(
-      'Pļaut apkārt. Divvārpu atstāt stāvam un pieliekt pie rugājiem.',
-      'Cut around it. Leave the double ear standing and bind it down into the stubble.',
+      'Pieliekt to pie zemes un piesiet pie rugājiem.',
+      'Bend it down and tie it into the stubble.',
     ),
     take: L(
-      'Izraut to ar visām saknēm un nest mājās klētī.',
+      'Izraut to ar saknēm un nest mājās klētī.',
       'Pull it up by the roots and carry it home to the granary.',
     ),
   },
@@ -636,10 +616,12 @@ export const items = {
     'Uz purvu tukšām rokām neiet. Paņem maizi — un neej viens.',
     'You do not go to the bog empty-handed. Take the bread — and do not go alone.',
   ),
-  // Field: the harvest is an action, not a menu entry.
+  // Field: the harvest is an action, not a menu entry. The wording has to say
+  // "sweep", not "tap" — the drag is the verb, and a player who only taps will
+  // be at it all afternoon.
   cutPrompt: L(
-    'Ņem sirpi no kules un sāc pļaut rudzus.',
-    'Take the sickle from your bag and start on the standing rye.',
+    'Ņem sirpi no kules un velc to pāri rudziem.',
+    'Take the sickle from your bag and sweep it across the rye.',
   ),
   cutWrongTool: L(
     'Ar to te nav ko darīt.',
