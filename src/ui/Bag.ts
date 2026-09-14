@@ -5,7 +5,7 @@ import { textureFor } from '../core/itemArt';
 import { state } from '../core/state';
 import { items } from '../content/script';
 import { Hex, Fonts, Layout, Palette, Touch, px, scaled } from '../core/theme';
-import { SPEAKING } from './Narration';
+import { SPEAKING } from './Hotspot';
 import { Notice } from './Notice';
 import { ignoreKey, keysOf, markHandled } from './keys';
 import { audio } from '../core/audio';

@@ -4,14 +4,9 @@ import { Hex, Fonts, Layout, Palette, Timing, px, scaled } from '../core/theme';
 import { ui } from '../content/script';
 import { audio } from '../core/audio';
 import { ignoreKey, isAdvanceKey, keysOf, markHandled } from './keys';
-import { setHotspotGate } from './Hotspot';
-
-/**
- * Fired on the scene whenever the panel starts or stops saying something.
- * The bag listens: while a run of lines is playing there is nothing to do with
- * an item, and the bag sits in the same corner as the Next button.
- */
-export const SPEAKING = 'narration-speaking';
+// SPEAKING is declared in Hotspot, which this module already depends on, so
+// that the hotspots can listen for it without importing back into here.
+import { SPEAKING, setHotspotGate } from './Hotspot';
 
 /**
  * The bottom narration panel: a parchment band that types out a line, waits

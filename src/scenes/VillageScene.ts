@@ -371,6 +371,9 @@ export class VillageScene extends Phaser.Scene {
       w: 150,
       h: ELDER.h + 30,
       label: elder.label,
+      // On the ground in front of her boots. Centred on the hotspot the mark
+      // lands on her apron and reads as something she is holding.
+      markAt: { x: ELDER.x, y: ELDER.y + 16 },
       onClick: () => this.talkTo(),
     });
   }

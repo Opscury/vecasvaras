@@ -12,6 +12,13 @@ import { audio } from '../core/audio';
  * floating label, both of which fade rather than pop.
  */
 
+/**
+ * Fired on the scene whenever the narration panel starts or stops a run of
+ * lines. It lives here rather than in `Narration` because both the bag and
+ * every hotspot listen for it, and `Narration` already imports this module.
+ */
+export const SPEAKING = 'narration-speaking';
+
 export interface HotspotOpts {
   x: number;
   y: number;
@@ -24,6 +31,12 @@ export interface HotspotOpts {
   onClick: () => void;
   /** Hidden hotspots take a click but show no ring until found (search puzzles). */
   discreet?: boolean;
+  /**
+   * Where the standing touch mark goes, if not the middle of the hotspot. A
+   * disc in the centre of a person reads as something they are holding; Anna
+   * gets hers on the ground in front of her boots.
+   */
+  markAt?: { x: number; y: number };
   /**
    * Return false to let the click fall through to the scene untouched.
    *
@@ -81,6 +94,7 @@ export class Hotspot {
    */
   private mark: Phaser.GameObjects.Graphics | null = null;
   private markTween: Phaser.Tweens.Tween | null = null;
+  private onSpeak: ((on: boolean) => void) | null = null;
   private opts: HotspotOpts;
   /** Guards the hover cue against a jittery cursor re-triggering on one object. */
   private hoverSounded = false;
@@ -179,28 +193,48 @@ export class Hotspot {
    */
   private addMark(): void {
     if (!Touch || this.opts.discreet) return;
-    const { x, y } = this.opts;
-    const r = scaled(10);
+    const { x, y } = this.opts.markAt ?? this.opts;
+    const r = scaled(8);
     // Below the narration panel, unlike the hover ring: a mark is up all the
     // time, and one sitting on top of a line of text reads as a stray dot.
     const m = this.scene.add.graphics().setDepth(MARK_DEPTH);
     // A dark wash under the gold. These paintings run from near-black bog to
     // pale summer path, and rye gold alone disappears into the light half.
-    m.fillStyle(Palette.ink, 0.35).fillCircle(x, y, r * 2.3);
+    m.fillStyle(Palette.ink, 0.3).fillCircle(x, y, r * 2.1);
     m.fillStyle(Palette.ryeBright, 0.95).fillCircle(x, y, r);
-    m.lineStyle(2, Palette.ryeBright, 0.55).strokeCircle(x, y, r * 2.1);
+    m.lineStyle(2, Palette.ryeBright, 0.45).strokeCircle(x, y, r * 2);
     m.setAlpha(0);
     this.mark = m;
     // Staggered, or every mark in the scene breathes in unison and the
-    // painting starts to look like a control panel.
+    // painting starts to look like a control panel. Quiet at the top of the
+    // breath as well: seven of these at full strength turned the village into
+    // a board game.
     this.markTween = this.scene.tweens.add({
       targets: m,
-      alpha: { from: 0.3, to: 0.85 },
-      duration: 1500,
+      alpha: { from: 0.22, to: 0.58 },
+      duration: 1600,
       delay: Math.random() * 1200,
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut',
+    });
+
+    // Nothing is worth touching while somebody is talking, and marks scattered
+    // over a painting behind a conversation are the loudest kind of clutter.
+    this.onSpeak = (on: boolean) => {
+      if (!this.mark) return;
+      if (on) {
+        this.markTween?.pause();
+        this.scene.tweens.add({ targets: this.mark, alpha: 0.06, duration: 260, ease: 'Quad.easeOut' });
+      } else {
+        // The breather picks the alpha back up from wherever it left off; no
+        // need to fade in first, and killing tweens here would kill it too.
+        this.markTween?.resume();
+      }
+    };
+    this.scene.events.on(SPEAKING, this.onSpeak);
+    this.scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      if (this.onSpeak) this.scene.events.off(SPEAKING, this.onSpeak);
     });
   }
 
