@@ -2,12 +2,14 @@ import Phaser from 'phaser';
 import { type Loc } from '../core/i18n';
 import { arrival, items, village } from '../content/script';
 import { elder } from '../content/elder';
-import { state } from '../core/state';
+import { state, type Outcome } from '../core/state';
 import { currentStep } from '../core/quest';
+import { scaled } from '../core/theme';
 import { Narration } from '../ui/Narration';
 import { Hotspot } from '../ui/Hotspot';
 import { Chrome } from '../ui/Chrome';
 import { Objective } from '../ui/Objective';
+import { Measures } from '../ui/Measures';
 import { Atmosphere } from '../fx/Atmosphere';
 import { Bag } from '../ui/Bag';
 import { Painting } from '../ui/Painting';
@@ -62,6 +64,9 @@ export class VillageScene extends Phaser.Scene {
   private spots: Hotspot[] = [];
   private catSprite: Phaser.GameObjects.Image | null = null;
   private objective!: Objective;
+  private measures!: Measures;
+  /** The outcomes the player was last shown here, so the marks can catch up on screen. */
+  private lastSeen: { jumis: Outcome; velns: Outcome } = { jumis: 'none', velns: 'none' };
 
   constructor() {
     super('Village');
@@ -98,6 +103,11 @@ export class VillageScene extends Phaser.Scene {
     this.narration = new Narration(this);
     new Chrome(this, { log: () => this.narration.history });
     this.objective = new Objective(this);
+    // Read the arrival BEFORE the marks are drawn: the marks start at whatever
+    // the player last saw, so the one they just earned is still empty when
+    // they walk in and fills a moment later, in front of them.
+    const news = this.arrivalLine();
+    this.measures = new Measures(this, this.objective.bottom + scaled(10), this.lastSeen);
 
     // Registered before the bag's own handler, so it sees what was in hand at
     // the moment of the click rather than after the bag has put it back.
@@ -291,9 +301,9 @@ export class VillageScene extends Phaser.Scene {
     // be `nudge()`, one flash that was gone the moment anything else was
     // clicked; the corner of the screen now says it permanently, and Anna
     // says it out loud to anyone who asks her.
-    const news = this.arrivalLine();
     if (news) {
       this.time.delayedCall(ARRIVAL_LINE_MS, () => {
+        this.measures.refresh(true);
         if (this.narration.busy) return;
         this.narration.say([news]);
       });
@@ -307,8 +317,9 @@ export class VillageScene extends Phaser.Scene {
    */
   private arrivalLine(): Loc | null {
     const s = state.get();
-    const seen = this.registry.get('villageSeen') as { jumis?: string; velns?: string } | undefined;
+    const seen = this.registry.get('villageSeen') as { jumis?: Outcome; velns?: Outcome } | undefined;
     const prev = seen ?? {};
+    this.lastSeen = { jumis: prev.jumis ?? 'none', velns: prev.velns ?? 'none' };
     this.registry.set('villageSeen', { jumis: s.jumis, velns: s.velns });
 
     if (s.jumis !== 'none' && prev.jumis !== s.jumis) {

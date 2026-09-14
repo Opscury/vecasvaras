@@ -61,6 +61,11 @@ export class Objective {
     this.refresh(true);
   }
 
+  /** Screen y of the panel's bottom edge, so the next thing can sit under it. */
+  get bottom(): number {
+    return this.root.y + this.line.y + this.line.height + scaled(14);
+  }
+
   /**
    * Re-reads the quest step. Cheap, and safe to call after anything that could
    * have moved the run on — which is why the scenes just call it rather than

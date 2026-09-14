@@ -17,42 +17,49 @@ export const ui = {
   resume: L('Turpināt', 'Continue'),
   restart: L('Sākt no jauna', 'Start over'),
   subtitle: L('Latviešu folkloras spēle', 'A game of Latvian folklore'),
-  clickAnywhere: L('Meklē. Aplūko lauku.', 'Search. Look the field over.'),
   /** The button that moves the narration on. */
   next: L('Tālāk', 'Next'),
   // Heading of the page that shows everything said so far (⟲ / H).
   history: L('Teiktais', 'Said so far'),
   loadFailed: L('Neizdevās ielādēt zīmējumus.', 'Some of the pictures did not load.'),
   retry: L('Mēģināt vēlreiz', 'Try again'),
-  examine: L('Aplūkot', 'Look'),
 };
 
+/**
+ * The opening. It was five long lines, and the first playtester met all of
+ * them before she had touched anything — the game's own best writing, standing
+ * between her and the game. Three short ones now: what is owed, who stopped
+ * paying it, and what that has cost. The rest is out in the field.
+ */
 export const intro = {
   lines: [
     L(
-      'Vecie ļaudis to sauca vienā vārdā: parāds.',
-      'The old people had one word for it: a debt.',
+      'Vecie ļaudis to sauca vienā vārdā: parāds. Ne naudā — nekas laukā vai purvā nav vienkārši tavs, ko ņemt.',
+      'The old people had one word for it: a debt. Not money — nothing in the field or the bog is simply yours for the taking.',
     ),
     L(
-      'Ne naudā. Kaut kas vecāks — saprašana, ka nekas laukā vai purvā nav vienkārši tavs, ko ņemt.',
-      'Not money. Something older — the understanding that nothing in the field or the bog is simply yours for the taking.',
+      'Vectēvs to turēja. Tēvs — pa pusei. Tu ne reizi neesi par to domājis.',
+      'Your grandfather kept it. Your father half-kept it. You have never once thought about it.',
     ),
     L(
-      'Vectēvs to turēja. Tēvs — pa pusei. Tu par to neesi domājis nemaz.',
-      'Your grandfather kept it. Your father half-kept it. You have not thought about it at all.',
-    ),
-    L(
-      'Šogad rudzi izauga plāni, strauts aiznesa tiltu, un ciems ir sācis uz tevi skatīties.',
-      'This year the rye came up thin, the stream took the bridge, and the village has begun to look at you.',
-    ),
-    L(
-      'Tāpēc tu iesi aiz sētas — un uzzināsi, kas vēl ir parādā.',
-      'So you will go out past the fence — and find out what is still owed.',
+      'Šogad rudzi plāni, tilta nav, un ciems ir sācis uz tevi skatīties.',
+      'This year the rye is thin, the bridge is gone, and the village has begun to look at you.',
     ),
   ],
 };
 
 export const village = {
+  /**
+   * The two things the village has more or less of, shown as filled marks in
+   * the corner. The playtester could not tell what she had gained from an
+   * encounter — the granary and the bridge change, but only if you happen to
+   * be looking at them, and only once. Two counters that tick up in front of
+   * her answer "was that better or worse than it could have been".
+   */
+  measures: {
+    grain: L('Maize', 'Grain'),
+    crossing: L('Ceļš', 'Crossing'),
+  },
   stone: {
     label: L('Akmens', 'The stone'),
     lines: [
@@ -122,18 +129,10 @@ export const village = {
       'The bog road. There is nothing waiting out there for you any more.',
     ),
   },
-  nudgeFirst: L(
-    'Ej aiz sētas. Sāc ar lauku.',
-    'Go out past the fence. Start with the field.',
-  ),
-  nudgeBog: L(
-    'Ar maizi kulē vari iet uz purvu.',
-    'With bread in your bag you can go to the bog.',
-  ),
-  nudgeDone: L(
-    'Abi parādi nokārtoti. Ej pie akmens.',
-    'Both debts are settled. Go to the stone.',
-  ),
+  // The three `nudge` lines that used to live here are gone. They were the
+  // game's entire answer to "what now", they fired once, and the corner of the
+  // screen and Anna both do the job properly now.
+  //
   // A click on nothing in particular gets one of these, in rotation, rather
   // than silence — which in a click-the-picture game reads as broken.
   nothing: [
@@ -289,6 +288,21 @@ export const velns = {
       '“But first — a riddle. I am bored. Get it right and we will talk man to man.”',
     ),
   ],
+  /**
+   * Getting out to him. The causeway is half rotten and the encounter used to
+   * begin with the player already standing in front of the Devil, having done
+   * nothing — the whole scene was a conversation you arrived in the middle of.
+   */
+  wade: {
+    prompt: L('Ej pa laipu. Ne katrs dēlis tur.', 'Walk out along the planks. Not every one will hold.'),
+    plank: L('Dēlis', 'A plank'),
+    step: [
+      L('Dēlis notur. Zem tā kaut kas mierīgi aizslīd.', 'The plank holds. Something slides away underneath it, unhurried.'),
+      L('Ūdens ir melns un nekustīgs kā darva.', 'The water is black and as still as tar.'),
+      L('Vēl viens. Tālāk laipa beidzas.', 'One more. After that the causeway stops.'),
+    ],
+    rotten: L('Tas ir satrunējis. Zem tā ir tikai purvs.', 'That one is rotten. There is only bog under it.'),
+  },
   riddle: L(
     '„Bez rokām, bez kājām, bet durvis ver. Kas tas ir?“',
     '“Without hands, without feet, and yet it opens doors. What is it?”',
@@ -313,6 +327,15 @@ export const velns = {
     ),
   ],
   question: L('Kā tu to izkārto?', 'How do you settle it?'),
+  /**
+   * The bargain is settled by handing something over, not by picking a line.
+   * The list below is still there, but it only comes up once the player has
+   * had a moment to work out that the bag is the answer.
+   */
+  bargainPrompt: L(
+    'Dod viņam kaut ko. Paņem to no kules un liec uz dēļiem.',
+    'Give him something. Take it out of your bag and put it on the planks.',
+  ),
   choices: {
     self: L(
       'Piekrist un iet pāri pašam.',
