@@ -18,7 +18,8 @@ export const ui = {
   restart: L('Sākt no jauna', 'Start over'),
   subtitle: L('Latviešu folkloras spēle', 'A game of Latvian folklore'),
   clickAnywhere: L('Meklē. Aplūko lauku.', 'Search. Look the field over.'),
-  skip: L('Izlaist', 'Skip'),
+  /** The button that moves the narration on. */
+  next: L('Tālāk', 'Next'),
   // Heading of the page that shows everything said so far (⟲ / H).
   history: L('Teiktais', 'Said so far'),
   loadFailed: L('Neizdevās ielādēt zīmējumus.', 'Some of the pictures did not load.'),
@@ -657,6 +658,28 @@ export const items = {
     'Paņem lietu rokā, tad norādi, kur to likt.',
     'Take a thing in hand, then point at where it goes.',
   ),
+  // Said every time something is taken in hand. Without a mouse cursor there is
+  // nothing on screen that says the game is now waiting for you to point.
+  inHand: L(
+    'Rokā. Tagad pieskaries tam, uz ko to lietot.',
+    'In hand. Now touch what to use it on.',
+  ),
+  // The way back out of holding something, for a screen with no right button.
+  putBack: L('Nolikt atpakaļ', 'Put it back'),
+  /**
+   * The bag's own introduction, shown as a card the first time something goes
+   * into it. It used to be one line beside the bag on first OPEN — which the
+   * first playtester never did, so she met the bag as an unexplained object
+   * appearing in the corner and asked out loud what it was.
+   */
+  intro: {
+    title: L('Tava kule', 'Your bag'),
+    body: L(
+      'Viss, ko atrodi, nonāk šeit. Pieskaries kulei, lai to atvērtu, tad paņem lietu rokā un norādi, kur to likt.',
+      'Everything you find goes in here. Touch the bag to open it, take a thing in hand, then point at where it goes.',
+    ),
+    ok: L('Sapratu', 'Got it'),
+  },
   // The loaf says what kind of year it came from — the one fact the bread
   // argument at the bog turns on. Shown under its name in the bag.
   breadNote: {

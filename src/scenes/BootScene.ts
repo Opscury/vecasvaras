@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { t } from '../core/i18n';
 import { ui } from '../content/script';
-import { Palette, Hex, Fonts, Layout } from '../core/theme';
+import { Palette, Hex, Fonts, Layout, px, scaled } from '../core/theme';
 import { assertDainasVerified } from '../content/dainas';
 import { TITLE_ASSETS, missingFrom, queueMissing, reportLoadErrors } from './assets';
 import { padHit } from '../ui/hit';
@@ -24,7 +24,7 @@ export class BootScene extends Phaser.Scene {
     const label = this.add
       .text(width / 2, height / 2 + 96, '', {
         fontFamily: Fonts.body,
-        fontSize: '20px',
+        fontSize: px(20),
         color: Hex.parchmentDim,
       })
       .setOrigin(0.5);
@@ -67,16 +67,16 @@ export class BootScene extends Phaser.Scene {
     this.add
       .text(width / 2, height / 2, `${t(ui.loadFailed)} ${missing.join(', ')}`, {
         fontFamily: Fonts.body,
-        fontSize: '26px',
+        fontSize: px(26),
         color: Hex.parchment,
         align: 'center',
         wordWrap: { width: 1200 },
       })
       .setOrigin(0.5);
     const retry = this.add
-      .text(width / 2, height / 2 + 80, t(ui.retry), {
+      .text(width / 2, height / 2 + scaled(80), t(ui.retry), {
         fontFamily: Fonts.body,
-        fontSize: '28px',
+        fontSize: px(28),
         color: Hex.rye,
       })
       .setOrigin(0.5);

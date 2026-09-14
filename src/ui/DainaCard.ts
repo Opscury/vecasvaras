@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
-import { i18n } from '../core/i18n';
+import { i18n, t } from '../core/i18n';
 import { dainas, dainaText } from '../content/dainas';
-import { Hex, Fonts, Layout, Palette } from '../core/theme';
+import { ui } from '../content/script';
+import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { ignoreKey, isAdvanceKey, markHandled } from './keys';
 
 /**
@@ -17,6 +18,8 @@ export class DainaCard {
   private root: Phaser.GameObjects.Container;
   private primary: Phaser.GameObjects.Text;
   private secondary: Phaser.GameObjects.Text;
+  /** "Next ▸" at the foot of the card — a word, because a lone glyph read as decoration. */
+  private go!: Phaser.GameObjects.Text;
   private key: keyof typeof dainas;
   private offLang: () => void;
 
@@ -35,31 +38,33 @@ export class DainaCard {
     this.primary = scene.add
       .text(width / 2, height * 0.38, '', {
         fontFamily: Fonts.display,
-        fontSize: '40px',
+        fontSize: px(40),
         color: Hex.parchment,
         align: 'center',
-        lineSpacing: 16,
+        lineSpacing: scaled(16),
       })
       .setOrigin(0.5, 0);
 
     this.secondary = scene.add
       .text(width / 2, height * 0.62, '', {
         fontFamily: Fonts.body,
-        fontSize: '26px',
+        fontSize: px(26),
         color: Hex.parchmentDim,
         align: 'center',
-        lineSpacing: 10,
+        lineSpacing: scaled(10),
         fontStyle: 'italic',
       })
       .setOrigin(0.5, 0);
 
-    const go = scene.add
-      .text(width / 2, height * 0.84, '▸', {
+    const go = (this.go = scene.add
+      .text(width / 2, height * 0.86, t(ui.next) + '  ▸', {
         fontFamily: Fonts.body,
-        fontSize: '30px',
+        fontSize: px(26),
         color: Hex.rye,
+        backgroundColor: 'rgba(20,22,26,0.6)',
+        padding: { x: scaled(22), y: scaled(14) },
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5));
 
     this.root = scene.add
       .container(0, 0, [veil, rule, this.primary, this.secondary, go])
@@ -134,6 +139,7 @@ export class DainaCard {
 
   /** Latvian on top when playing in Latvian; English on top when in English. */
   private refresh(): void {
+    this.go.setText(t(ui.next) + '  ▸');
     const d = dainaText(this.key);
     if (i18n.lang === 'lv') {
       this.primary.setText(d.lv);
@@ -142,6 +148,6 @@ export class DainaCard {
       this.primary.setText(d.en);
       this.secondary.setText(d.lv);
     }
-    this.secondary.setY(this.primary.y + this.primary.height + 56);
+    this.secondary.setY(this.primary.y + this.primary.height + scaled(46));
   }
 }

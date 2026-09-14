@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { type Loc, t, i18n } from '../core/i18n';
-import { Hex, Fonts, Palette } from '../core/theme';
+import { Hex, Fonts, Layout, Palette, Touch, px, scaled } from '../core/theme';
 import { audio } from '../core/audio';
 
 /**
@@ -44,6 +44,8 @@ export interface HotspotOpts {
  */
 const RING_DEPTH = 520;
 const TAG_DEPTH = 530;
+/** Under the narration panel (500) — see `addMark`. */
+const MARK_DEPTH = 490;
 
 const registry = new WeakMap<Phaser.Scene, Hotspot[]>();
 
@@ -72,6 +74,13 @@ export class Hotspot {
   private scene: Phaser.Scene;
   private ring: Phaser.GameObjects.Graphics;
   private tag: Phaser.GameObjects.Text;
+  /**
+   * The standing mark on a touch screen — see `addMark`. Null on a pointer
+   * device, where hover does this job, and on discreet hotspots, which are
+   * hidden on purpose.
+   */
+  private mark: Phaser.GameObjects.Graphics | null = null;
+  private markTween: Phaser.Tweens.Tween | null = null;
   private opts: HotspotOpts;
   /** Guards the hover cue against a jittery cursor re-triggering on one object. */
   private hoverSounded = false;
@@ -102,13 +111,16 @@ export class Hotspot {
     this.ring = scene.add.graphics().setDepth(RING_DEPTH).setAlpha(0);
     this.drawRing(w, h);
 
+    // Kept clear of the narration panel. A label for something in the bottom
+    // third of the painting used to land in the middle of a line of text.
+    const tagY = Math.min(opts.y - h / 2 - scaled(22), Layout.height - Layout.panelH - scaled(12));
     this.tag = scene.add
-      .text(opts.x, opts.y - h / 2 - 22, t(opts.label), {
+      .text(opts.x, tagY, t(opts.label), {
         fontFamily: Fonts.body,
-        fontSize: '24px',
+        fontSize: px(24),
         color: Hex.parchment,
         backgroundColor: 'rgba(20,22,26,0.78)',
-        padding: { x: 12, y: 6 },
+        padding: { x: scaled(12), y: scaled(6) },
       })
       .setOrigin(0.5, 1)
       .setDepth(TAG_DEPTH)
@@ -148,8 +160,48 @@ export class Hotspot {
       scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => registry.delete(scene));
     }
 
+    this.addMark();
+
     this.offLang = i18n.onChange(() => this.tag.setText(t(this.opts.label)));
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.offLang());
+  }
+
+  /**
+   * A small breathing mark that sits on every live hotspot on a touch screen.
+   *
+   * The whole game's answer to "what can I touch" was hover, and a phone has no
+   * hover. The first playtester got as far as the village and then simply
+   * stopped, because nothing on the painting admitted to being a thing. This is
+   * the fix: quiet enough not to turn the painting into a menu, present enough
+   * that there is always somewhere to start.
+   *
+   * Discreet hotspots are left out — they are hidden as the puzzle.
+   */
+  private addMark(): void {
+    if (!Touch || this.opts.discreet) return;
+    const { x, y } = this.opts;
+    const r = scaled(10);
+    // Below the narration panel, unlike the hover ring: a mark is up all the
+    // time, and one sitting on top of a line of text reads as a stray dot.
+    const m = this.scene.add.graphics().setDepth(MARK_DEPTH);
+    // A dark wash under the gold. These paintings run from near-black bog to
+    // pale summer path, and rye gold alone disappears into the light half.
+    m.fillStyle(Palette.ink, 0.35).fillCircle(x, y, r * 2.3);
+    m.fillStyle(Palette.ryeBright, 0.95).fillCircle(x, y, r);
+    m.lineStyle(2, Palette.ryeBright, 0.55).strokeCircle(x, y, r * 2.1);
+    m.setAlpha(0);
+    this.mark = m;
+    // Staggered, or every mark in the scene breathes in unison and the
+    // painting starts to look like a control panel.
+    this.markTween = this.scene.tweens.add({
+      targets: m,
+      alpha: { from: 0.3, to: 0.85 },
+      duration: 1500,
+      delay: Math.random() * 1200,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
   }
 
   /** Clickable right now. */
@@ -173,8 +225,24 @@ export class Hotspot {
     // The text on screen may want this click first — see setHotspotGate.
     if (gates.get(this.scene)?.(this)) return true;
     this.pulse();
+    // On a phone the label has never been seen — there was no hover to show it.
+    // Naming the thing as it is touched is how the player learns the village.
+    if (Touch) this.flashTag();
     this.opts.onClick();
     return true;
+  }
+
+  /** Shows the label for a moment, for a touch that had no hover before it. */
+  private flashTag(): void {
+    this.scene.tweens.killTweensOf(this.tag);
+    this.tag.setAlpha(1);
+    this.scene.tweens.add({
+      targets: this.tag,
+      alpha: 0,
+      delay: 900,
+      duration: 400,
+      ease: 'Quad.easeIn',
+    });
   }
 
   /** Keyboard focus draws the hotspot as if the pointer were over it. */
@@ -239,6 +307,9 @@ export class Hotspot {
   setEnabled(on: boolean): void {
     this.enabled = on;
     this.zone.setVisible(on);
+    // A mark on a dead hotspot is a lie, and the scene turns them off in bulk
+    // on the way out of a room.
+    this.mark?.setVisible(on);
     if (on) {
       // Re-enables the existing hit area, circle or rectangle.
       this.zone.setInteractive();
@@ -259,8 +330,12 @@ export class Hotspot {
     const list = registry.get(this.scene);
     if (list) registry.set(this.scene, list.filter((h) => h !== this));
     this.scene.tweens.killTweensOf([this.ring, this.tag]);
+    this.markTween?.remove();
+    this.markTween = null;
     this.zone.destroy();
     this.ring.destroy();
     this.tag.destroy();
+    this.mark?.destroy();
+    this.mark = null;
   }
 }

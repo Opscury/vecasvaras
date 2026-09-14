@@ -3,7 +3,7 @@ import { t, i18n } from '../core/i18n';
 import { ui } from '../content/script';
 import { state } from '../core/state';
 import { bag } from '../core/inventory';
-import { Hex, Fonts, Layout, Palette } from '../core/theme';
+import { Hex, Fonts, Layout, Palette, Compact, px, scaled } from '../core/theme';
 import { Chrome } from '../ui/Chrome';
 import { Atmosphere } from '../fx/Atmosphere';
 import { padHit } from '../ui/hit';
@@ -84,7 +84,7 @@ export class TitleScene extends Phaser.Scene {
     const title = this.add
       .text(titleX, height * 0.36, 'VECĀS VARAS', {
         fontFamily: Fonts.display,
-        fontSize: '96px',
+        fontSize: Compact ? '112px' : '96px',
         color: Hex.parchment,
       })
       .setOrigin(0.5)
@@ -104,7 +104,7 @@ export class TitleScene extends Phaser.Scene {
     const sub = this.add
       .text(titleX, height * 0.36 + 116, t(ui.subtitle), {
         fontFamily: Fonts.body,
-        fontSize: '26px',
+        fontSize: px(26),
         color: Hex.parchmentDim,
       })
       .setOrigin(0.5)
@@ -120,7 +120,7 @@ export class TitleScene extends Phaser.Scene {
     const start = this.add
       .text(titleX, height * 0.62, t(startLabel), {
         fontFamily: Fonts.body,
-        fontSize: '34px',
+        fontSize: px(34),
         color: Hex.rye,
       })
       .setOrigin(0.5)
@@ -133,9 +133,9 @@ export class TitleScene extends Phaser.Scene {
     let placeRestart: (() => void) | null = null;
     if (hasRun) {
       restart = this.add
-        .text(titleX, height * 0.62 + 70, t(ui.restart), {
+        .text(titleX, height * 0.62 + scaled(70), t(ui.restart), {
           fontFamily: Fonts.body,
-          fontSize: '22px',
+          fontSize: px(22),
           color: Hex.parchmentDim,
         })
         .setOrigin(0.5)
@@ -261,15 +261,15 @@ export class TitleScene extends Phaser.Scene {
     this.errorText = this.add
       .text(x, height * 0.84, t(ui.loadFailed), {
         fontFamily: Fonts.body,
-        fontSize: '22px',
+        fontSize: px(22),
         color: Hex.parchment,
       })
       .setOrigin(0.5)
       .setDepth(MENU_DEPTH + 1);
     this.retryText = this.add
-      .text(x, height * 0.84 + 50, t(ui.retry), {
+      .text(x, height * 0.84 + scaled(50), t(ui.retry), {
         fontFamily: Fonts.body,
-        fontSize: '24px',
+        fontSize: px(24),
         color: Hex.rye,
       })
       .setOrigin(0.5)

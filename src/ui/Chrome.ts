@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { type Loc, i18n, t } from '../core/i18n';
 import { ui } from '../content/script';
-import { Hex, Fonts, Layout } from '../core/theme';
+import { Hex, Fonts, Layout, px, scaled } from '../core/theme';
 import { History } from './History';
 import { KeyNav } from './KeyNav';
 import { markHandled, wasHandled } from './keys';
@@ -9,11 +9,11 @@ import { audio } from '../core/audio';
 
 const CHIP = {
   fontFamily: Fonts.body,
-  fontSize: '24px',
+  fontSize: px(24),
   color: Hex.parchmentDim,
   backgroundColor: 'rgba(20,22,26,0.6)',
   // Generous padding: the chip is a 17px target on a phone held sideways otherwise.
-  padding: { x: 26, y: 18 },
+  padding: { x: scaled(26), y: scaled(18) },
 };
 
 /**

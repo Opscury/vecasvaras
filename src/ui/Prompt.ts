@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { type Loc, i18n, t } from '../core/i18n';
-import { Hex, Fonts, Layout } from '../core/theme';
+import { Hex, Fonts, Layout, px, scaled } from '../core/theme';
 
 /**
  * The one-line instruction at the top of the frame while the player is meant
@@ -25,12 +25,14 @@ export class Prompt {
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.text = scene.add
-      .text(Layout.width / 2, 96, '', {
+      .text(Layout.width / 2, scaled(96), '', {
         fontFamily: Fonts.body,
-        fontSize: '23px',
-        color: Hex.parchmentDim,
-        backgroundColor: 'rgba(20,22,26,0.55)',
-        padding: { x: 18, y: 9 },
+        fontSize: px(23),
+        color: Hex.parchment,
+        backgroundColor: 'rgba(20,22,26,0.72)',
+        padding: { x: scaled(18), y: scaled(9) },
+        wordWrap: { width: Layout.width - scaled(560) },
+        align: 'center',
       })
       .setOrigin(0.5)
       .setDepth(400)
