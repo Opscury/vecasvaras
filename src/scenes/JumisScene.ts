@@ -61,8 +61,12 @@ const SKY_ROWS = 2;
 /** How much of the field has to be down before the harvest is finished. */
 const TARGET = 0.86;
 
-/** Positions read off the painting. Re-measure if the art is regenerated. */
-const TRUE_STALK = { x: 1596, y: 540 } as const;
+/**
+ * The double ear. Positions read off the painting — re-measure if the art is
+ * regenerated. `base` is the ground it grows out of, so it sits centred in the
+ * island of rye left standing around it.
+ */
+const TRUE_STALK = { x: 1596, base: 652, h: 192 } as const;
 /**
  * The two cells the double ear stands in, excluded from the day's work so the
  * harvest can be finished without touching it. The shape the player actually
@@ -71,6 +75,17 @@ const TRUE_STALK = { x: 1596, y: 540 } as const;
 const TITHE_CELLS = ['8,2', '8,3'];
 /** The patch of rye left standing around the double ear. */
 const TITHE_ISLAND = { x: 1596, y: 555, rx: 155, ry: 140 } as const;
+/**
+ * The island is protected by three overlapping stamps rather than one, offset
+ * and at different sizes. A single ellipse came out as a perfect oval sitting
+ * in the stubble, which reads as a hole in the picture rather than as a patch
+ * somebody deliberately worked around.
+ */
+const ISLAND_LOBES = [
+  { dx: 0, dy: 0, sx: 1, sy: 1 },
+  { dx: -0.4, dy: -0.26, sx: 0.66, sy: 0.66 },
+  { dx: 0.38, dy: 0.3, sx: 0.6, sy: 0.72 },
+] as const;
 /** One sweep of the blade, in canvas pixels. Wider than tall, like the swing. */
 const SWATH_W = 330;
 const SWATH_H = 210;
@@ -183,13 +198,13 @@ export class JumisScene extends Phaser.Scene {
     // revealed over the standing crop, and the one stem that survives it has
     // to be drawn on top of both.
     this.stalk = this.add
-      .image(TRUE_STALK.x, TRUE_STALK.y + 84, 'jumis-stalk')
+      .image(TRUE_STALK.x, TRUE_STALK.base, 'jumis-stalk')
       .setOrigin(0.5, 1)
       .setDepth(6)
       // Tinted into the field's own washed-out gold, so it reads as a plant
       // rather than as a marker.
       .setTint(STALK_TINT);
-    this.stalk.setScale(158 / this.stalk.height);
+    this.stalk.setScale(TRUE_STALK.h / this.stalk.height);
     this.swayStalk();
 
     // The tithe, as the old women left it: bent to the ground and tied.
@@ -362,8 +377,15 @@ export class JumisScene extends Phaser.Scene {
     this.maskRT.draw(this.brush, x, y);
     // The island is restored after every stroke that came near it, so a soft
     // brush sweeping past cannot nibble the tithe away a few pixels at a time.
-    if (!this.titheCut && Math.abs(x - TITHE_ISLAND.x) < SWATH_W + TITHE_ISLAND.rx) {
-      this.maskRT.erase(this.island, TITHE_ISLAND.x, TITHE_ISLAND.y);
+    if (!this.titheCut && Math.abs(x - TITHE_ISLAND.x) < SWATH_W + TITHE_ISLAND.rx * 1.6) {
+      for (const lobe of ISLAND_LOBES) {
+        this.island.setDisplaySize(TITHE_ISLAND.rx * 2 * lobe.sx, TITHE_ISLAND.ry * 2 * lobe.sy);
+        this.maskRT.erase(
+          this.island,
+          TITHE_ISLAND.x + TITHE_ISLAND.rx * lobe.dx,
+          TITHE_ISLAND.y + TITHE_ISLAND.ry * lobe.dy,
+        );
+      }
     }
   }
 
