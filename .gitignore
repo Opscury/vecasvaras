@@ -16,3 +16,6 @@ Claude outputs/
 
 # scratch archive used to mirror the repo into a screenshot sandbox
 _vv_snapshot.zip
+
+# Screenshot harness output
+shots/
