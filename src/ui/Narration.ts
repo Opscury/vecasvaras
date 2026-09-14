@@ -301,6 +301,11 @@ export class Narration {
       this.onDone = null;
       if (cb) {
         cb();
+        // A callback that does something other than talk — refreshing the
+        // objective, handing over an item — used to leave the panel sitting
+        // empty over the bottom third of the painting, because only the
+        // no-callback branch below ever folded it away.
+        if (!this.queue.length && !this.onDone && !this.choices.length && !this.current) this.hide();
       } else {
         // Nothing follows: get the panel out of the way. Half the clickable
         // world lives in the bottom third of these paintings.
