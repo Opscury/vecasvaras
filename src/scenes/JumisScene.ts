@@ -13,11 +13,9 @@ import { Atmosphere } from '../fx/Atmosphere';
 import { Bag } from '../ui/Bag';
 import { Painting } from '../ui/Painting';
 import { Prompt } from '../ui/Prompt';
-import { bag } from '../core/inventory';
 import { attachWind, type WindPipeline } from '../fx/WindPipeline';
 import { fadeIn, goTo } from './transition';
 import { audio } from '../core/audio';
-import { textureFor } from '../core/itemArt';
 
 /**
  * Encounter one — Jumis, the harvest spirit, in a Zemgale rye field.
@@ -352,15 +350,14 @@ export class JumisScene extends Phaser.Scene {
     const outcome = jumisOutcome(pick);
     const good = outcome === 'good';
 
-    // Commit now, before the prose plays. The result and the loaf it earns are
-    // the save, and they go in together: a player who closes the tab
+    // Commit now, before the prose plays: a player who closes the tab
     // mid-sentence comes back to a harvested field, not a half-finished one.
-    // The loaf flies into the bag rather than into a status line because it is
-    // literally the thing you argue with in encounter two.
+    //
+    // The loaf used to fly into the bag right here, mid-cutscene. The first
+    // playtester never saw it happen and could not say afterwards what she had
+    // got out of the field. The bread is now baked and handed over by Anna
+    // when the harvest is reported back, so the reward has a giver.
     state.set('jumis', outcome);
-    // state.jumis is already committed by here, so this picks up the right loaf.
-    this.bagUi.fly(textureFor('bread'), Layout.width / 2, Layout.height * 0.55);
-    bag.add('bread');
 
     this.harvest(pick);
 

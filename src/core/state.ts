@@ -23,13 +23,29 @@ export interface RunState {
   /** Set when the closing narration has played. */
   outroSeen: boolean;
   /**
+   * Anna has given the first errand. Until she has, the player has no reason
+   * to walk out of the village and the field path says so.
+   */
+  metElder: boolean;
+  /**
+   * The harvest has been taken back to Anna and paid for with the loaf. This,
+   * not the harvest itself, is what opens the bog: the reward is handed over
+   * by a person, in front of the player, rather than appearing in the bag
+   * halfway through a sentence.
+   */
+  jumisPaid: boolean;
+  /** The crossing has been reported back. The stone then ends the run. */
+  velnsPaid: boolean;
+  /**
    * Where the player last was, so Continue can put them back there rather
    * than silently in the hub. Encounters resume from their opening card.
    */
   scene: Place;
 }
 
-const STORAGE_KEY = 'vecasvaras.save.v1';
+const STORAGE_KEY = 'vecasvaras.save.v2';
+/** Read once, and only to carry a run in progress across the quest rework. */
+const STORAGE_KEY_V1 = 'vecasvaras.save.v1';
 
 const blank = (): RunState => ({
   jumis: 'none',
@@ -37,6 +53,9 @@ const blank = (): RunState => ({
   introSeen: false,
   outroSeen: false,
   scene: 'Village',
+  metElder: false,
+  jumisPaid: false,
+  velnsPaid: false,
 });
 
 const OUTCOMES: readonly unknown[] = ['none', 'poor', 'good'];
@@ -79,7 +98,7 @@ class GameState {
    * from encounter one is the ticket into encounter two.
    */
   get bogOpen(): boolean {
-    return this.data.jumis !== 'none';
+    return this.data.jumisPaid;
   }
 
   private save(): void {
@@ -93,22 +112,57 @@ class GameState {
   private load(): void {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      // Read field by field: a stale or hand-edited save falls back to the
-      // fresh-run value for anything it does not recognise, rather than
-      // carrying an outcome no scene knows how to draw.
-      const p = JSON.parse(raw) as Record<string, unknown> | null;
-      if (!p || typeof p !== 'object') return;
-      this.data = {
-        jumis: asOutcome(p.jumis),
-        velns: asOutcome(p.velns),
-        introSeen: p.introSeen === true,
-        outroSeen: p.outroSeen === true,
-        scene: asPlace(p.scene),
-      };
+      if (raw) {
+        // Read field by field: a stale or hand-edited save falls back to the
+        // fresh-run value for anything it does not recognise, rather than
+        // carrying an outcome no scene knows how to draw.
+        const p = JSON.parse(raw) as Record<string, unknown> | null;
+        if (!p || typeof p !== 'object') return;
+        this.data = {
+          jumis: asOutcome(p.jumis),
+          velns: asOutcome(p.velns),
+          introSeen: p.introSeen === true,
+          outroSeen: p.outroSeen === true,
+          metElder: p.metElder === true,
+          jumisPaid: p.jumisPaid === true,
+          velnsPaid: p.velnsPaid === true,
+          scene: asPlace(p.scene),
+        };
+        return;
+      }
+      this.migrateV1();
     } catch {
       this.data = blank();
     }
+  }
+
+  /**
+   * A run saved before Anna existed. Everything she is supposed to have done
+   * for that player has, by definition, already happened: they were given the
+   * errands by the old nudge lines, and the loaf arrived by itself. So the
+   * errand flags are inferred from the outcomes rather than making somebody
+   * mid-run walk back and re-accept a task they finished last week.
+   */
+  private migrateV1(): void {
+    const raw = localStorage.getItem(STORAGE_KEY_V1);
+    if (!raw) return;
+    const p = JSON.parse(raw) as Record<string, unknown> | null;
+    if (!p || typeof p !== 'object') return;
+    const jumis = asOutcome(p.jumis);
+    const velns = asOutcome(p.velns);
+    this.data = {
+      jumis,
+      velns,
+      introSeen: p.introSeen === true,
+      outroSeen: p.outroSeen === true,
+      // They have plainly met her if they were ever sent anywhere.
+      metElder: p.introSeen === true,
+      jumisPaid: jumis !== 'none',
+      velnsPaid: velns !== 'none',
+      scene: asPlace(p.scene),
+    };
+    this.save();
+    localStorage.removeItem(STORAGE_KEY_V1);
   }
 
   /**
@@ -119,8 +173,12 @@ class GameState {
    * commit both at once; this puts the loaf back for anyone already caught.
    */
   private repair(): void {
-    const { jumis, velns } = this.data;
-    if (jumis !== 'none' && velns === 'none' && !bag.has('bread')) bag.add('bread');
+    const { jumisPaid, velns } = this.data;
+    // The loaf is Anna's to give, so the test is whether she has given it —
+    // not whether the field is cut. Without this a reload between the bog
+    // opening and the bread being spent leaves the bog enterable and the
+    // player with nothing to enter it with.
+    if (jumisPaid && velns === 'none' && !bag.has('bread')) bag.add('bread');
   }
 }
 

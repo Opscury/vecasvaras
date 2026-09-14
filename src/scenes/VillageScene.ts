@@ -1,14 +1,18 @@
 import Phaser from 'phaser';
 import { type Loc } from '../core/i18n';
 import { arrival, items, village } from '../content/script';
+import { elder } from '../content/elder';
 import { state } from '../core/state';
+import { currentStep } from '../core/quest';
 import { Narration } from '../ui/Narration';
 import { Hotspot } from '../ui/Hotspot';
 import { Chrome } from '../ui/Chrome';
+import { Objective } from '../ui/Objective';
 import { Atmosphere } from '../fx/Atmosphere';
 import { Bag } from '../ui/Bag';
 import { Painting } from '../ui/Painting';
 import { bag } from '../core/inventory';
+import { textureFor } from '../core/itemArt';
 import { fadeIn, goTo } from './transition';
 import { CHIMNEYS, addUpgrades } from './villageArt';
 import { audio } from '../core/audio';
@@ -42,6 +46,13 @@ const CAT = { x: 1222, y: 522 };
 /** Drawn height of the sitting cat, in step with the cottages at that depth. */
 const CAT_H = 52;
 
+/**
+ * Vecā Anna, on the open ground between her cottage and the rune stone.
+ * `y` is the ground her feet stand on; `h` is her drawn height, scaled to the
+ * cottages at that depth (a little over three times the sitting cat).
+ */
+const ELDER = { x: 700, y: 596, h: 178 };
+
 /** How long after arriving the "what changed" line is said: once the building has settled. */
 const ARRIVAL_LINE_MS = 2600;
 
@@ -50,6 +61,7 @@ export class VillageScene extends Phaser.Scene {
   private bagUi!: Bag;
   private spots: Hotspot[] = [];
   private catSprite: Phaser.GameObjects.Image | null = null;
+  private objective!: Objective;
 
   constructor() {
     super('Village');
@@ -85,6 +97,7 @@ export class VillageScene extends Phaser.Scene {
 
     this.narration = new Narration(this);
     new Chrome(this, { log: () => this.narration.history });
+    this.objective = new Objective(this);
 
     // Registered before the bag's own handler, so it sees what was in hand at
     // the moment of the click rather than after the bag has put it back.
@@ -105,7 +118,10 @@ export class VillageScene extends Phaser.Scene {
       h: 220,
       label: village.stone.label,
       onClick: () => {
-        if (state.bothResolved) {
+        // The stone only ends the run once Anna has heard about both debts.
+        // Walking straight from the bog into the ending skipped the only
+        // person who had been keeping the account.
+        if (currentStep() === 'done') {
           this.narration.say(village.stone.lines, () => this.leaveTo('Outro'));
         } else {
           this.narration.say(village.stone.lines);
@@ -155,8 +171,14 @@ export class VillageScene extends Phaser.Scene {
       h: 260,
       label: village.pathField.label,
       onClick: () => {
-        if (s.jumis !== 'none') {
+        if (state.get().jumis !== 'none') {
           this.narration.flash(village.pathField.done);
+          return;
+        }
+        // Nobody has asked yet. Walking out to cut somebody else's rye
+        // unprompted is not a thing a person does.
+        if (!state.get().metElder) {
+          this.narration.flash(elder.notAsked);
           return;
         }
         if (!bag.has('sickle')) {
@@ -177,7 +199,7 @@ export class VillageScene extends Phaser.Scene {
       h: 260,
       label: village.pathBog.label,
       onClick: () => {
-        if (s.velns !== 'none') {
+        if (state.get().velns !== 'none') {
           this.narration.flash(village.pathBog.done);
           return;
         }
@@ -195,6 +217,9 @@ export class VillageScene extends Phaser.Scene {
 
     this.bagUi = new Bag(this);
 
+    // --- Anna, who is the reason any of the rest of this happens
+    this.addElder(painting);
+
     // --- the lean-to where the sickle hangs
     this.spot({
       x: SHED.x,
@@ -211,7 +236,9 @@ export class VillageScene extends Phaser.Scene {
           // Off the hook and into the bag, on screen.
           this.bagUi.fly('item-sickle', SHED.x, SHED.y);
           bag.add('sickle');
-          this.narration.flash(this.nudge());
+          // No follow-up line: the corner already says where the sickle is
+          // meant to go, and says it for as long as the player needs.
+          this.objective.refresh();
         });
       },
     });
@@ -249,7 +276,6 @@ export class VillageScene extends Phaser.Scene {
           this.catSprite = null;
           this.bagUi.fly('item-cat', CAT.x, CAT.y - CAT_H / 2);
           bag.add('cat');
-          this.narration.flash(this.nudge());
         });
       },
     });
@@ -260,15 +286,16 @@ export class VillageScene extends Phaser.Scene {
     //
     // Both lines are on timers, so neither may replace something the player
     // has already asked for.
+    //
+    // There is deliberately no "what to do next" line any more. That used to
+    // be `nudge()`, one flash that was gone the moment anything else was
+    // clicked; the corner of the screen now says it permanently, and Anna
+    // says it out loud to anyone who asks her.
     const news = this.arrivalLine();
     if (news) {
       this.time.delayedCall(ARRIVAL_LINE_MS, () => {
         if (this.narration.busy) return;
-        this.narration.say([news], () => this.narration.flash(this.nudge()));
-      });
-    } else {
-      this.time.delayedCall(700, () => {
-        if (this.narration.idle) this.narration.flash(this.nudge());
+        this.narration.say([news]);
       });
     }
   }
@@ -293,15 +320,119 @@ export class VillageScene extends Phaser.Scene {
     return null;
   }
 
-  private nudge(): Loc {
-    if (state.bothResolved) return village.nudgeDone;
-    if (state.bogOpen && state.get().velns === 'none') {
-      // Points at the cat while it is still on the doorstep, because leaving
-      // without it quietly closes off the best answer at the bog.
-      return bag.has('cat') ? village.nudgeBog : items.needOffering;
+  /**
+   * Vecā Anna: the standing figure and everything she has to say.
+   *
+   * She is the hint system with a face. Every branch below is reachable at any
+   * time by walking over and touching her, which is the whole point — the
+   * advice the game used to give once, in passing, is now a person who is
+   * still there an hour later.
+   */
+  private addElder(painting: Painting): void {
+    const anna = painting.add(this.add.image(ELDER.x, ELDER.y, 'elder').setOrigin(0.5, 1));
+    anna.setScale(ELDER.h / anna.height);
+    // Cooled a shade, the way the Devil is cooled into the bog. Straight out of
+    // the generator she is lit warmer than the village she is standing in, and
+    // that difference is exactly what makes a cutout look pasted on.
+    anna.setTint(0xdad9d2);
+    // The same two mismatched clocks the Devil has, so she reads as somebody
+    // standing rather than a cutout leaning against the village.
+    this.tweens.add({
+      targets: anna,
+      scaleY: anna.scaleY * 1.008,
+      duration: 3400,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+    this.tweens.add({
+      targets: anna,
+      angle: { from: -0.5, to: 0.5 },
+      duration: 7300,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    this.spot({
+      x: ELDER.x,
+      y: ELDER.y - ELDER.h / 2,
+      w: 150,
+      h: ELDER.h + 30,
+      label: elder.label,
+      onClick: () => this.talkTo(),
+    });
+  }
+
+  /** What Anna says, which depends entirely on where the run has got to. */
+  private talkTo(): void {
+    switch (currentStep()) {
+      case 'meetElder':
+        return this.giveFieldErrand();
+      case 'takeSickle':
+        return this.narration.flash(elder.remind.takeSickle);
+      case 'harvest':
+        return this.narration.flash(elder.remind.harvest);
+      case 'returnHarvest':
+        return this.takeHarvestBack();
+      case 'crossBog':
+        return this.narration.flash(elder.remind.crossBog);
+      case 'returnBog':
+        return this.takeBogBack();
+      case 'done':
+        return this.narration.flash(elder.remind.done);
     }
-    if (!bag.has('sickle')) return items.needSickle;
-    return village.nudgeFirst;
+  }
+
+  /** The first errand, accepted out loud rather than assumed. */
+  private giveFieldErrand(): void {
+    const accept = () => {
+      this.narration.say([elder.accepted], () => {
+        state.set('metElder', true);
+        this.objective.refresh();
+      });
+    };
+    this.narration.say(elder.greet, () => {
+      this.narration.ask(elder.ask, [
+        { label: elder.choices.accept, onPick: accept },
+        {
+          label: elder.choices.why,
+          onPick: () => this.narration.say([elder.why], accept),
+        },
+      ]);
+    });
+  }
+
+  /**
+   * Reporting the harvest. This is where the loaf comes from now: it used to
+   * appear in the bag during the outcome text out at the field, where the
+   * playtester never saw it arrive and could not say what it was for.
+   */
+  private takeHarvestBack(): void {
+    const good = state.get().jumis === 'good';
+    const lines = good ? elder.harvestBack.good : elder.harvestBack.poor;
+    this.narration.say([...lines, elder.harvestBack.bread], () => {
+      this.bagUi.fly(textureFor('bread'), ELDER.x, ELDER.y - ELDER.h * 0.55);
+      bag.add('bread');
+      state.set('jumisPaid', true);
+      this.objective.refresh();
+      // Straight on into the second errand: she has the player's attention and
+      // a walk back across the village to ask again is not a puzzle.
+      this.narration.say(elder.bog, () => {
+        this.narration.ask(elder.bogAsk, [
+          { label: elder.choices.accept, onPick: () => this.narration.flash(elder.farewell) },
+        ]);
+      });
+    });
+  }
+
+  private takeBogBack(): void {
+    const good = state.get().velns === 'good';
+    const lines = good ? elder.bogBack.good : elder.bogBack.poor;
+    this.narration.say([...lines, elder.toStone], () => {
+      state.set('velnsPaid', true);
+      this.objective.refresh();
+    });
   }
 
   private spot(o: ConstructorParameters<typeof Hotspot>[1]): void {
