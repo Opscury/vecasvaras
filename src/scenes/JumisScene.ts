@@ -133,6 +133,8 @@ export class JumisScene extends Phaser.Scene {
   private titheWarned = false;
   /** Once true the island stops being protected — the player meant it. */
   private titheCut = false;
+  /** A stroke came near the island and the standing patch needs putting back. */
+  private islandDirty = false;
   private skyDone = false;
   /**
    * Where the current stroke began, or null between strokes.
@@ -175,6 +177,7 @@ export class JumisScene extends Phaser.Scene {
     this.workCells = [];
     this.titheWarned = false;
     this.titheCut = false;
+    this.islandDirty = false;
     this.skyDone = false;
     this.strokeFrom = null;
     this.cutting = false;
@@ -297,6 +300,7 @@ export class JumisScene extends Phaser.Scene {
       // tap on the double ear cut it while a sweep across it never can.
       this.strokeFrom = { x, y };
       this.strike(x, y);
+      this.protectIsland();
       // Always keep the blade in hand: a harvest is not one swing.
       return true;
     };
@@ -372,20 +376,37 @@ export class JumisScene extends Phaser.Scene {
     return n / this.workCells.length;
   }
 
-  /** One swept mark of the blade painted into the mask. */
+  /**
+   * One swept mark of the blade painted into the mask.
+   *
+   * Marks the island dirty rather than restoring it here. A fast drag is fifty
+   * samples, and re-erasing three lobes on every one of them is two hundred
+   * render-texture passes for a single flick of a thumb — which a phone feels.
+   * `protectIsland` does it once at the end of the batch instead.
+   */
   private paint(x: number, y: number): void {
     this.maskRT.draw(this.brush, x, y);
-    // The island is restored after every stroke that came near it, so a soft
-    // brush sweeping past cannot nibble the tithe away a few pixels at a time.
     if (!this.titheCut && Math.abs(x - TITHE_ISLAND.x) < SWATH_W + TITHE_ISLAND.rx * 1.6) {
-      for (const lobe of ISLAND_LOBES) {
-        this.island.setDisplaySize(TITHE_ISLAND.rx * 2 * lobe.sx, TITHE_ISLAND.ry * 2 * lobe.sy);
-        this.maskRT.erase(
-          this.island,
-          TITHE_ISLAND.x + TITHE_ISLAND.rx * lobe.dx,
-          TITHE_ISLAND.y + TITHE_ISLAND.ry * lobe.dy,
-        );
-      }
+      this.islandDirty = true;
+    }
+  }
+
+  /**
+   * Puts the standing patch back, after a stroke has swept past it.
+   *
+   * Three overlapping stamps, so what is left is a patch somebody worked
+   * around rather than a perfect oval punched in the stubble.
+   */
+  private protectIsland(): void {
+    if (!this.islandDirty || this.titheCut) return;
+    this.islandDirty = false;
+    for (const lobe of ISLAND_LOBES) {
+      this.island.setDisplaySize(TITHE_ISLAND.rx * 2 * lobe.sx, TITHE_ISLAND.ry * 2 * lobe.sy);
+      this.maskRT.erase(
+        this.island,
+        TITHE_ISLAND.x + TITHE_ISLAND.rx * lobe.dx,
+        TITHE_ISLAND.y + TITHE_ISLAND.ry * lobe.dy,
+      );
     }
   }
 
@@ -441,6 +462,7 @@ export class JumisScene extends Phaser.Scene {
     this.lastSample = { x, y };
     if (!from) {
       this.strike(x, y);
+      this.protectIsland();
       return;
     }
     const dist = Phaser.Math.Distance.Between(from.x, from.y, x, y);
@@ -449,6 +471,7 @@ export class JumisScene extends Phaser.Scene {
       const t = i / steps;
       this.strike(Phaser.Math.Linear(from.x, x, t), Phaser.Math.Linear(from.y, y, t));
     }
+    this.protectIsland();
   }
 
   /** One swing of the blade at a point in the field. */
@@ -599,7 +622,10 @@ export class JumisScene extends Phaser.Scene {
       const [col, row] = key.split(',').map(Number);
       const x = col * CELL_W + CELL_W / 2;
       const y = row * CELL_H + CELL_H / 2;
-      this.time.delayedCall(step * i, () => this.paint(x, y));
+      this.time.delayedCall(step * i, () => {
+        this.paint(x, y);
+        this.protectIsland();
+      });
     });
   }
 
