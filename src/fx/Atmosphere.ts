@@ -22,6 +22,10 @@ export class Atmosphere {
   private objects = new Set<Phaser.GameObjects.GameObject>();
   /** Anything that is not a game object but still has to come down with the scene. */
   private teardown: Array<() => void> = [];
+  /** Multiplier on how fast the mist moves; a gust raises it for a moment. */
+  private windFactor = 1;
+  /** The bog lights, so a gust can push them. */
+  private wispList: Phaser.GameObjects.Image[] = [];
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -124,7 +128,7 @@ export class Atmosphere {
       // shutdown — so this listener has to be taken down by hand, or every visit
       // leaves another one scrolling a destroyed sprite for the rest of the game.
       const scroll = (_t: number, dt: number) => {
-        img.tilePositionX += pxPerMs * dt;
+        img.tilePositionX += pxPerMs * dt * this.windFactor;
       };
       this.scene.events.on(Phaser.Scenes.Events.UPDATE, scroll);
       this.teardown.push(() => this.scene.events.off(Phaser.Scenes.Events.UPDATE, scroll));
@@ -200,7 +204,20 @@ export class Atmosphere {
    * can add to a painting of a village — smoke means somebody is home.
    */
   smoke(x: number, y: number, opts: { scale?: number; tint?: number; rate?: number } = {}): this {
-    if (!flags.fx) return this;
+    this.chimney(x, y, opts);
+    return this;
+  }
+
+  /**
+   * The same chimney, returned so a scene can turn it up or down: a village
+   * with bread in the granary smokes more than one without.
+   */
+  chimney(
+    x: number,
+    y: number,
+    opts: { scale?: number; tint?: number; rate?: number } = {},
+  ): { setLevel: (level: 0 | 1 | 2 | 3) => void } | null {
+    if (!flags.fx) return null;
     const { scale = 0.5, tint = 0xcfd4d6, rate = 620 } = opts;
 
     const em = this.scene.add.particles(x, y, 'fx-blob', {
@@ -220,7 +237,20 @@ export class Atmosphere {
     });
     em.setDepth(12);
     this.objects.add(em);
-    return this;
+    const base = rate;
+    return {
+      /** 0 cold, 1 a thin thread, 2 a lived-in chimney, 3 a busy one. */
+      setLevel: (level) => {
+        if (!em.active) return;
+        if (level === 0) {
+          em.stop();
+          return;
+        }
+        if (!em.emitting) em.start();
+        em.frequency = level === 1 ? base * 2.6 : level === 2 ? base : base * 0.66;
+        em.setAlpha(level === 1 ? 0.55 : 1);
+      },
+    };
   }
 
   /**
@@ -305,6 +335,7 @@ export class Atmosphere {
         .setDepth(14)
         .setBlendMode(Phaser.BlendModes.SCREEN);
       this.objects.add(w);
+      this.wispList.push(w);
 
       const wander = () => {
         if (!w.active) return;
@@ -359,6 +390,38 @@ export class Atmosphere {
       ease: 'Sine.easeInOut',
     });
     this.objects.add(veil);
+    return this;
+  }
+
+  /**
+   * A gust: the mist races for a moment and the lights are pushed along with
+   * it. Used when the Devil asks what opens doors without hands — the bog
+   * answers before the player does.
+   */
+  gust(strength = 9, duration = 2400): this {
+    if (!flags.fx) return this;
+    const holder = { v: 0 };
+    this.scene.tweens.add({
+      targets: holder,
+      v: 1,
+      duration,
+      ease: 'Linear',
+      onUpdate: () => {
+        this.windFactor = 1 + (strength - 1) * Math.sin(Math.PI * holder.v);
+      },
+      onComplete: () => {
+        this.windFactor = 1;
+      },
+    });
+    for (const w of this.wispList) {
+      if (!w.active) continue;
+      this.scene.tweens.add({
+        targets: w,
+        x: Phaser.Math.Clamp(w.x + Phaser.Math.Between(90, 200), 80, Layout.width - 80),
+        duration: duration * 0.6,
+        ease: 'Sine.easeOut',
+      });
+    }
     return this;
   }
 

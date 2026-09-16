@@ -1,5 +1,6 @@
 import { ITEMS, type ItemId } from './inventory';
 import { state } from './state';
+import { loafFrom } from './rules';
 
 /**
  * Which texture an item is drawn with right now.
@@ -16,9 +17,8 @@ import { state } from './state';
  */
 export function textureFor(id: ItemId): string {
   if (id === 'bread') {
-    const year = state.get().jumis;
-    if (year === 'good') return 'item-bread-good';
-    if (year === 'poor') return 'item-bread-poor';
+    const pick = state.get().jumisPick;
+    if (pick !== 'none') return loafFrom(pick) === 'thin' ? 'item-bread-poor' : 'item-bread-good';
   }
   return ITEMS[id].texture;
 }

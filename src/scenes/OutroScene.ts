@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
-import { i18n, t, type Loc } from '../core/i18n';
+import { fillLoc, i18n, L, t, type Loc } from '../core/i18n';
 import { outro, tally, ui } from '../content/script';
 import { state } from '../core/state';
-import { ending } from '../core/rules';
+import { ledger } from '../core/ledger';
+import { holdings, BREAD_CAP } from '../core/holdings';
+import { ending, shortfalls } from '../core/rules';
 import { Hex, Fonts, Layout, Palette, Timing, px, scaled } from '../core/theme';
 import { Narration } from '../ui/Narration';
 import { Chrome } from '../ui/Chrome';
@@ -10,63 +12,68 @@ import { Atmosphere } from '../fx/Atmosphere';
 import { Painting } from '../ui/Painting';
 import { SignMark } from '../ui/Sign';
 import { padHit } from '../ui/hit';
+import { renderShareCard, shareCard } from '../ui/ShareCard';
 import { ignoreKey, isAdvanceKey, markHandled } from '../ui/keys';
 import { fadeIn, goTo, isLeaving } from './transition';
-import { CHIMNEYS, addUpgrades } from './villageArt';
+import { CHIMNEYS, addEvening, addUpgrades } from './villageArt';
 import { audio } from '../core/audio';
+import { makeBlob } from '../fx/textures';
+
+const SHARE_URL = 'vecasvaras.protu.lv';
 
 /**
  * The ending, in three movements:
  *
- *   1. closing narration over the village as the player actually left it
- *   2. THE TALLY — both marks side by side, each whole or unfinished, with a
- *      one-line record of each share and a plain statement of the total
- *   3. the title card
+ *   1. closing narration over the village as the player left it — at dusk,
+ *      with as many lit windows as there is bread
+ *   2. THE TALLY — both marks side by side, each whole or unfinished, a line
+ *      for each share, the smaller facts under them, and the total said plainly
+ *   3. the way on: the next year, or a picture of this one to send somebody
  *
- * Movement 2 is the part that was missing. A player who reaches the end of a
- * game about what you leave behind should not have to guess what they left, and
- * the two marks answer that in a single glance before a word is read.
+ * The year is written into the stone's ledger the moment the tally is shown.
  */
 export class OutroScene extends Phaser.Scene {
   private narration!: Narration;
-  /** The "start over" line is up and can be pressed. */
-  private canRestart = false;
+  /** The "next year" button is up and can be pressed. */
+  private canGoOn = false;
 
   constructor() {
     super('Outro');
   }
 
   create(): void {
-    // One ambient channel for the whole game; this cross-fades from whatever
-    // the last scene was playing.
     audio.ambient('village');
 
-    this.canRestart = false;
+    this.canGoOn = false;
     fadeIn(this, Timing.fade * 2);
+    makeBlob(this);
 
     const painting = new Painting(this, 'bg-village');
     painting.bg.setAlpha(0.9);
 
     const run = state.get();
+    const bread = holdings().bread;
 
-    // Show the village as the player left it. Closing on the empty foundation
-    // they just filled would undo the whole point of the hub.
+    // The village as the player left it, at the end of the day.
     addUpgrades(this, painting, run, { animate: false, alpha: 0.9 });
+    addEvening(this, painting, { lit: 1 + bread, arriving: false });
 
     const air = new Atmosphere(this)
       .drift(painting.root, { scale: 1.05, duration: 60000 })
-      .fog({ band: 0.14, height: 280, tint: 0xe6ecef, alpha: 0.2, speed: 80000, layers: 2 });
-    CHIMNEYS.forEach((c, i) => air.smoke(c.x, c.y, { scale: 0.52, rate: 720 + i * 160 }));
-    air.birds({ band: [0.06, 0.2], every: [7000, 15000] }).breathe({ amount: 0.07, duration: 28000 });
+      .fog({ band: 0.14, height: 280, tint: 0x9aa3b0, alpha: 0.2, speed: 80000, layers: 2 });
+    CHIMNEYS.forEach((c, i) => {
+      if (i === 0 || bread >= 2) air.smoke(c.x, c.y, { scale: 0.52, rate: 720 + i * 160, tint: 0xa6aab0 });
+    });
+    air.birds({ band: [0.06, 0.2], every: [9000, 17000] }).breathe({ amount: 0.07, duration: 28000 });
 
     this.narration = new Narration(this);
     new Chrome(this, { log: () => this.narration.history });
     this.input.on('pointerdown', () => this.narration.advance());
 
     this.input.keyboard?.on('keydown', (ev: KeyboardEvent) => {
-      if (ignoreKey(this, ev) || !isAdvanceKey(ev) || !this.canRestart) return;
+      if (ignoreKey(this, ev) || !isAdvanceKey(ev) || !this.canGoOn) return;
       markHandled(ev);
-      this.restart();
+      this.nextYear();
     });
 
     this.narration.say(outro[ending(run.jumis, run.velns)], () => {
@@ -75,139 +82,210 @@ export class OutroScene extends Phaser.Scene {
     });
   }
 
-  private restart(): void {
+  private nextYear(): void {
     if (isLeaving(this)) return;
-    state.reset();
-    goTo(this, 'Title');
+    state.nextYear();
+    goTo(this, 'Intro');
   }
 
-  /** Both shares, marked and named. */
+  /** Both shares, marked and named, and what the year came to. */
   private showTally(): void {
     const { width, height } = Layout;
     const run = state.get();
+    const pick = run.jumisPick === 'none' ? (run.jumis === 'good' ? 'leave' : 'all') : run.jumisPick;
     const jGood = run.jumis === 'good';
     const vGood = run.velns === 'good';
     const kind = ending(run.jumis, run.velns);
+    const bread = holdings().bread;
+    const summary = { jumisPick: pick, velns: run.velns, catLost: run.catLost, bread };
+    const short = shortfalls(summary);
+    const perfect = short.length === 0;
 
-    const veil = this.add
-      .rectangle(width / 2, height / 2, width, height, Palette.ink, 0)
-      .setDepth(700);
+    // The record, once.
+    ledger.record({
+      year: run.year,
+      jumisPick: pick,
+      jumis: run.jumis,
+      velns: run.velns,
+      velnsPick: run.velnsPick === 'none' ? 'self' : run.velnsPick,
+      catLost: run.catLost,
+      devilGone: run.devilGone,
+      crumb: run.crumb,
+      bread,
+    });
+    state.set('outroSeen', true);
+
+    const veil = this.add.rectangle(width / 2, height / 2, width, height, Palette.ink, 0).setDepth(700);
     this.tweens.add({ targets: veil, fillAlpha: 0.9, duration: 800, ease: 'Sine.easeOut' });
 
-    const texts: Array<{ obj: Phaser.GameObjects.Text; loc: Loc }> = [];
-    const add = (
-      x: number,
-      y: number,
-      loc: Loc,
-      o: { size: string; colour: string; origin?: number },
-    ) => {
+    const texts: Array<{ obj: Phaser.GameObjects.Text; loc: () => Loc }> = [];
+    const add = (x: number, y: number, loc: () => Loc, o: { size: string; colour: string; italic?: boolean }) => {
       const obj = this.add
-        .text(x, y, t(loc), {
+        .text(x, y, t(loc()), {
           fontFamily: Fonts.body,
           fontSize: o.size,
           color: o.colour,
           align: 'center',
+          fontStyle: o.italic ? 'italic' : 'normal',
         })
-        .setOrigin(o.origin ?? 0.5, 0.5)
+        .setOrigin(0.5, 0.5)
         .setDepth(720)
         .setAlpha(0);
       texts.push({ obj, loc });
       return obj;
     };
 
-    const heading = add(width / 2, height * 0.16, tally.heading, {
-      size: px(30),
-      colour: Hex.parchmentDim,
-    });
+    const yearLoc = (): Loc => fillLoc(ui.year, L(String(run.year), String(run.year)));
+    const headingLoc = (): Loc =>
+      run.year > 1
+        ? { lv: `${tally.heading.lv} · ${yearLoc().lv}`, en: `${tally.heading.en} · ${yearLoc().en}` }
+        : tally.heading;
+    const heading = add(width / 2, height * 0.12, headingLoc, { size: px(30), colour: Hex.parchmentDim });
 
     // The two marks, left and right. Whole or stopped short, warm or cold.
     const leftX = width * 0.34;
     const rightX = width * 0.66;
-    const markY = height * 0.36;
+    const markY = height * 0.3;
 
-    const mJ = new SignMark(this, {
-      x: leftX,
-      y: markY,
-      size: 80,
-      key: 'jumis',
-      complete: jGood,
-      depth: 720,
-    });
-    const mV = new SignMark(this, {
-      x: rightX,
-      y: markY,
-      size: 80,
-      key: 'crossing',
-      complete: vGood,
-      depth: 720,
-    });
+    const mJ = new SignMark(this, { x: leftX, y: markY, size: 80, key: 'jumis', complete: jGood, depth: 720 });
+    const mV = new SignMark(this, { x: rightX, y: markY, size: 80, key: 'crossing', complete: vGood, depth: 720 });
 
-    const rowJ = add(leftX, markY + scaled(150), jGood ? tally.rowJumis.good : tally.rowJumis.poor, {
-      size: px(26),
-      colour: jGood ? Hex.parchment : Hex.mist,
-    });
-    const rowV = add(rightX, markY + scaled(150), vGood ? tally.rowVelns.good : tally.rowVelns.poor, {
-      size: px(26),
-      colour: vGood ? Hex.parchment : Hex.mist,
+    const rowY = markY + scaled(142);
+    const velnsRow = run.devilGone ? tally.rowVelns.gone : vGood ? tally.rowVelns.good : tally.rowVelns.poor;
+    const rowJ = add(leftX, rowY, () => tally.rowJumis[pick], { size: px(26), colour: jGood ? Hex.parchment : Hex.mist });
+    const rowV = add(rightX, rowY, () => velnsRow, { size: px(26), colour: vGood ? Hex.parchment : Hex.mist });
+
+    // The smaller facts under each share.
+    const subY = rowY + scaled(40);
+    const breadLoc = (): Loc => fillLoc(tally.bread, L(`${bread}/${BREAD_CAP}`, `${bread}/${BREAD_CAP}`));
+    const subJ = add(leftX, subY, breadLoc, { size: px(21), colour: bread >= BREAD_CAP ? Hex.rye : Hex.parchmentDim, italic: true });
+    const subV = add(rightX, subY, () => (run.catLost ? tally.catLost : tally.catHome), {
+      size: px(21),
+      colour: run.catLost ? Hex.mist : Hex.parchmentDim,
+      italic: true,
     });
 
-    const verdict = add(width / 2, height * 0.63, tally[kind], {
+    const verdictY = height * 0.64;
+    const verdict = add(width / 2, verdictY, () => tally[kind], {
       size: px(42),
       colour: kind === 'both' ? Hex.parchment : Hex.parchmentDim,
     });
 
-    const note = add(width / 2, height * 0.63 + scaled(62), kind === 'both' ? tally.perfect : tally.again, {
-      size: px(24),
-      colour: Hex.rye,
-    });
+    const noteLoc = (): Loc => {
+      if (perfect) return tally.perfect;
+      // Both shares whole, and still something given up: say what.
+      const parts: Loc[] = [];
+      if (kind === 'both') {
+        if (short.includes('bread')) parts.push(tally.shortBread);
+        if (short.includes('cat')) parts.push(tally.shortCat);
+      }
+      parts.push(tally.again);
+      return { lv: parts.map((p) => p.lv).join(' '), en: parts.map((p) => p.en).join(' ') };
+    };
+    const note = add(width / 2, verdictY + scaled(60), noteLoc, { size: px(24), colour: Hex.rye });
 
-    const again = this.add
-      .text(width / 2, height * 0.82, t(ui.restart), {
-        fontFamily: Fonts.body,
-        fontSize: px(28),
-        color: Hex.rye,
-      })
-      .setOrigin(0.5)
-      .setDepth(720)
-      .setAlpha(0);
-    const placeAgain = padHit(again, 380, 88);
-    texts.push({ obj: again, loc: ui.restart });
-    again.on('pointerover', () => again.setColor(Hex.ryeBright));
-    again.on('pointerout', () => again.setColor(Hex.rye));
-    again.on('pointerdown', () => this.restart());
+    // The way on.
+    const btnY = height * 0.85;
+    const next = this.button(width / 2 - scaled(150), btnY, ui.nextYear, true);
+    const share = this.button(width / 2 + scaled(160), btnY, ui.share, false);
+    next.txt.on('pointerdown', () => this.nextYear());
+    share.txt.on('pointerdown', () => this.share(pick, jGood, vGood, velnsRow, kind, noteLoc(), yearLoc()));
 
-    // Carve the marks one after the other, then let the words follow. Staggering
-    // them means the player watches each share being scored rather than reading
-    // a results table.
-    const fadeUp = (target: Phaser.GameObjects.Text, delay: number, duration = 700, onComplete?: () => void) =>
+    // Carve the marks one after the other, then let the words follow.
+    const fadeUp = (target: Phaser.GameObjects.GameObject, delay: number, duration = 700, onComplete?: () => void) =>
       this.tweens.add({ targets: target, alpha: 1, duration, delay, ease: 'Quad.easeOut', onComplete });
     fadeUp(heading, 300, 600);
-    // One knock per mark, on the beat the row appears: the sound of a share
-    // being written off, twice.
     this.time.delayedCall(700, () => {
       mJ.carve(this, () => {
         audio.play('tally');
         fadeUp(rowJ, 0, 500);
+        fadeUp(subJ, 250, 500);
       });
     });
-    this.time.delayedCall(1600, () => {
+    this.time.delayedCall(1700, () => {
       mV.carve(this, () => {
         audio.play('tally');
         fadeUp(rowV, 0, 500);
+        fadeUp(subV, 250, 500);
       });
     });
-    fadeUp(verdict, 3200);
-    fadeUp(note, 3900);
-    fadeUp(again, 4600, 600, () => {
-      this.canRestart = true;
+    fadeUp(verdict, 3400);
+    fadeUp(note, 4100);
+    fadeUp(share.txt, 4800, 600);
+    fadeUp(next.txt, 4800, 600, () => {
+      this.canGoOn = true;
     });
-
-    state.set('outroSeen', true);
 
     const off = i18n.onChange(() => {
-      texts.forEach((x) => x.obj.setText(t(x.loc)));
-      placeAgain();
+      texts.forEach((x) => x.obj.setText(t(x.loc())));
+      next.refresh();
+      share.refresh();
     });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, off);
+  }
+
+  private button(x: number, y: number, label: Loc, primary: boolean): { txt: Phaser.GameObjects.Text; refresh: () => void } {
+    const txt = this.add
+      .text(x, y, t(label) + (primary ? '  ▸' : ''), {
+        fontFamily: Fonts.body,
+        fontSize: px(primary ? 28 : 24),
+        color: primary ? Hex.rye : Hex.parchmentDim,
+        backgroundColor: primary ? 'rgba(107,88,66,0.55)' : 'rgba(20,22,26,0.5)',
+        padding: { x: scaled(26), y: scaled(14) },
+      })
+      .setOrigin(0.5)
+      .setDepth(720)
+      .setAlpha(0);
+    const place = padHit(txt, 300, 80);
+    const idle = primary ? Hex.rye : Hex.parchmentDim;
+    txt.on('pointerover', () => txt.setColor(Hex.ryeBright));
+    txt.on('pointerout', () => txt.setColor(idle));
+    return {
+      txt,
+      refresh: () => {
+        txt.setText(t(label) + (primary ? '  ▸' : ''));
+        place();
+      },
+    };
+  }
+
+  /** The year as a picture, to the share sheet or a download. */
+  private share(
+    pick: 'leave' | 'take' | 'all' | 'spare',
+    jGood: boolean,
+    vGood: boolean,
+    velnsRow: Loc,
+    kind: 'both' | 'half' | 'neither',
+    note: Loc,
+    year: Loc,
+  ): void {
+    const run = state.get();
+    const canvas = renderShareCard(this, {
+      title: 'VECĀS VARAS',
+      subtitle: ui.subtitle,
+      year: run.year > 1 ? year : null,
+      heading: tally.heading,
+      marks: [
+        { key: 'jumis', complete: jGood, label: tally.rowJumis[pick] },
+        { key: 'crossing', complete: vGood, label: velnsRow },
+      ],
+      verdict: tally[kind],
+      note,
+      url: SHARE_URL,
+    });
+    const name = `vecas-varas-${run.year}.png`;
+    void shareCard(canvas, name, `${t(tally[kind])} — ${SHARE_URL}`).then((result) => {
+      if (result === 'shared' || !this.scene.isActive()) return;
+      const msg = this.add
+        .text(Layout.width / 2, Layout.height * 0.93, t(result === 'saved' ? ui.shareSaved : ui.shareFailed), {
+          fontFamily: Fonts.body,
+          fontSize: px(20),
+          color: Hex.parchmentDim,
+        })
+        .setOrigin(0.5)
+        .setDepth(730)
+        .setAlpha(0);
+      this.tweens.add({ targets: msg, alpha: 1, duration: 250, yoyo: true, hold: 2200, onComplete: () => msg.destroy() });
+    });
   }
 }

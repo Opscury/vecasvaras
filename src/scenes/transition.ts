@@ -18,14 +18,14 @@ export function fadeIn(scene: Phaser.Scene, duration: number = Timing.fade): voi
  * clicked while the frame is already going dark, is ignored instead of
  * queueing the next scene to start twice.
  */
-export function goTo(scene: Phaser.Scene, key: string): void {
+export function goTo(scene: Phaser.Scene, key: string, data?: object): void {
   if (leaving.has(scene)) return;
   leaving.add(scene);
   // Phaser reuses scene instances, so the flag has to come off on the way out
   // or the next visit to this scene could never leave.
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => leaving.delete(scene));
   const cam = scene.cameras.main;
-  cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => scene.scene.start(key));
+  cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => scene.scene.start(key, data));
   // `fade` is fadeOut with a force flag. Forced, because a fade-out requested
   // while the fade-in is still running is otherwise dropped — and then the
   // completion event above never comes.

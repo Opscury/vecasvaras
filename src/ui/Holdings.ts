@@ -1,23 +1,26 @@
 import Phaser from 'phaser';
 import { i18n, t } from '../core/i18n';
 import { village } from '../content/script';
-import { BREAD_CAP, ROAD_CAP, type Holdings as Held, type RoadState, holdings, roadsOpen } from '../core/holdings';
-import { state, type Outcome } from '../core/state';
+import {
+  BREAD_CAP,
+  ROAD_CAP,
+  type Holdings as Held,
+  type HoldingsSource,
+  type RoadState,
+  holdings,
+  roadsOpen,
+} from '../core/holdings';
+import { state } from '../core/state';
 import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { audio } from '../core/audio';
 
 /**
  * The village's standing, in the top-right corner, for the whole game.
  *
- * Two rows, because the village only thinks about two things. Bread is a store
- * with a lid on it: six cells, filled from what comes home, and meant to be
- * spent again later — so the empty half of the row is the point, not an
- * oversight. Roads are a chain: one link per way out of the valley, opened one
- * at a time, drawn joined so it is obvious they lead somewhere and that the
- * chain does not stop at the end of what is built.
- *
- * It replaces a pair of two-dot rows under the objective, which read as a
- * score for the last errand rather than as anything the village kept.
+ * Two rows, because the village only thinks about two things. Bread is what
+ * the harvest came to once Anna threshed it; roads are the ways out of the
+ * valley, drawn joined so it is obvious they lead somewhere. Both rows are
+ * exactly as long as the year can fill.
  */
 const BREAD_PITCH = 21;
 const BREAD_W = 15;
@@ -44,7 +47,7 @@ export class Holdings {
    * walk back in, and fills a moment later in front of them — which is the
    * whole reason for having it on screen.
    */
-  constructor(scene: Phaser.Scene, from?: { jumis: Outcome; velns: Outcome }) {
+  constructor(scene: Phaser.Scene, from?: HoldingsSource) {
     this.scene = scene;
     this.shown = holdings(from ?? state.get());
 
@@ -98,6 +101,32 @@ export class Holdings {
 
   private get plateH(): number {
     return scaled(14) + 2 * scaled(38) + scaled(2);
+  }
+
+  /** Screen position of the next empty bread cell — where a threshed loaf flies to. */
+  get breadSlot(): { x: number; y: number } {
+    const i = Math.min(this.shown.bread, BREAD_CAP - 1);
+    const g = this.cells[i];
+    return { x: this.root.x + g.x + scaled(BREAD_W) / 2, y: this.root.y + g.y };
+  }
+
+  /** Fills one more bread cell, in front of the player: a loaf arriving. */
+  addLoaf(): void {
+    if (this.shown.bread >= BREAD_CAP) return;
+    const i = this.shown.bread;
+    this.shown = { ...this.shown, bread: i + 1 };
+    this.layout();
+    const g = this.cells[i];
+    this.paintCell(g, true);
+    g.setScale(0.2);
+    this.scene.tweens.add({ targets: g, scale: 1, duration: 520, ease: 'Back.easeOut' });
+    this.pulse();
+    audio.play('tally', { volume: 0.5 });
+  }
+
+  /** A brief brightening of the whole panel, so the eye goes to it. */
+  pulse(): void {
+    this.scene.tweens.add({ targets: this.plate, alpha: { from: 0.4, to: 1 }, duration: 500, ease: 'Quad.easeOut' });
   }
 
   /**

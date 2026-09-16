@@ -1,0 +1,88 @@
+/**
+ * The bog, the long way: the cat goes first, the light lures you into the
+ * moss, the first riddle is fumbled and the second answered, and the night's
+ * planks go down before the good loaf is thrown.
+ */
+export default [
+  () => __h.start('Velns'),
+  { wait: 2600 },
+  { shot: 'daina' },
+  () => __h.card('Velns'),
+  { wait: 1400 },
+  () => __h.next('Velns'),
+  { wait: 700 },
+  () => __h.next('Velns'),
+  { wait: 2200 },
+  { shot: 'cat-ahead' },
+  { wait: 2600 },
+  { shot: 'cat-at-first-plank' },
+  // The lured hummock: back to the bank.
+  () => {
+    const v = __h.scene('Velns');
+    const lured = v.spots.filter((s) => s.id === 'hummock')[v.lureAt];
+    lured.activate();
+  },
+  { wait: 1200 },
+  { shot: 'lured-back' },
+  () => __h.spot('Velns', 'plank0').activate(),
+  { wait: 2200 },
+  () => __h.spot('Velns', 'plank1').activate(),
+  { wait: 2600 },
+  { shot: 'cat-ahead-2' },
+  { wait: 2000 },
+  { shot: 'frog-ripple' },
+  () => __h.spot('Velns', 'plank2').activate(),
+  { wait: 4200 },
+  { shot: 'devil-cat-back' },
+  { wait: 1500 },
+  () => __h.log('greeting', __h.scene('Velns').narration.queue.length),
+  () => __h.next('Velns'),
+  { wait: 500 },
+  () => __h.next('Velns'),
+  { wait: 500 },
+  () => __h.next('Velns'),
+  { wait: 500 },
+  () => __h.type('Velns'),
+  () => __h.log('choices at riddle', __h.scene('Velns').narration.choices.length),
+  { shot: 'riddle-gust' },
+  () => __h.pick('Velns', 0),
+  { wait: 900 },
+  () => __h.next('Velns'),
+  { wait: 800 },
+  { shot: 'riddle-two' },
+  () => __h.pick('Velns', 2),
+  { wait: 900 },
+  () => __h.next('Velns'),
+  { wait: 800 },
+  () => __h.type('Velns'),
+  { shot: 'terms-night-begins' },
+  () => __h.next('Velns'),
+  { wait: 12000 },
+  { shot: 'night-planks' },
+  { wait: 14000 },
+  { shot: 'list-and-more-planks' },
+  () => {
+    const v = __h.scene('Velns');
+    v.narration.hide();
+    v.bagUi.take('bread');
+  },
+  { wait: 300 },
+  () => __h.scene('Velns').bagUi.offer(1000, 520),
+  { wait: 700 },
+  { shot: 'bread-thrown' },
+  { wait: 1500 },
+  () => __h.next('Velns'),
+  { wait: 600 },
+  () => __h.next('Velns'),
+  { wait: 900 },
+  () => __h.type('Velns'),
+  { shot: 'argued' },
+  () => __h.next('Velns'),
+  { wait: 1200 },
+  () => __h.type('Velns'),
+  { shot: 'cock-bridge-done' },
+  () => __h.next('Velns'),
+  { wait: 5200 },
+  { shot: 'reckoning' },
+  () => __h.log('state', __h.state(), 'bag', localStorage.getItem('vecasvaras.bag.v1'), 'lore', localStorage.getItem('vecasvaras.lore.v1')),
+];

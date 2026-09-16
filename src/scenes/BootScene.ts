@@ -3,6 +3,7 @@ import { t } from '../core/i18n';
 import { ui } from '../content/script';
 import { Palette, Hex, Fonts, Layout, px, scaled } from '../core/theme';
 import { assertDainasVerified } from '../content/dainas';
+import { assertBeliefsVerified } from '../content/ticejumi';
 import { TITLE_ASSETS, missingFrom, queueMissing, reportLoadErrors } from './assets';
 import { padHit } from '../ui/hit';
 
@@ -44,6 +45,7 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     assertDainasVerified();
+    assertBeliefsVerified();
 
     const missing = missingFrom(this, TITLE_ASSETS);
     if (missing.length) {

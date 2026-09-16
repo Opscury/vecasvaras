@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { intro } from '../content/script';
 import { state } from '../core/state';
+import { ledger } from '../core/ledger';
+import { perfectYear } from '../core/rules';
 import { Layout, Palette, Timing } from '../core/theme';
 import { Narration } from '../ui/Narration';
 import { Chrome } from '../ui/Chrome';
@@ -70,7 +72,19 @@ export class IntroScene extends Phaser.Scene {
       this.leave();
     });
 
-    this.narration.say(intro.lines, () => this.leave());
+    this.narration.say(this.lines(), () => this.leave());
+  }
+
+  /**
+   * The first telling gets the whole opening. A later one gets a year gone by
+   * and what the stone remembers of it — the village is back as it was; the
+   * record is not.
+   */
+  private lines() {
+    const last = ledger.last;
+    if (!last) return intro.lines;
+    const good = perfectYear({ jumisPick: last.jumisPick, velns: last.velns, catLost: last.catLost, bread: last.bread });
+    return [intro.again, good ? intro.rememberGood : intro.rememberPoor];
   }
 
   private leave(): void {

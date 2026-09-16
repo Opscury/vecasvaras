@@ -164,6 +164,84 @@ export function makeBird(scene: Phaser.Scene, key = 'fx-bird'): string {
   return key;
 }
 
+/**
+ * A crow on the ground, side on: a body, a head, a beak, a tail. Drawn once,
+ * tinted and flipped per bird. Small enough that three blobs are a bird.
+ */
+export function makeGroundBird(scene: Phaser.Scene, key = 'fx-groundbird'): string {
+  const w = 40;
+  const h = 26;
+  const tex = canvas(scene, key, w, h);
+  if (!tex) return key;
+  const ctx = tex.getContext();
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = 'rgba(255,255,255,1)';
+  ctx.beginPath();
+  ctx.ellipse(18, 15, 11, 7, -0.15, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(29, 9, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(33, 8);
+  ctx.lineTo(39, 10);
+  ctx.lineTo(33, 11);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(8, 13);
+  ctx.lineTo(1, 11);
+  ctx.lineTo(8, 18);
+  ctx.fill();
+  ctx.fillRect(16, 21, 1.5, 5);
+  ctx.fillRect(21, 21, 1.5, 5);
+  tex.refresh();
+  return key;
+}
+
+/**
+ * A fresh plank, for the bridge the Devil lays. Pale new wood with grain, so
+ * it reads as just cut against the grey old causeway it is laid over.
+ */
+export function makePlank(scene: Phaser.Scene, key = 'fx-plank'): string {
+  const w = 256;
+  const h = 40;
+  const tex = canvas(scene, key, w, h);
+  if (!tex) return key;
+  const ctx = tex.getContext();
+  ctx.clearRect(0, 0, w, h);
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, '#e7d7b6');
+  g.addColorStop(0.55, '#cdb58b');
+  g.addColorStop(1, '#8f7652');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(3, 4);
+  ctx.lineTo(w - 2, 2);
+  ctx.lineTo(w - 4, h - 3);
+  ctx.lineTo(1, h - 2);
+  ctx.closePath();
+  ctx.fill();
+  let s = 4242;
+  const rnd = () => {
+    s = (s * 1664525 + 1013904223) % 4294967296;
+    return s / 4294967296;
+  };
+  for (let i = 0; i < 14; i++) {
+    const y = 5 + rnd() * (h - 10);
+    ctx.strokeStyle = `rgba(90,66,40,${0.18 + rnd() * 0.2})`;
+    ctx.lineWidth = 1 + rnd();
+    ctx.beginPath();
+    ctx.moveTo(2, y);
+    ctx.bezierCurveTo(w * 0.3, y + rnd() * 4 - 2, w * 0.7, y + rnd() * 4 - 2, w - 2, y + rnd() * 3 - 1.5);
+    ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(70,50,30,0.55)';
+  ctx.fillRect(1, 3, 5, h - 6);
+  ctx.fillRect(w - 6, 3, 5, h - 6);
+  tex.refresh();
+  return key;
+}
+
 /** Everything the atmosphere module needs, made once per scene. */
 export function ensureFxTextures(scene: Phaser.Scene): void {
   makeBlob(scene);

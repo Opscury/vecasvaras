@@ -23,6 +23,16 @@ unverified and confirm before a public release or a grant submission.**
 
 No attribution is required by Picsart. Attribution is given here for the project's own records.
 
+## Audio — synthesised
+
+`mus_kokle_jumis` · `mus_kokle_velns` · `sfx_frog` · `sfx_gust` · `sfx_splash` · `sfx_sheaf` ·
+`sfx_chime`
+
+Made from nothing by `tools/build_synth.py` (NumPy/SciPy, encoded with ffmpeg) in September 2026:
+no samples, no generator service, no third-party material. The two kokle melodies were
+composed for this project in a traditional idiom and are not arrangements of any existing
+tune. Original work of the project; nothing to credit, nothing to clear.
+
 ## Audio — ambient beds
 
 Sourced from Freesound in September 2026, trimmed to their steadiest 30-second
@@ -51,6 +61,10 @@ right callback URL configured.
 ## Audio — still to commission
 
 **The Devil's laugh.** Needs a performer, not a generated clip.
+
+**The sung verses.** One line per verse card; slots `voice_jumis` / `voice_velns` exist in
+code. If a traditional melody is sung, it is public domain — credit the singer here, and the
+source of the tune.
 
 ---
 

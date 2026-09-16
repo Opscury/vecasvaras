@@ -14,6 +14,7 @@ import { ignoreKey, isAdvanceKey, markHandled } from './keys';
  *   3. the verdict lands
  *   4. what you gained
  *   5. (diminished only) what you should have done instead
+ *      or (a good outcome with a price) what it cost
  *
  * Step 5 is the one that turns "I have no idea if that was right" into a
  * lesson. It is only ever shown on a poor outcome; telling a player who did
@@ -29,6 +30,8 @@ export interface ReckoningOpts {
   verdict: Loc;
   gain: Loc;
   missed: Loc | null;
+  /** A good outcome that was paid for: the cat, the granary's loaf. */
+  cost?: Loc | null;
   onDone: () => void;
 }
 
@@ -99,14 +102,22 @@ export class Reckoning {
       colour: Hex.parchmentDim,
     });
 
+    const after = gain.y + gain.height + scaled(26);
     const missed = opts.missed
-      ? this.line(width / 2, height * 0.52 + scaled(152), opts.missed, {
+      ? this.line(width / 2, after, opts.missed, {
           size: px(25),
           colour: Hex.rye,
           italic: true,
           wrap: 980,
         })
-      : null;
+      : opts.cost
+        ? this.line(width / 2, after, opts.cost, {
+            size: px(24),
+            colour: Hex.mist,
+            italic: true,
+            wrap: 980,
+          })
+        : null;
 
     this.go = scene.add
       .text(width / 2, height * 0.88, t(ui.next) + '  ▸', {

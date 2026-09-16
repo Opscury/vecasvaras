@@ -17,5 +17,8 @@ Claude outputs/
 # scratch archive used to mirror the repo into a screenshot sandbox
 _vv_snapshot.zip
 
-# Screenshot harness output
-shots/
+# Screenshot harness output (the routes in tools/shots/ are kept)
+/shots/
+
+# Python bytecode from the audio tools
+__pycache__/

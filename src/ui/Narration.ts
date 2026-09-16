@@ -80,12 +80,8 @@ export class Narration {
     // The panel has no hard top edge — a straight black line cutting across a
     // painting is the fastest way to make a game look like a slideshow. Instead
     // the darkness ramps in over ~150px and the painting dissolves into it.
-    const rampH = scaled(150);
     this.plate = scene.add.graphics();
-    this.plate.fillGradientStyle(Palette.ink, Palette.ink, Palette.ink, Palette.ink, 0, 0, 0.9, 0.9);
-    this.plate.fillRect(0, top - rampH, width, rampH);
-    this.plate.fillStyle(Palette.ink, 0.9);
-    this.plate.fillRect(0, top, width, panelH + 2);
+    this.drawPlate(0);
 
     this.label = scene.add.text(panelPad, top + scaled(44), '', {
       fontFamily: Fonts.body,
@@ -139,6 +135,10 @@ export class Narration {
     this.onDone = after ?? null;
     this.markOpened();
     this.show();
+    // Say so now, not once the first line has finished typing: the bag stands
+    // down for a run of lines, and waiting left it fading out under the Next
+    // button just as that appeared.
+    this.signal();
     this.next();
   }
 
@@ -218,6 +218,21 @@ export class Narration {
   private fade(to: number, duration: number, ease: string): void {
     this.scene.tweens.killTweensOf(this.root);
     this.scene.tweens.add({ targets: this.root, alpha: to, duration, ease });
+  }
+
+  /**
+   * The dark plate, grown upward by `extra` when a decision needs more room
+   * than the panel has — a question and three answers at phone type size.
+   */
+  private drawPlate(extra: number): void {
+    const { width, height, panelH } = Layout;
+    const top = height - panelH - extra;
+    const rampH = scaled(150);
+    this.plate.clear();
+    this.plate.fillGradientStyle(Palette.ink, Palette.ink, Palette.ink, Palette.ink, 0, 0, 0.9, 0.9);
+    this.plate.fillRect(0, top - rampH, width, rampH);
+    this.plate.fillStyle(Palette.ink, 0.9);
+    this.plate.fillRect(0, top, width, panelH + extra + 2);
   }
 
   /** Called by the scene's global click handler. Returns true if it consumed the click. */
@@ -449,15 +464,23 @@ export class Narration {
 
   private buildChoices(): void {
     const { width, height, panelPad } = Layout;
-    const gap = Math.max(scaled(58), Layout.tap);
-    // Rows start under the lead-in line, however many lines it wrapped to.
-    const labelBottom = this.label.text
-      ? this.label.y + this.label.height + scaled(14)
-      : height - Layout.panelH + scaled(40);
-    const startY = Math.min(
-      Math.max(height - scaled(210), labelBottom),
-      height - this.choices.length * gap - scaled(6),
-    );
+    // The lead-in sits at the top of the panel and the rows stack under it.
+    // At phone type size a question and three thumb-sized rows are taller
+    // than the panel, and the old layout pushed the first row up onto the
+    // question. Now the rows give up some height first, down to a floor, and
+    // if that is still not enough the plate grows upward to fit.
+    const rows = this.choices.length;
+    const bottomPad = scaled(10);
+    const labelTop = height - Layout.panelH + scaled(26);
+    const labelH = this.label.text ? this.label.height + scaled(16) : scaled(14);
+    const room = height - bottomPad - labelTop;
+    const floor = scaled(58);
+    let gap = Math.max(floor, Layout.tap);
+    if (labelH + rows * gap > room) gap = Math.max(floor, Math.floor((room - labelH) / Math.max(1, rows)));
+    const extra = Math.max(0, labelH + rows * gap - room);
+    this.drawPlate(extra);
+    if (this.label.text) this.label.setY(labelTop - extra);
+    const startY = labelTop - extra + labelH;
     // The hit area is the whole ROW, not the glyphs — a short option like "The
     // wind." is barely a hundred pixels of text. But it stops short of the bag
     // in the bottom-right corner, which used to catch clicks meant for the
@@ -465,8 +488,8 @@ export class Narration {
     const rowW = width - panelPad * 2 - scaled(260);
 
     this.choices.forEach((c, idx) => {
-      const y = startY + idx * gap;
-      const txt = this.scene.add.text(panelPad + scaled(26), y, '— ' + t(c.label), {
+      const rowTop = startY + idx * gap;
+      const txt = this.scene.add.text(panelPad + scaled(26), rowTop, '— ' + t(c.label), {
         fontFamily: Fonts.body,
         fontSize: px(27),
         color: Hex.parchmentDim,
@@ -475,7 +498,8 @@ export class Narration {
 
       // Rows tile: each hit box is exactly one row tall, so there is no gap
       // between options to click into and no overlap to click the wrong one.
-      const pad = (gap - txt.height) / 2;
+      const pad = Math.max(0, (gap - txt.height) / 2);
+      txt.setY(rowTop + pad);
       txt.setInteractive({
         hitArea: new Phaser.Geom.Rectangle(-scaled(26), -pad, rowW, Math.max(gap, txt.height)),
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
@@ -502,10 +526,6 @@ export class Narration {
       );
       this.choiceBox.add(txt);
     });
-    // Nudge the lead-in text up so it never collides with the option list.
-    if (this.choices.length) {
-      this.label.setY(height - Layout.panelH + scaled(26));
-    }
   }
 
   private pick(c: Choice): void {
@@ -516,9 +536,11 @@ export class Narration {
   }
 
   private clearChoices(): void {
+    const had = this.choices.length > 0 || this.choiceBox.length > 0;
     this.choices = [];
     this.choiceBox.removeAll(true);
     this.label.setY(Layout.height - Layout.panelH + scaled(44));
+    if (had) this.drawPlate(0);
   }
 
   private redraw(): void {

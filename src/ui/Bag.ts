@@ -7,11 +7,13 @@ import { items } from '../content/script';
 import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { SPEAKING } from './Hotspot';
 import { Notice } from './Notice';
+import { once } from '../core/once';
+import { loafFrom } from '../core/rules';
 import { ignoreKey, keysOf, markHandled } from './keys';
 import { audio } from '../core/audio';
 
-/** Registry flag: the bag has introduced itself this session. */
-const TAUGHT = 'bagTaught';
+/** The bag introduces itself once per install, not once per page load. */
+const TAUGHT = 'bagIntro';
 
 /** How far a finger must travel for a tray press to count as a drag rather than a tap. */
 const DRAG_SLOP = 40;
@@ -23,8 +25,11 @@ const DRAG_SLOP = 40;
  * Devil tells them.
  */
 function noteFor(id: ItemId): Loc {
-  const year = state.get().jumis;
-  if (id === 'bread' && year !== 'none') return year === 'good' ? items.breadNote.good : items.breadNote.poor;
+  const pick = state.get().jumisPick;
+  if (id === 'bread' && pick !== 'none') {
+    const loaf = loafFrom(pick);
+    return loaf === 'jumis' ? items.breadNote.jumis : loaf === 'good' ? items.breadNote.good : items.breadNote.poor;
+  }
   return ITEMS[id].note;
 }
 
@@ -72,6 +77,7 @@ export class Bag {
   private labelH = 0;
   private labelShown = false;
   private ghost: Phaser.GameObjects.Image | null = null;
+  private asideTimer: Phaser.Time.TimerEvent | null = null;
   private open = false;
   /** Whether the bag is meant to be on screen. Never read this off a mid-tween alpha. */
   private shown = false;
@@ -87,6 +93,12 @@ export class Bag {
   private closingToTake = false;
   /** Set while the narration is mid-sentence; the bag steps out of the corner. */
   private muted = false;
+  /**
+   * Things still in the bag as far as the run is concerned, but not in it on
+   * screen — the cat walking the planks ahead of the player. Not saved: a
+   * reload puts everything back where the run says it is.
+   */
+  private away = new Set<ItemId>();
   private offBag: () => void;
   private offLang: () => void;
 
@@ -329,12 +341,57 @@ export class Bag {
     });
   }
 
+  /**
+   * The reverse of `fly`: something leaves the bag for a point in the world —
+   * the cat hopping out, a crumb set down. Call it just after the `bag.remove`
+   * it illustrates, if there is one. `onLanded` fires when it gets there.
+   */
+  flyOut(texture: string, toX: number, toY: number, opts: { size?: number; onLanded?: () => void } = {}): void {
+    const fromX = this.root.x;
+    const fromY = this.root.y;
+    const img = this.scene.add.image(fromX, fromY, texture).setDepth(960);
+    const end = (opts.size ?? scaled(80)) / Math.max(img.width, img.height);
+    img.setScale(end * 0.5);
+    this.bump();
+    this.scene.tweens.addCounter({
+      from: 0,
+      to: 1,
+      duration: 460,
+      ease: 'Sine.easeInOut',
+      onUpdate: (tw) => {
+        const v = tw.getValue() ?? 0;
+        img.setPosition(
+          Phaser.Math.Linear(fromX, toX, v),
+          Phaser.Math.Linear(fromY, toY, v) - Math.sin(v * Math.PI) * 120,
+        );
+        img.setScale(end * (0.5 + 0.5 * v));
+      },
+      onComplete: () => {
+        img.destroy();
+        opts.onLanded?.();
+      },
+    });
+  }
+
+  /** Hides an item from the tray without taking it out of the run. */
+  setAway(id: ItemId, on: boolean): void {
+    if (on) this.away.add(id);
+    else this.away.delete(id);
+    if (this.open) this.rebuildTray();
+  }
+
+  /** Where the bag hangs, for anything that flies to or from it. */
+  get anchor(): { x: number; y: number } {
+    return { x: this.root.x, y: this.root.y };
+  }
+
   /** Puts the held item back. It visibly travels home, so even a cancel reads as one. */
   putBack(): void {
     const ghost = this.ghost;
     this.setHeld(null);
     this.ghost = null;
     this.hideLabel();
+    this.hideAside();
     if (!ghost) return;
     this.scene.tweens.add({
       targets: ghost,
@@ -356,6 +413,7 @@ export class Bag {
     this.ghost = null;
     this.setHeld(null);
     this.hideLabel();
+    this.hideAside();
   }
 
   /** Offers the held item to the scene at a point in the world. */
@@ -392,14 +450,25 @@ export class Bag {
     this.restack();
     this.scene.tweens.killTweensOf(this.teach);
     this.scene.tweens.add({ targets: this.teach, alpha: 1, duration: 220, ease: 'Quad.easeOut' });
-    this.scene.time.delayedCall(ms, () => {
+    // One timer at a time: an older line's fade must not cut a newer one short.
+    this.asideTimer?.remove(false);
+    this.asideTimer = this.scene.time.delayedCall(ms, () => {
+      this.asideTimer = null;
       this.scene.tweens.add({ targets: this.teach, alpha: 0, duration: 420, ease: 'Quad.easeIn' });
     });
   }
 
+  /** "X in hand" is over once nothing is — put back or given away. */
+  private hideAside(): void {
+    this.asideTimer?.remove(false);
+    this.asideTimer = null;
+    this.scene.tweens.killTweensOf(this.teach);
+    this.scene.tweens.add({ targets: this.teach, alpha: 0, duration: 160, ease: 'Quad.easeIn' });
+  }
+
   /** Takes an item out of the bag and into the player's hand. */
   private take(id: ItemId): void {
-    if (!bag.has(id)) return;
+    if (!bag.has(id) || this.away.has(id)) return;
     // Set after the guard: an early return here used to leave the flag stuck
     // true and silence every bag-close for the rest of the run.
     this.closingToTake = true;
@@ -431,7 +500,7 @@ export class Bag {
       else this.toggle();
       markHandled(ev);
     } else if (this.open && /^[1-9]$/.test(k)) {
-      const id = bag.list()[Number(k) - 1];
+      const id = bag.list().filter((i) => !this.away.has(i))[Number(k) - 1];
       if (id) {
         this.take(id);
         // No pointer is involved, so the item waits at the focused thing, or mid-frame.
@@ -475,9 +544,7 @@ export class Bag {
    * what it was. It is a system, it arrives once, and it gets a card.
    */
   private maybeIntroduce(): void {
-    const reg = this.scene.registry;
-    if (reg.get(TAUGHT)) return;
-    reg.set(TAUGHT, true);
+    if (!once.mark(TAUGHT)) return;
     new Notice(this.scene, {
       title: items.intro.title,
       body: items.intro.body,
@@ -494,7 +561,7 @@ export class Bag {
     this.tray.removeAll(true);
     if (!this.open) return;
 
-    const ids = bag.list();
+    const ids = bag.list().filter((id) => !this.away.has(id));
     ids.forEach((id, i) => {
       const def = ITEMS[id];
       // The tray opens leftward, away from the screen edge the bag sits on.

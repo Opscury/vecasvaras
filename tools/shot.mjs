@@ -41,11 +41,17 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(file).pipe(res);
 });
 
-const PORT = 4173;
+const PORT = Number(process.env.SHOT_PORT ?? 4173);
 await new Promise((r) => server.listen(PORT, r));
 
+// The sandbox this was written in keeps its Chromium here. Anywhere else,
+// Playwright's own (`npx playwright install chromium`), or CHROMIUM_PATH.
+const SANDBOX_CHROMIUM = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const executablePath =
+  process.env.CHROMIUM_PATH ?? (fs.existsSync(SANDBOX_CHROMIUM) ? SANDBOX_CHROMIUM : undefined);
+
 const browser = await chromium.launch({
-  executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  executablePath,
   args: [
     '--autoplay-policy=no-user-gesture-required',
     // Without these the renderer is treated as backgrounded and rAF all but
@@ -152,6 +158,109 @@ await page.evaluate(() => {
   };
 });
 
+// Small helpers for the scripts, installed in the page. Scripts are
+// serialised functions, so anything they share has to live over there.
+await page.evaluate(() => {
+  const g = window.__game;
+  window.__h = {
+    scene: (k) => g.scene.getScene(k),
+    start: (k, data) => {
+      g.scene.getScenes(true).forEach((s) => g.scene.stop(s.scene.key));
+      g.scene.start(k, data);
+    },
+    type: (k) => g.scene.getScene(k).narration.finishTyping(),
+    next: (k) => {
+      const n = g.scene.getScene(k).narration;
+      n.finishTyping();
+      n.advance();
+    },
+    pick: (k, i) => {
+      const n = g.scene.getScene(k).narration;
+      n.pick(n.choices[i]);
+    },
+    /** Clicks the full-screen card on top: the verse, or the reckoning. */
+    card: (k) => {
+      const s = g.scene.getScene(k);
+      const hit = s.children.list
+        .filter((o) => o.type === 'Zone' && (o.depth === 810 || o.depth === 840))
+        .pop();
+      hit?.emit('pointerdown', { button: 0 }, 0, 0, { stopPropagation() {} });
+    },
+    spot: (k, id) => g.scene.getScene(k).spots.find((h) => h.id === id),
+    sweep: (k, ys, x0 = 60, x1 = 1900) => {
+      const j = g.scene.getScene(k);
+      for (const y of ys) {
+        j.strokeFrom = { x: x0, y };
+        for (let x = x0; x <= x1; x += 40) j.strike(x, y);
+        j.protectTuft();
+        j.strokeFrom = null;
+      }
+    },
+    /**
+     * Reads on through every line queued — and whatever those lines start —
+     * stopping at a decision or once the panel is empty. Returns lines read.
+     */
+    drain: (k, max = 30) => {
+      for (let i = 0; i < max; i++) {
+        const x = g.scene.getScene(k).narration;
+        if (!g.scene.isActive(k) || !x || x.choices.length || (!x.current && !x.queue.length && !x.typing)) return i;
+        x.finishTyping();
+        x.advance();
+        window.__advance(300);
+      }
+      return max;
+    },
+    /** Steps game time until the panel has something up, or `max` ms pass. */
+    waitSay: (k, max = 8000) => {
+      for (let t = 0; t < max; t += 250) {
+        const x = g.scene.getScene(k).narration;
+        if (x && (x.current || x.queue.length || x.typing || x.choices.length)) return t;
+        window.__advance(250);
+      }
+      return -1;
+    },
+    /** Presses a text button by (part of) its label, in whichever language is up. */
+    press: (k, ...labels) => {
+      const s = g.scene.getScene(k);
+      const btn = s.children.list
+        .filter((o) => o.type === 'Text' && labels.some((l) => o.text.includes(l)))
+        .pop();
+      if (!btn) throw new Error(`no button "${labels.join('" / "')}" in ${k}`);
+      btn.emit('pointerdown', { button: 0 }, 0, 0, { stopPropagation() {} });
+    },
+    /** Takes an item from the bag and offers it at a hotspot, as a tap would. */
+    use: (k, item, spotId) => {
+      const s = g.scene.getScene(k);
+      const at = s.spots.find((h) => h.id === spotId).center;
+      s.bagUi.take(item);
+      s.bagUi.offer(at.x, at.y);
+    },
+    /** A key press, as the browser would deliver it. */
+    key: (key) => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      window.__advance(50);
+      window.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
+    },
+    /** Downloads land in window.__grab as a data URL, for a { grab } step. */
+    catchDownload: () => {
+      window.__grab = null;
+      URL.createObjectURL = (blob) => {
+        const r = new FileReader();
+        r.onload = () => (window.__grab = r.result);
+        r.readAsDataURL(blob);
+        return 'data:text/plain,x';
+      };
+    },
+    /** Where the panel is: for DBG lines when a script loses its place. */
+    nar: (k) => {
+      const n = g.scene.getScene(k).narration;
+      return { busy: n.busy, idle: n.idle, choices: n.choices.length, queue: n.queue.length, line: n.label?.text?.slice(0, 40) };
+    },
+    state: () => JSON.parse(localStorage.getItem('vecasvaras.save.v3') || '{}'),
+    log: (...a) => console.log('DBG', ...a.map((v) => (typeof v === 'string' ? v : JSON.stringify(v)))),
+  };
+});
+
 const name = process.argv[2] ?? 'field';
 const steps = (await import(`./shots/${name}.mjs`)).default;
 
@@ -161,6 +270,13 @@ for (const step of steps) {
     await page.evaluate(step);
   } else if (step.wait) {
     await page.evaluate((ms) => window.__advance(ms), step.wait);
+  } else if (step.grab) {
+    const handle = await page.waitForFunction(() => window.__grab, null, { timeout: 15000 });
+    const url = await handle.jsonValue();
+    const file = path.join(out, `${name}-${String(++n).padStart(2, '0')}-${step.grab}.png`);
+    fs.writeFileSync(file, Buffer.from(url.split(',')[1], 'base64'));
+    await page.evaluate(() => (window.__grab = null));
+    console.log('wrote', file);
   } else if (step.shot) {
     await page.evaluate(() => window.__paint());
     const file = path.join(out, `${name}-${String(++n).padStart(2, '0')}-${step.shot}.png`);

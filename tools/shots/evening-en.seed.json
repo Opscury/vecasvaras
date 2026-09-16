@@ -1,0 +1,43 @@
+{
+ "vecasvaras.save.v3": {
+  "year": 1,
+  "jumis": "good",
+  "jumisPick": "leave",
+  "sheaves": 8,
+  "fieldMask": "",
+  "velns": "good",
+  "velnsPick": "bread",
+  "catLost": false,
+  "devilGone": false,
+  "crumb": true,
+  "introSeen": true,
+  "outroSeen": false,
+  "metElder": true,
+  "jumisPaid": true,
+  "velnsPaid": false,
+  "scene": "Village",
+  "shown": {
+   "jumis": "good",
+   "jumisPick": "leave",
+   "jumisPaid": true,
+   "sheaves": 8,
+   "velns": "none"
+  }
+ },
+ "vecasvaras.bag.v1": [
+  "sickle",
+  "cat"
+ ],
+ "vecasvaras.seen.v1": [
+  "bagIntro",
+  "daina:jumis",
+  "daina:velns"
+ ],
+ "vecasvaras.lore.v1": [
+  "jumis",
+  "maize",
+  "gailis",
+  "pirmaisKumoss"
+ ],
+ "vecasvaras.lang": "en"
+}

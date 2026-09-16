@@ -1,0 +1,15 @@
+{
+  "vecasvaras.save.v2": {
+    "jumis": "good",
+    "velns": "poor",
+    "introSeen": true,
+    "outroSeen": false,
+    "metElder": true,
+    "jumisPaid": true,
+    "velnsPaid": true,
+    "scene": "Village"
+  },
+  "vecasvaras.bag.v1": [],
+  "bagTaught": "1",
+  "vecasvaras.lang": "lv"
+}

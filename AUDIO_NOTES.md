@@ -1,8 +1,11 @@
 # Audio — implemented
 
-Sound is in and working. Twelve one-shots, three ambient beds, one audio system, wired to
-every place in the game that should make a noise. **1.6 MB total** in `public/audio/`
-(ogg + m4a, so a browser downloads about half that).
+Sound is in and working. Seventeen one-shots, two kokle lines, three ambient beds, one audio
+system, wired to every place in the game that should make a noise. About **2.6 MB total** in
+`public/audio/` (ogg + m4a, so a browser downloads about half that).
+
+Twelve of the one-shots are generated and processed (below); five, and both kokle lines, are
+synthesised from nothing by `tools/build_synth.py`, so there is no licence question for them.
 
 ## The system — `src/core/audio.ts`
 
@@ -38,8 +41,27 @@ should be actually quiet.
 | `bagOpen` / `bagClose` | `Bag.setOpen()` |
 | `carve1/2/3` | `SignMark.carve()`, one stroke per stroke of the mark, cycled so no two repeat back to back |
 | `cat` | Picking the cat up in the village, and again when it walks the planks |
-| `cock` | The last line of both winning bread outcomes |
-| `tally` | `OutroScene.showTally()`, one knock as each debt is scored |
+| `cock` | The last line of the winning bread outcomes; the dawn, when nothing was paid |
+| `tally` | `OutroScene.showTally()`, one knock as each debt is scored; each plank the Devil lays; a loaf reaching the bread row |
+| `frog` | `VelnsScene.frogHint()` — a croak and a ring on the water from the plank that will hold |
+| `splash` | A wrong step on the causeway; the Jumis ear pulled from the ground, pitched up |
+| `gust` | The wind riddle — with the reed shader, the mist and a two-second swell of the bed |
+| `sheaf` | The double ear bent down and tied |
+| `chime` | A belief found (`Lore.showLoreToast`); the crumb landing at the stone |
+
+And two longer pieces, through `audio.music()` rather than `play()`, so mute reaches them
+mid-phrase:
+
+| Tune | Plays |
+|---|---|
+| `kokleJumis` | as the harvest starts, under the verse card — the card is shown once per install, the tune every time |
+| `kokleVelns` | the same, at the bog |
+| `voiceJumis` / `voiceVelns` | **empty slots** — a sung line over the kokle, 600 ms in. See below. |
+
+`audio.bedLevel(gain, ms)` scales the current bed without changing it: the gust swells the
+bog to 1.35 for a moment, and from the first grey in the east the frogs thin to 0.35 over the
+thirty seconds before the cocks. A new level replaces the one in progress rather than racing
+it, and changing beds resets it.
 
 Two implementation notes on those:
 
@@ -68,6 +90,26 @@ envelope to *stay* below the floor for 70 ms — without that hold, a momentary 
 sickle's shear tail off at 170 ms. And five of the twelve — all three carves, the mallet and
 the crow — came back as continuous textures with no gap to find at all, so those use
 `window_hit()`, a fixed window on the loudest peak.
+
+## The synthesised sounds — `tools/build_synth.py`
+
+    cd tools && python3 build_synth.py      # numpy, scipy, ffmpeg; deterministic
+
+**The kokle** is Karplus-Strong: a burst of noise in a delay line one period long, averaged on
+every pass — a plucked string in a few lines — with a body resonance and a short room after.
+The two lines are written for this game in the idiom of Latvian recitative song (narrow range,
+repeated notes, a falling cadence onto the tonic): G mixolydian for the harvest, D dorian and
+slower for the bog. **They are not transcriptions of any traditional tune** — if a real
+melody is wanted, the dainas' own tunes are public domain and a recording can replace these
+files without a code change.
+
+The five one-shots are built from the same kit: the frog is two runs of short resonant
+pings (a common frog's purr), band-passed; the gust is noise under a band that sweeps up and
+back, with some brown noise under it, panned left to right; the splash is a noise slap under
+a falling low-pass with a few rising-sine bubbles after; the sheaf is a soft low thump and a
+spill of dry crackle; the chime is one kokle pluck and its fifth, left to ring. Peaks sit at
+−2 dBFS (−3 for the stereo gust, the chime and the kokle lines) and the encoding is
+`build_audio.py`'s.
 
 ## The beds
 
@@ -110,6 +152,12 @@ One thing fixed during testing: taking an item out of the bag fired `bagOpen` th
 the tray is shutting as a side effect of `take()` rather than because the player closed it.
 
 ## Still open
+
+**The sung verses.** The biggest atmosphere upgrade left, and it wants a person: one sung line
+per verse card, unaccompanied or over the kokle, recorded on a phone in a quiet room is enough.
+Save it as `public/audio/voice_jumis.ogg` + `.m4a` (and `voice_velns`), then add `'voiceJumis'`
+/ `'voiceVelns'` to `SHIPPED_TUNES` in `core/audio.ts` — nothing else changes. Until then the
+loader does not ask for the files.
 
 **The Devil's laugh.** Unchanged: it wants a person. Generated laughter lands cartoonish or
 uncanny, and it is the one sound in the game with a character behind it. There is no cue slot

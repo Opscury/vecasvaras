@@ -4,6 +4,13 @@ import { dainas, dainaText } from '../content/dainas';
 import { ui } from '../content/script';
 import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { ignoreKey, isAdvanceKey, markHandled } from './keys';
+import { once } from '../core/once';
+import { audio, type Tune } from '../core/audio';
+
+const TUNES: Record<keyof typeof dainas, { kokle: Tune; voice: Tune }> = {
+  jumis: { kokle: 'kokleJumis', voice: 'voiceJumis' },
+  velns: { kokle: 'kokleVelns', voice: 'voiceVelns' },
+};
 
 /**
  * The epigraph that opens each encounter: the verse, in the language being
@@ -16,6 +23,25 @@ import { ignoreKey, isAdvanceKey, markHandled } from './keys';
  * the version people actually read.
  */
 export class DainaCard {
+  /**
+   * Opens an encounter on its verse — the first time. After that the verse is
+   * only heard: the kokle line plays under the arrival and the card is
+   * skipped, because a second year should not charge the full price again.
+   *
+   * Dainas are sung, not read. If a recording of the verse has been added (see
+   * `SHIPPED_TUNES` in audio.ts) it plays over the kokle.
+   */
+  static open(scene: Phaser.Scene, key: keyof typeof dainas, onDone: () => void): void {
+    const tunes = TUNES[key];
+    audio.music(tunes.kokle);
+    audio.music(tunes.voice, { delay: 600 });
+    if (!once.mark(`daina:${key}`)) {
+      onDone();
+      return;
+    }
+    new DainaCard(scene, key, onDone);
+  }
+
   private root: Phaser.GameObjects.Container;
   private verse: Phaser.GameObjects.Text;
   /** "Next ▸" at the foot of the card — a word, because a lone glyph read as decoration. */

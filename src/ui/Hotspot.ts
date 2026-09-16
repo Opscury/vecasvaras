@@ -20,6 +20,8 @@ import { audio } from '../core/audio';
 export const SPEAKING = 'narration-speaking';
 
 export interface HotspotOpts {
+  /** What this is, for a scene deciding what an item used on it should do. */
+  id?: string;
   x: number;
   y: number;
   /** Radius of the clickable circle. */
@@ -65,6 +67,18 @@ const registry = new WeakMap<Phaser.Scene, Hotspot[]>();
 /** The scene's hotspots, in the order they were made — the keyboard's Tab order. */
 export function hotspotsIn(scene: Phaser.Scene): Hotspot[] {
   return registry.get(scene) ?? [];
+}
+
+/**
+ * The live hotspot under a point, if any — for "what did the player use this
+ * item on". Later hotspots win, as they are drawn over earlier ones.
+ */
+export function hotspotAt(scene: Phaser.Scene, x: number, y: number): Hotspot | null {
+  const list = hotspotsIn(scene);
+  for (let i = list.length - 1; i >= 0; i--) {
+    if (list[i].live && list[i].contains(x, y)) return list[i];
+  }
+  return null;
 }
 
 /**
@@ -241,6 +255,24 @@ export class Hotspot {
   /** Clickable right now. */
   get live(): boolean {
     return this.enabled;
+  }
+
+  get id(): string | undefined {
+    return this.opts.id;
+  }
+
+  /** Whether a screen point is inside the clickable area. */
+  contains(x: number, y: number): boolean {
+    const w = this.opts.w ?? (this.opts.r ?? 60) * 2;
+    const h = this.opts.h ?? (this.opts.r ?? 60) * 2;
+    if (this.round) return Math.hypot(x - this.opts.x, y - this.opts.y) <= w / 2;
+    return Math.abs(x - this.opts.x) <= w / 2 && Math.abs(y - this.opts.y) <= h / 2;
+  }
+
+  /** Changes what the label says, for a thing that has become something else. */
+  setLabel(label: Loc): void {
+    this.opts.label = label;
+    this.tag.setText(t(label));
   }
 
   /** Screen position, for the keyboard's "use the held item here". */

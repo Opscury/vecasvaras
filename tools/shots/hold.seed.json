@@ -1,0 +1,17 @@
+{
+  "vecasvaras.save.v2": {
+    "jumis": "none",
+    "velns": "none",
+    "introSeen": true,
+    "outroSeen": false,
+    "metElder": true,
+    "jumisPaid": false,
+    "velnsPaid": false,
+    "scene": "Village"
+  },
+  "vecasvaras.bag.v1": [
+    "sickle"
+  ],
+  "bagTaught": "1",
+  "vecasvaras.lang": "lv"
+}

@@ -33,7 +33,36 @@ const CUES = {
   cat: { key: 'sfx_cat', volume: 0.55 },
   cock: { key: 'sfx_cock', volume: 0.6 },
   tally: { key: 'sfx_tally', volume: 0.6 },
+  // Synthesised in tools/build_synth.py — see AUDIO_NOTES.
+  frog: { key: 'sfx_frog', volume: 0.42 },
+  gust: { key: 'sfx_gust', volume: 0.5 },
+  splash: { key: 'sfx_splash', volume: 0.5 },
+  sheaf: { key: 'sfx_sheaf', volume: 0.42 },
+  chime: { key: 'sfx_chime', volume: 0.4 },
 } as const;
+
+/**
+ * Longer pieces that play over a scene rather than on an event: the kokle
+ * line under each encounter's verse, and — when someone records them — the
+ * verse sung. They go through `music()`, which keeps hold of them so a mute
+ * pressed halfway through actually silences them.
+ */
+const TUNES = {
+  kokleJumis: { key: 'mus_kokle_jumis', volume: 0.5 },
+  kokleVelns: { key: 'mus_kokle_velns', volume: 0.5 },
+  voiceJumis: { key: 'voice_jumis', volume: 0.9 },
+  voiceVelns: { key: 'voice_velns', volume: 0.9 },
+} as const;
+
+export type Tune = keyof typeof TUNES;
+
+/**
+ * Tunes whose files are actually in `public/audio/`. The sung verses need a
+ * singer; until there is a recording, their keys stay out of this list so the
+ * loader does not ask the server for files that are not there. Drop
+ * `voice_jumis.ogg`/`.m4a` into the folder and add `'voiceJumis'` here.
+ */
+const SHIPPED_TUNES: readonly Tune[] = ['kokleJumis', 'kokleVelns'];
 
 export type Cue = keyof typeof CUES;
 
@@ -62,6 +91,12 @@ class Audio {
   /** A bed asked for while still locked, replayed the moment we unlock. */
   private pending: Bed | null = null;
   private carveIndex = 0;
+  /** Long pieces currently sounding, so mute can reach them. */
+  private tunes = new Set<Phaser.Sound.BaseSound>();
+  /** Multiplier on the bed's own volume: the dawn thins the frogs, a gust swells the wind. */
+  private bedGain = 1;
+  /** The bed's level change in progress, if any. */
+  private levelTween: Phaser.Tweens.Tween | null = null;
 
   /** Called once from `main.ts` after the game exists. */
   attach(game: Phaser.Game): void {
@@ -107,6 +142,47 @@ class Audio {
     mgr.play(def.key, { volume: opts.volume ?? def.volume, rate });
   }
 
+  /**
+   * A longer piece — the kokle under a verse, a sung verse. Returns false if it
+   * could not play (muted, locked, or not in the build), so a caller can fall
+   * back to silence without asking why.
+   */
+  music(tune: Tune, opts: { volume?: number; delay?: number } = {}): boolean {
+    if (!this.enabled || this._muted || !this.unlocked) return false;
+    if (!SHIPPED_TUNES.includes(tune)) return false;
+    const def = TUNES[tune];
+    if (!this.game!.cache.audio.exists(def.key)) return false;
+    const snd = this.game!.sound.add(def.key, { volume: opts.volume ?? def.volume });
+    this.tunes.add(snd);
+    snd.once(Phaser.Sound.Events.COMPLETE, () => {
+      this.tunes.delete(snd);
+      snd.destroy();
+    });
+    snd.play({ delay: (opts.delay ?? 0) / 1000 });
+    return true;
+  }
+
+  /** Fades out everything `music()` started. */
+  stopMusic(fade = 600): void {
+    this.tunes.forEach((snd) => {
+      this.tunes.delete(snd);
+      this.fadeSound(snd, 0, fade, () => snd.destroy());
+    });
+  }
+
+  /**
+   * Scales the ambient bed. 1 is the bed's own level; the bog at dawn goes
+   * down towards 0.3 as the frogs stop, and a gust of wind briefly goes over 1.
+   */
+  bedLevel(gain: number, fade = 800): void {
+    this.bedGain = gain;
+    if (!this.current || !this.currentBed || this._muted) return;
+    // One level change at a time: a new one replaces the last rather than
+    // racing it for the same volume.
+    this.levelTween?.stop();
+    this.levelTween = this.fadeSound(this.current, BEDS[this.currentBed].volume * gain, fade);
+  }
+
   /** Next carve stroke. Cycling beats random: no repeats back to back. */
   carve(): void {
     this.play(CARVES[this.carveIndex % CARVES.length]);
@@ -124,10 +200,17 @@ class Audio {
       this.pending = bed;
       return;
     }
-    if (bed === this.currentBed) return;
+    if (bed === this.currentBed) {
+      // Same bed, but a scene that thinned it may have left it thin.
+      if (this.bedGain !== 1) this.bedLevel(1, fade);
+      return;
+    }
     this.currentBed = bed;
+    this.bedGain = 1;
 
     const old = this.current;
+    this.levelTween?.stop();
+    this.levelTween = null;
     if (old) {
       // Tween the old bed out and destroy it, so beds never pile up.
       this.fadeSound(old, 0, fade, () => old.destroy());
@@ -152,9 +235,10 @@ class Audio {
       /* ignore */
     }
     if (this.current && this.currentBed) {
-      const target = v ? 0 : BEDS[this.currentBed].volume;
+      const target = v ? 0 : BEDS[this.currentBed].volume * this.bedGain;
       this.fadeSound(this.current, target, 260);
     }
+    if (v) this.stopMusic(260);
     this.listeners.forEach((fn) => fn(v));
   }
 
@@ -177,15 +261,15 @@ class Audio {
     to: number,
     duration: number,
     onDone?: () => void,
-  ): void {
+  ): Phaser.Tweens.Tween | null {
     const scene = this.game?.scene.getScenes(true)[0];
     const holder = snd as unknown as { volume: number };
     if (!scene) {
       holder.volume = to;
       onDone?.();
-      return;
+      return null;
     }
-    scene.tweens.add({
+    return scene.tweens.add({
       targets: holder,
       volume: to,
       duration,
@@ -208,7 +292,11 @@ export const audio = new Audio();
  */
 export function queueAudio(scene: Phaser.Scene): number {
   if (!flags.fx) return 0;
-  const all = [...Object.values(CUES), ...Object.values(BEDS)];
+  const all = [
+    ...Object.values(CUES),
+    ...Object.values(BEDS),
+    ...SHIPPED_TUNES.map((t) => TUNES[t]),
+  ];
   let queued = 0;
   for (const { key } of all) {
     if (scene.cache.audio.exists(key)) continue;
