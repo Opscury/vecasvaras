@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { fillLoc, i18n, L, t, type Loc } from '../core/i18n';
 import { outro, tally, ui } from '../content/script';
 import { state } from '../core/state';
-import { ledger } from '../core/ledger';
 import { holdings, BREAD_CAP } from '../core/holdings';
 import { ending, shortfalls } from '../core/rules';
 import { Hex, Fonts, Layout, Palette, Timing, px, scaled } from '../core/theme';
@@ -12,14 +11,11 @@ import { Atmosphere } from '../fx/Atmosphere';
 import { Painting } from '../ui/Painting';
 import { SignMark } from '../ui/Sign';
 import { padHit } from '../ui/hit';
-import { renderShareCard, shareCard } from '../ui/ShareCard';
 import { ignoreKey, isAdvanceKey, markHandled } from '../ui/keys';
 import { fadeIn, goTo, isLeaving } from './transition';
 import { CHIMNEYS, addEvening, addUpgrades } from './villageArt';
 import { audio } from '../core/audio';
 import { makeBlob } from '../fx/textures';
-
-const SHARE_URL = 'vecasvaras.protu.lv';
 
 /**
  * The ending, in three movements:
@@ -28,13 +24,11 @@ const SHARE_URL = 'vecasvaras.protu.lv';
  *      with as many lit windows as there is bread
  *   2. THE TALLY — both marks side by side, each whole or unfinished, a line
  *      for each share, the smaller facts under them, and the total said plainly
- *   3. the way on: the next year, or a picture of this one to send somebody
- *
- * The year is written into the stone's ledger the moment the tally is shown.
+ *   3. the way on: another run, from the beginning
  */
 export class OutroScene extends Phaser.Scene {
   private narration!: Narration;
-  /** The "next year" button is up and can be pressed. */
+  /** The "start over" button is up and can be pressed. */
   private canGoOn = false;
 
   constructor() {
@@ -73,7 +67,7 @@ export class OutroScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown', (ev: KeyboardEvent) => {
       if (ignoreKey(this, ev) || !isAdvanceKey(ev) || !this.canGoOn) return;
       markHandled(ev);
-      this.nextYear();
+      this.playAgain();
     });
 
     this.narration.say(outro[ending(run.jumis, run.velns)], () => {
@@ -82,13 +76,13 @@ export class OutroScene extends Phaser.Scene {
     });
   }
 
-  private nextYear(): void {
+  private playAgain(): void {
     if (isLeaving(this)) return;
-    state.nextYear();
+    state.reset();
     goTo(this, 'Intro');
   }
 
-  /** Both shares, marked and named, and what the year came to. */
+  /** Both shares, marked and named, and what the run came to. */
   private showTally(): void {
     const { width, height } = Layout;
     const run = state.get();
@@ -101,18 +95,6 @@ export class OutroScene extends Phaser.Scene {
     const short = shortfalls(summary);
     const perfect = short.length === 0;
 
-    // The record, once.
-    ledger.record({
-      year: run.year,
-      jumisPick: pick,
-      jumis: run.jumis,
-      velns: run.velns,
-      velnsPick: run.velnsPick === 'none' ? 'self' : run.velnsPick,
-      catLost: run.catLost,
-      devilGone: run.devilGone,
-      crumb: run.crumb,
-      bread,
-    });
     state.set('outroSeen', true);
 
     const veil = this.add.rectangle(width / 2, height / 2, width, height, Palette.ink, 0).setDepth(700);
@@ -135,12 +117,7 @@ export class OutroScene extends Phaser.Scene {
       return obj;
     };
 
-    const yearLoc = (): Loc => fillLoc(ui.year, L(String(run.year), String(run.year)));
-    const headingLoc = (): Loc =>
-      run.year > 1
-        ? { lv: `${tally.heading.lv} · ${yearLoc().lv}`, en: `${tally.heading.en} · ${yearLoc().en}` }
-        : tally.heading;
-    const heading = add(width / 2, height * 0.12, headingLoc, { size: px(30), colour: Hex.parchmentDim });
+    const heading = add(width / 2, height * 0.12, () => tally.heading, { size: px(30), colour: Hex.parchmentDim });
 
     // The two marks, left and right. Whole or stopped short, warm or cold.
     const leftX = width * 0.34;
@@ -185,11 +162,8 @@ export class OutroScene extends Phaser.Scene {
     const note = add(width / 2, verdictY + scaled(60), noteLoc, { size: px(24), colour: Hex.rye });
 
     // The way on.
-    const btnY = height * 0.85;
-    const next = this.button(width / 2 - scaled(150), btnY, ui.nextYear, true);
-    const share = this.button(width / 2 + scaled(160), btnY, ui.share, false);
-    next.txt.on('pointerdown', () => this.nextYear());
-    share.txt.on('pointerdown', () => this.share(pick, jGood, vGood, velnsRow, kind, noteLoc(), yearLoc()));
+    const next = this.button(width / 2, height * 0.85, ui.restart, true);
+    next.txt.on('pointerdown', () => this.playAgain());
 
     // Carve the marks one after the other, then let the words follow.
     const fadeUp = (target: Phaser.GameObjects.GameObject, delay: number, duration = 700, onComplete?: () => void) =>
@@ -211,7 +185,6 @@ export class OutroScene extends Phaser.Scene {
     });
     fadeUp(verdict, 3400);
     fadeUp(note, 4100);
-    fadeUp(share.txt, 4800, 600);
     fadeUp(next.txt, 4800, 600, () => {
       this.canGoOn = true;
     });
@@ -219,7 +192,6 @@ export class OutroScene extends Phaser.Scene {
     const off = i18n.onChange(() => {
       texts.forEach((x) => x.obj.setText(t(x.loc())));
       next.refresh();
-      share.refresh();
     });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, off);
   }
@@ -247,45 +219,5 @@ export class OutroScene extends Phaser.Scene {
         place();
       },
     };
-  }
-
-  /** The year as a picture, to the share sheet or a download. */
-  private share(
-    pick: 'leave' | 'take' | 'all' | 'spare',
-    jGood: boolean,
-    vGood: boolean,
-    velnsRow: Loc,
-    kind: 'both' | 'half' | 'neither',
-    note: Loc,
-    year: Loc,
-  ): void {
-    const run = state.get();
-    const canvas = renderShareCard(this, {
-      title: 'VECĀS VARAS',
-      subtitle: ui.subtitle,
-      year: run.year > 1 ? year : null,
-      heading: tally.heading,
-      marks: [
-        { key: 'jumis', complete: jGood, label: tally.rowJumis[pick] },
-        { key: 'crossing', complete: vGood, label: velnsRow },
-      ],
-      verdict: tally[kind],
-      note,
-      url: SHARE_URL,
-    });
-    const name = `vecas-varas-${run.year}.png`;
-    void shareCard(canvas, name, `${t(tally[kind])} — ${SHARE_URL}`).then((result) => {
-      if (result === 'shared' || !this.scene.isActive()) return;
-      const msg = this.add
-        .text(Layout.width / 2, Layout.height * 0.93, t(result === 'saved' ? ui.shareSaved : ui.shareFailed), {
-          fontFamily: Fonts.body,
-          fontSize: px(20),
-          color: Hex.parchmentDim,
-        })
-        .setOrigin(0.5)
-        .setDepth(730)
-        .setAlpha(0);
-      this.tweens.add({ targets: msg, alpha: 1, duration: 250, yoyo: true, hold: 2200, onComplete: () => msg.destroy() });
-    });
   }
 }

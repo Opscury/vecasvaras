@@ -1,8 +1,8 @@
 /**
- * The whole first year from a fresh install, the way a careful player takes
+ * The whole run from a fresh install, the way a careful player takes
  * it: the intro, Anna's errand, the sickle and the cat, the tithe, the yard,
  * the bog with the cat ahead and the good loaf thrown, the evening, the stone,
- * the tally and the first morning of the next year.
+ * the tally and the first morning of a fresh run.
  *
  * No seed: this is a first run. Steps are serialised into the page, so each
  * looks the live scene up for itself through `__h`.
@@ -163,10 +163,10 @@ export default [
   () => __h.drain('Outro'),
   { wait: 7000 },
   { shot: 'tally' },
-  () => __h.log('ledger', localStorage.getItem('vecasvaras.ledger.v1'), 'lore', localStorage.getItem('vecasvaras.lore.v1')),
-  () => __h.press('Outro', 'Nākamais gads', 'Next year'),
+  () => __h.log('lore', localStorage.getItem('vecasvaras.lore.v1')),
+  () => __h.press('Outro', 'Sākt no jauna', 'Start over'),
   { wait: 2600 },
   () => __h.type('Intro'),
-  { shot: 'next-year' },
-  () => __h.log('year two', __h.state().year, 'seen', localStorage.getItem('vecasvaras.seen.v1')),
+  { shot: 'play-again' },
+  () => __h.log('state', __h.state(), 'seen', localStorage.getItem('vecasvaras.seen.v1')),
 ];

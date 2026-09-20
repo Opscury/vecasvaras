@@ -30,14 +30,6 @@ export const elder = {
       '“The rye is standing out there waiting to be cut, and there is nobody in this village younger than me left to do it.”',
     ),
   ],
-  // NEW — a second year onwards. She knows you know.
-  greetAgain: [
-    L('Vecā Anna stāv pie durvīm. «Atkal rudens.»', 'Old Anna is standing at her door. “Autumn again.”'),
-    L(
-      '«Rudzi stāv. Tu zini, kur sirpis, un zini, kas jādara.»',
-      '“The rye is standing. You know where the sickle is, and you know what needs doing.”',
-    ),
-  ],
   ask: L('«Aiziesi?»', '“Will you go?”'),
   choices: {
     accept: L('Aiziešu.', 'I will go.'),

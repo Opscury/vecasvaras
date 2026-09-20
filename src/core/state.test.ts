@@ -26,9 +26,8 @@ async function boot(seed: Record<string, string>) {
   vi.stubGlobal('localStorage', storage);
   const { state } = await import('./state');
   const { bag } = await import('./inventory');
-  const { ledger } = await import('./ledger');
   const { holdings } = await import('./holdings');
-  return { state, bag, ledger, holdings, storage };
+  return { state, bag, holdings, storage };
 }
 
 describe('saves', () => {
@@ -36,9 +35,8 @@ describe('saves', () => {
     vi.unstubAllGlobals();
   });
 
-  it('starts a fresh install on year one', async () => {
+  it('starts a fresh install with nothing decided', async () => {
     const { state } = await boot({});
-    expect(state.get().year).toBe(1);
     expect(state.get().jumisPick).toBe('none');
   });
 
@@ -94,7 +92,7 @@ describe('saves', () => {
     expect(bag.has('bread')).toBe(true);
   });
 
-  it('remembers what the village has shown across a reload, and forgets it with the year', async () => {
+  it('remembers what the village has shown across a reload, and forgets it on a restart', async () => {
     const shown = { jumis: 'good' as const, jumisPick: 'leave' as const, jumisPaid: true, sheaves: 8, velns: 'none' as const };
     const first = await boot({});
     first.state.patch({ jumis: 'good', jumisPick: 'leave', sheaves: 8, jumisPaid: true });
@@ -103,7 +101,7 @@ describe('saves', () => {
 
     const again = await boot({ 'vecasvaras.save.v3': saved });
     expect(again.state.get().shown).toEqual(shown);
-    again.state.nextYear();
+    again.state.reset();
     expect(again.state.get().shown).toBeNull();
   });
 
@@ -123,66 +121,5 @@ describe('saves', () => {
     expect(holdings().roads).toEqual(['sound', 'none']);
     state.set('velns', 'poor');
     expect(holdings().roads).toEqual(['sound', 'frail']);
-  });
-});
-
-describe('years', () => {
-  it('numbers the next year after the ones the stone remembers, and keeps them through a restart', async () => {
-    const { state, ledger } = await boot({});
-    ledger.record({
-      year: 1,
-      jumisPick: 'leave',
-      jumis: 'good',
-      velns: 'good',
-      velnsPick: 'bread',
-      catLost: false,
-      devilGone: false,
-      crumb: true,
-      bread: 3,
-    });
-    state.nextYear();
-    expect(state.get().year).toBe(2);
-    state.reset();
-    expect(state.get().year).toBe(2);
-    expect(ledger.count).toBe(1);
-  });
-
-  it('writes each year once', async () => {
-    const { ledger } = await boot({});
-    const entry = {
-      year: 3,
-      jumisPick: 'all' as const,
-      jumis: 'poor' as const,
-      velns: 'poor' as const,
-      velnsPick: 'dawn' as const,
-      catLost: false,
-      devilGone: false,
-      crumb: false,
-      bread: 1,
-    };
-    ledger.record(entry);
-    ledger.record({ ...entry, jumisPick: 'leave' });
-    expect(ledger.count).toBe(1);
-    expect(ledger.last?.jumisPick).toBe('all');
-  });
-
-  it('survives a reload', async () => {
-    const first = await boot({});
-    first.ledger.record({
-      year: 1,
-      jumisPick: 'take',
-      jumis: 'good',
-      velns: 'good',
-      velnsPick: 'bread',
-      catLost: false,
-      devilGone: true,
-      crumb: false,
-      bread: 2,
-    });
-    const saved = first.storage.dump();
-    const second = await boot(saved);
-    expect(second.ledger.count).toBe(1);
-    expect(second.ledger.last?.devilGone).toBe(true);
-    expect(second.state.get().year).toBe(2);
   });
 });

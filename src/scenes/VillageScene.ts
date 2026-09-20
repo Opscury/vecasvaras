@@ -2,11 +2,10 @@ import Phaser from 'phaser';
 import { type Loc } from '../core/i18n';
 import { arrival, items, jumis as jumisText, village } from '../content/script';
 import { elder } from '../content/elder';
-import { state, type Outcome, type Shown } from '../core/state';
+import { state, type Shown } from '../core/state';
 import { currentStep } from '../core/quest';
 import { breadFrom, loafFrom } from '../core/rules';
 import { holdings, snapshot, type HoldingsSource } from '../core/holdings';
-import { ledger } from '../core/ledger';
 import { lore } from '../core/lore';
 import { Narration } from '../ui/Narration';
 import { Hotspot, hotspotAt } from '../ui/Hotspot';
@@ -14,7 +13,6 @@ import { Chrome } from '../ui/Chrome';
 import { Objective } from '../ui/Objective';
 import { Holdings } from '../ui/Holdings';
 import { SheafTally } from '../ui/SheafTally';
-import { SignMark } from '../ui/Sign';
 import { Atmosphere } from '../fx/Atmosphere';
 import { Bag } from '../ui/Bag';
 import { Painting } from '../ui/Painting';
@@ -32,7 +30,6 @@ import { makeBlob } from '../fx/textures';
  *
  * What it shows, and where it comes from:
  *   the granary and the bridge     what the two encounters built
- *   the marks on the stone         this year's two shares, and earlier years'
  *   the chimneys and the windows   how much bread there is for the winter
  *   the light                      evening, once the bog is behind you
  *   the doorstep                   whether the cat came home
@@ -60,22 +57,6 @@ const CAT_H = 52;
 const ELDER = { x: 706, y: 582, h: 104 };
 
 /**
- * The stone's face, where the year's marks are cut: this year's two side by
- * side low down, earlier years in fainter rows above them.
- */
-const STONE_MARKS = {
-  now: [
-    { x: 956, y: 562 },
-    { x: 992, y: 562 },
-  ],
-  size: 9.5,
-  pastRows: [540, 519, 498],
-  pastSize: 6.2,
-  pastX: [960, 988],
-  /** Where a new mark is carved, big, before it goes into the stone. */
-  carveAt: { x: 970, y: 330 },
-};
-/**
  * The foot of the stone, where the first crumb is left: on the grass ring,
  * clear of the stone's own touch marker.
  */
@@ -83,8 +64,6 @@ const STONE_FOOT = { x: 1022, y: 603 };
 
 /** How long after arriving the "what changed" line is said: once the building has settled. */
 const ARRIVAL_LINE_MS = 2600;
-/** When a new mark is cut into the stone on the way in. */
-const CARVE_MS = 1900;
 
 /** Before the village has shown anything. */
 const NOTHING_SHOWN: Shown = { jumis: 'none', jumisPick: 'none', jumisPaid: false, sheaves: 0, velns: 'none' };
@@ -99,7 +78,6 @@ export class VillageScene extends Phaser.Scene {
   private objective!: Objective;
   private holdings!: Holdings;
   private chimneys: Array<{ setLevel: (level: 0 | 1 | 2 | 3) => void } | null> = [];
-  private stoneMarks: SignMark[] = [];
   /** What the player was last shown here, so the changes can land in front of them. */
   private lastSeen: Shown = NOTHING_SHOWN;
 
@@ -115,7 +93,6 @@ export class VillageScene extends Phaser.Scene {
     this.catSprite = null;
     this.catSpot = null;
     this.chimneys = [];
-    this.stoneMarks = [];
     state.set('scene', 'Village');
 
     fadeIn(this);
@@ -141,7 +118,6 @@ export class VillageScene extends Phaser.Scene {
     addUpgrades(this, painting, s, { animate: true, seen: this.lastSeen });
     this.addElder();
     this.addCat();
-    this.drawStone(news.mark);
     if (s.crumb) this.drawCrumb(false);
     if (evening) addEvening(this, painting, { lit: 1 + holdings().bread, arriving: news.bridge !== null });
 
@@ -166,21 +142,18 @@ export class VillageScene extends Phaser.Scene {
     this.bagUi = new Bag(this);
     this.bagUi.onUse = (id, x, y) => this.useItem(id, x, y);
 
-    // Coming back from an encounter, the first thing said is what changed —
-    // timed to land once the building has finished arriving.
-    if (news.mark) {
-      this.time.delayedCall(CARVE_MS, () => this.carveNew(news.mark!));
-    }
     // Whatever changes while the player is here, changes in front of them.
     const offShown = state.onChange(() => this.rememberShown());
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, offShown);
 
+    // Coming back from an encounter, the first thing said is what changed —
+    // timed to land once the building has finished arriving.
     if (news.granary || news.bridge) {
       this.time.delayedCall(ARRIVAL_LINE_MS, () => {
         this.holdings.refresh(true);
         if (this.narration.busy) return;
         if (news.granary) {
-          this.narration.say([news.granary, village.stone.newMark]);
+          this.narration.say([news.granary]);
           return;
         }
         this.narration.say([news.bridge!], () => this.bogHomecoming());
@@ -194,10 +167,10 @@ export class VillageScene extends Phaser.Scene {
    * Compares the run against what the player was last shown here, so each
    * change is announced once, on the trip home from the encounter that made it.
    */
-  private readNews(): { granary: Loc | null; bridge: Loc | null; mark: 'jumis' | 'crossing' | null } {
+  private readNews(): { granary: Loc | null; bridge: Loc | null } {
     const s = state.get();
     // Kept with the run, not in the session: a reload must neither replay the
-    // field's news nor lose the bog's, and a new year starts with nothing shown.
+    // field's news nor lose the bog's.
     this.lastSeen = s.shown ?? NOTHING_SHOWN;
     this.rememberShown();
 
@@ -210,12 +183,12 @@ export class VillageScene extends Phaser.Scene {
             : s.jumis === 'good'
               ? arrival.granaryGood
               : arrival.granaryPoor;
-      return { granary: line, bridge: null, mark: 'jumis' };
+      return { granary: line, bridge: null };
     }
     if (s.velns !== 'none' && this.lastSeen.velns !== s.velns) {
-      return { granary: null, bridge: s.velns === 'good' ? arrival.bridgeGood : arrival.bridgePoor, mark: 'crossing' };
+      return { granary: null, bridge: s.velns === 'good' ? arrival.bridgeGood : arrival.bridgePoor };
     }
-    return { granary: null, bridge: null, mark: null };
+    return { granary: null, bridge: null };
   }
 
   /** Everything on screen now counts as seen. */
@@ -224,7 +197,7 @@ export class VillageScene extends Phaser.Scene {
     state.markShown({ jumis: s.jumis, ...snapshot(s) });
   }
 
-  /** Home from the bog: the cat back to its step, the lights, the new mark. */
+  /** Home from the bog: the cat back to its step and the lights. */
   private bogHomecoming(): void {
     const lines: Loc[] = [];
     if (bag.has('cat')) {
@@ -232,8 +205,7 @@ export class VillageScene extends Phaser.Scene {
       this.sendCatHome();
     }
     if (holdings().bread > 0) lines.push(arrival.evening);
-    lines.push(village.stone.newMark);
-    this.narration.say(lines);
+    if (lines.length) this.narration.say(lines);
   }
 
   // --- the painting --------------------------------------------------------------
@@ -293,112 +265,6 @@ export class VillageScene extends Phaser.Scene {
     });
   }
 
-  /**
-   * The marks on the stone. This year's shares low on the face — the one just
-   * earned left off, to be carved in front of the player — and earlier years
-   * above them, worn fainter the older they are.
-   */
-  private drawStone(fresh: 'jumis' | 'crossing' | null): void {
-    const s = state.get();
-    const shares: Array<['jumis' | 'crossing', Outcome]> = [
-      ['jumis', s.jumis],
-      ['crossing', s.velns],
-    ];
-    shares.forEach(([key, outcome], i) => {
-      if (outcome === 'none' || key === fresh) return;
-      this.stoneMarks.push(this.cutMark(key, outcome === 'good', STONE_MARKS.now[i], STONE_MARKS.size, 1));
-    });
-
-    const past = ledger.years.filter((y) => y.year < s.year).slice(-STONE_MARKS.pastRows.length).reverse();
-    past.forEach((y, row) => {
-      const fade = 0.55 - row * 0.14;
-      const at = (i: number) => ({ x: STONE_MARKS.pastX[i], y: STONE_MARKS.pastRows[row] });
-      this.stoneMarks.push(this.cutMark('jumis', y.jumis === 'good', at(0), STONE_MARKS.pastSize, fade));
-      this.stoneMarks.push(this.cutMark('crossing', y.velns === 'good', at(1), STONE_MARKS.pastSize, fade));
-    });
-  }
-
-  private cutMark(
-    key: 'jumis' | 'crossing',
-    complete: boolean,
-    at: { x: number; y: number },
-    size: number,
-    fade: number,
-  ): SignMark {
-    const m = new SignMark(this, {
-      x: at.x,
-      y: at.y,
-      size,
-      key,
-      complete,
-      width: size > 8 ? 2.4 : 1.7,
-      colour: complete ? 0xd9b25a : 0x4f565b,
-      alpha: (complete ? 0.95 : 0.9) * fade,
-      silent: true,
-    });
-    m.snap();
-    m.parts.forEach((p) => this.painting.add(p));
-    return m;
-  }
-
-  /**
-   * A new mark: carved large above the stone, with the chisel sounding, then
-   * set into it.
-   */
-  private carveNew(key: 'jumis' | 'crossing'): void {
-    const s = state.get();
-    const complete = (key === 'jumis' ? s.jumis : s.velns) === 'good';
-    const slot = STONE_MARKS.now[key === 'jumis' ? 0 : 1];
-    const big = new SignMark(this, {
-      x: STONE_MARKS.carveAt.x,
-      y: STONE_MARKS.carveAt.y,
-      size: 58,
-      key,
-      complete,
-      depth: 460,
-    });
-    // A dark disc under the carving, so a mark reads over roofs, trees or
-    // sky alike — a cold broken one especially.
-    const disc = this.add
-      .image(STONE_MARKS.carveAt.x, STONE_MARKS.carveAt.y, 'fx-blob')
-      .setDepth(454)
-      .setTint(Palette.ink)
-      .setScale(3.4)
-      .setAlpha(0);
-    const halo = this.add
-      .image(STONE_MARKS.carveAt.x, STONE_MARKS.carveAt.y, 'fx-blob')
-      .setDepth(455)
-      .setTint(complete ? 0xffd98a : 0x9aa6ad)
-      .setBlendMode(Phaser.BlendModes.SCREEN)
-      .setScale(2.4)
-      .setAlpha(0);
-    this.tweens.add({ targets: disc, alpha: 0.85, duration: 400 });
-    this.tweens.add({ targets: halo, alpha: complete ? 0.3 : 0.12, duration: 500 });
-    big.carve(this, () => {
-      this.time.delayedCall(500, () => {
-        const k = STONE_MARKS.size / 58;
-        this.tweens.add({ targets: [halo, disc], alpha: 0, x: slot.x, y: slot.y, scale: 0.5, duration: 700, ease: 'Quad.easeIn' });
-        this.tweens.add({
-          targets: big.parts,
-          x: slot.x,
-          y: slot.y,
-          scale: k,
-          duration: 700,
-          ease: 'Quad.easeIn',
-          onComplete: () => {
-            big.destroy();
-            halo.destroy();
-            disc.destroy();
-            const m = this.cutMark(key, complete, slot, STONE_MARKS.size, 1);
-            m.shine(this, 1, 500);
-            this.stoneMarks.push(m);
-            audio.play('tally', { volume: 0.35, rate: 0.8 });
-          },
-        });
-      });
-    }, 1000);
-  }
-
   /** The first crumb, at the foot of the stone. */
   private drawCrumb(animate: boolean): void {
     const g = this.add.graphics();
@@ -454,13 +320,10 @@ export class VillageScene extends Phaser.Scene {
       w: 150,
       h: 220,
       label: village.stone.label,
-      // On the grass ring, not on the face: the face is where the marks go.
       markAt: { x: POS.stone.x, y: 618 },
       onClick: () => {
         const run = state.get();
         const lines = [...village.stone.lines];
-        if (run.jumis !== 'none' || run.velns !== 'none') lines.push(village.stone.marked);
-        if (ledger.years.some((y) => y.year < run.year)) lines.push(village.stone.older);
         if (run.crumb) lines.push(village.stone.crumbThere);
         if (currentStep() === 'done') {
           this.narration.say(lines, () => this.leaveTo('Outro'));
@@ -772,14 +635,6 @@ export class VillageScene extends Phaser.Scene {
         this.objective.refresh();
       });
     };
-    // A second telling does not need the whole speech again.
-    if (state.get().year > 1) {
-      this.narration.say(elder.greetAgain, () => {
-        state.set('metElder', true);
-        this.objective.refresh();
-      });
-      return;
-    }
     this.narration.say(elder.greet, () => {
       this.narration.ask(elder.ask, [
         { label: elder.choices.accept, onPick: accept },

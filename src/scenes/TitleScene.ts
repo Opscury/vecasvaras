@@ -111,12 +111,11 @@ export class TitleScene extends Phaser.Scene {
       .setAlpha(0)
       .setDepth(MENU_DEPTH + 1);
 
-    // Only a run in progress offers Continue and Start over. A finished year
-    // is not something to continue: after the ending, the way on is the next
-    // year, and the stone keeps the last one.
+    // Only a run in progress offers Continue and Start over. A finished run is
+    // not something to continue: after the ending, the way on is a fresh one.
     const run = state.get();
     const hasRun = run.introSeen && !run.outroSeen;
-    const startLabel = hasRun ? ui.resume : run.outroSeen ? ui.nextYear : ui.begin;
+    const startLabel = hasRun ? ui.resume : run.outroSeen ? ui.restart : ui.begin;
 
     const start = this.add
       .text(titleX, height * 0.62, t(startLabel), {
@@ -303,8 +302,8 @@ export class TitleScene extends Phaser.Scene {
       }
       return;
     }
-    // After the ending, the way on is the next year, not a walk back into the old one.
-    if (state.get().outroSeen) state.nextYear();
+    // After the ending, the way on is a fresh run, not a walk back into the old one.
+    if (state.get().outroSeen) state.reset();
     goTo(this, this.resumeTarget());
   }
 

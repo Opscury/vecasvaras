@@ -1,16 +1,15 @@
 /**
  * Run state + persistence.
  *
- * One year of the story is short enough to hold in one object. It is saved to
+ * One run of the story is short enough to hold in one object. It is saved to
  * localStorage on every mutation so a player who closes the tab mid-bog comes
  * back where they were.
  *
- * What outlives a year — the marks on the stone, the beliefs found — is kept
- * elsewhere (`ledger.ts`, `lore.ts`), so starting a year over never wipes it.
+ * What outlives a run — the beliefs found — is kept elsewhere (`lore.ts`), so
+ * starting over never wipes it.
  */
 
 import { bag } from './inventory';
-import { ledger } from './ledger';
 import type { JumisPick, VelnsPick } from './rules';
 
 export type Outcome = 'none' | 'poor' | 'good';
@@ -19,8 +18,6 @@ export type Outcome = 'none' | 'poor' | 'good';
 export type Place = 'Village' | 'Jumis' | 'Velns';
 
 export interface RunState {
-  /** Which telling of the story this is. 1 on a fresh install. */
-  year: number;
   /** How the Jumis encounter resolved. Drives the granary sprite. */
   jumis: Outcome;
   /** What exactly was done in the field — four endings share two outcomes. */
@@ -36,7 +33,7 @@ export interface RunState {
   velns: Outcome;
   /** How the bargain was settled. */
   velnsPick: 'none' | VelnsPick;
-  /** The cat went with the Devil and will not be on its doorstep again this year. */
+  /** The cat went with the Devil and will not be on its doorstep again. */
   catLost: boolean;
   /** The Devil was argued off the bog for good. */
   devilGone: boolean;
@@ -67,7 +64,7 @@ export interface RunState {
   /**
    * What the village last put in front of the player, so each change is
    * announced once — on the walk home from the encounter that made it, and
-   * not again after a reload, a restart or in the next year.
+   * not again after a reload or a restart.
    */
   shown: Shown | null;
 }
@@ -81,7 +78,6 @@ const STORAGE_KEY_V2 = 'vecasvaras.save.v2';
 const STORAGE_KEY_V1 = 'vecasvaras.save.v1';
 
 const blank = (): RunState => ({
-  year: ledger.count + 1,
   jumis: 'none',
   jumisPick: 'none',
   sheaves: 0,
@@ -171,21 +167,13 @@ class GameState {
     return () => this.listeners.delete(fn);
   }
 
-  /** Throws this year away and starts it again. The stone keeps its marks. */
+  /** Throws this run away and starts it again. */
   reset(): void {
     this.data = blank();
     this.save();
     // Starting over means walking out of the house with nothing again.
     bag.clear();
     this.listeners.forEach((fn) => fn());
-  }
-
-  /**
-   * The next telling. The finished year is already in the ledger by the time
-   * this is called; the new one starts with the number after it.
-   */
-  nextYear(): void {
-    this.reset();
   }
 
   /** True once both encounters have been resolved, either way. */
@@ -234,7 +222,6 @@ class GameState {
     const jumis = asOutcome(o.jumis);
     const velns = asOutcome(o.velns);
     return {
-      year: Math.max(1, asCount(o.year, fresh.year)),
       jumis,
       jumisPick: asJumisPick(o.jumisPick),
       sheaves: asCount(o.sheaves, 0),

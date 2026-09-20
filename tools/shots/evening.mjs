@@ -1,14 +1,13 @@
 /**
- * Home from the bog with the cat still in the bag, a whole year behind you:
- * the bridge, the carving, the cat to its step, the lights; Anna, the stone,
- * the tally, the picture of the year, and the next year's first morning.
+ * Home from the bog with the cat still in the bag, a whole run behind you:
+ * the bridge, the cat to its step, the lights; Anna, the stone, the tally,
+ * and the first morning of a fresh run.
  */
 export default [
   () => __h.start('Village'),
   { wait: 1000 },
   { shot: 'arriving' },
   { wait: 1500 },
-  { shot: 'carving-crossing' },
   { wait: 1100 },
   () => __h.type('Village'),
   { shot: 'bridge-news' },
@@ -41,13 +40,7 @@ export default [
   () => __h.log('outro lines', __h.drain('Outro')),
   { wait: 7000 },
   { shot: 'tally' },
-  () => __h.catchDownload(),
-  () => __h.press('Outro', 'Dalīties', 'Share'),
-  { grab: 'share-card' },
-  { wait: 800 },
-  { shot: 'tally-saved' },
-  () => __h.log('ledger', localStorage.getItem('vecasvaras.ledger.v1')),
-  () => __h.press('Outro', 'Nākamais gads', 'Next year'),
+  () => __h.press('Outro', 'Sākt no jauna', 'Start over'),
   { wait: 2500 },
   () => __h.log('intro active', __h.scene('Intro').sys.isActive(), 'state', __h.state()),
   () => __h.type('Intro'),
@@ -55,12 +48,12 @@ export default [
   () => __h.log('intro lines', __h.drain('Intro')),
   { wait: 3000 },
   () => __h.log('village again', __h.scene('Village').sys.isActive(), 'bag', localStorage.getItem('vecasvaras.bag.v1')),
-  { shot: 'year-two' },
+  { shot: 'fresh-village' },
   () => __h.spot('Village', 'stone').activate(),
   { wait: 700 },
   () => __h.log('stone2 lines', __h.drain('Village', 3)),
   () => __h.type('Village'),
-  { shot: 'stone-older' },
+  { shot: 'stone-again' },
   () => __h.drain('Village'),
   { wait: 400 },
   () => __h.spot('Village', 'anna').activate(),

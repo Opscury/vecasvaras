@@ -20,8 +20,6 @@ export const ui = {
   begin: L('Sākt', 'Begin'),
   resume: L('Turpināt', 'Continue'),
   restart: L('Sākt no jauna', 'Start over'),
-  // NEW — the ending's way on, and the title's once a year is finished.
-  nextYear: L('Nākamais gads', 'Next year'),
   subtitle: L('Latviešu folkloras spēle', 'A game of Latvian folklore'),
   /** The button that moves the narration on. */
   next: L('Tālāk', 'Next'),
@@ -29,12 +27,6 @@ export const ui = {
   history: L('Teiktais', 'Said so far'),
   loadFailed: L('Neizdevās ielādēt zīmējumus.', 'Some of the pictures did not load.'),
   retry: L('Mēģināt vēlreiz', 'Try again'),
-  // NEW — which telling of the story this is. `{}` is the number.
-  year: L('{}. gads', 'Year {}'),
-  // NEW — the share card at the tally.
-  share: L('Dalīties', 'Share'),
-  shareSaved: L('Attēls saglabāts.', 'Picture saved.'),
-  shareFailed: L('Attēlu neizdevās izveidot.', 'The picture could not be made.'),
 };
 
 /** NEW — the beliefs page and the note that a new one was found. */
@@ -66,22 +58,6 @@ export const intro = {
       'This year the rye is thin, the bridge is gone, and the village has begun to look at you.',
     ),
   ],
-  /**
-   * NEW — a second year onwards. The village is back as it was; the stone is
-   * not. One line to say so, one to say what the stone remembers.
-   */
-  again: L(
-    'Pagāja gads. Strauts atkal paņēma tiltu, no klēts atkal palikuši tikai pamati, un rudzi atkal stāv gatavi.',
-    'A year went by. The stream took the bridge again, only the foundation is left of the granary again, and the rye stands ready again.',
-  ),
-  rememberGood: L(
-    'Akmens atceras pērno gadu — tas bija labs. Vecās varas negaida, ka tas atkārtosies pats no sevis.',
-    'The stone remembers last year — it was a good one. The old powers do not expect it to repeat itself.',
-  ),
-  rememberPoor: L(
-    'Akmens atceras pērno gadu. Šogad tas gaida, ko tu atstāsi.',
-    'The stone remembers last year. This year it is waiting to see what you leave.',
-  ),
 };
 
 export const village = {
@@ -104,18 +80,6 @@ export const village = {
         'But everyone still throws it the first crumb of the first loaf. Every year. Without thinking.',
       ),
     ],
-    // NEW — once the year has left marks on it.
-    marked: L(
-      'Starp vecajiem rakstiem ir jaunas zīmes, iecirstas tavā gadā. Neviens neatzīstas, ka tās cirtis.',
-      'Among the old patterns there are new marks, cut in your year. Nobody admits to cutting them.',
-    ),
-    // NEW — and the years before this one.
-    older: L(
-      'Virs tām, gandrīz nodilušas, iepriekšējo gadu zīmes.',
-      'Above them, almost worn away, the marks of earlier years.',
-    ),
-    // NEW — said on the way home, as the mark appears.
-    newMark: L('Uz akmens ir jauna zīme. Neviens to nav cirtis.', 'There is a new mark on the stone. Nobody carved it.'),
     // NEW — after the crumb.
     crumbThere: L(
       'Akmens pakājē guļ tava drupača. Putni to vēl nav aizkampuši.',
