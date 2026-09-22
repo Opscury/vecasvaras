@@ -23,7 +23,12 @@ const running = new WeakMap<Phaser.Scene, Phaser.Tweens.Tween>();
  * and the edges last. Falls back to a camera fade on Canvas or with `?fx=off`.
  */
 export function fadeIn(scene: Phaser.Scene, duration: number = Timing.fade): void {
-  const ink = flags.fx ? inkOn(scene) : null;
+  let ink: ReturnType<typeof inkOn> = null;
+  try {
+    ink = flags.fx ? inkOn(scene) : null;
+  } catch {
+    ink = null;
+  }
   if (!ink) {
     scene.cameras.main.fadeIn(duration, INK.r, INK.g, INK.b);
     return;
@@ -65,7 +70,18 @@ export function goTo(scene: Phaser.Scene, key: string, data?: object): void {
     inkOff(scene);
   });
 
-  const ink = flags.fx ? inkOn(scene) : null;
+  // If the ink pass cannot be built on this GPU, fall back to the plain fade
+  // rather than throw — a throw here used to leave the scene marked as
+  // leaving, so every later tap on Begin was ignored as a double-click.
+  let ink: ReturnType<typeof inkOn> = null;
+  if (flags.fx) {
+    try {
+      ink = inkOn(scene);
+    } catch (err) {
+      console.warn('[Vecās Varas] ink transition unavailable, using a fade:', err);
+      ink = null;
+    }
+  }
   if (!ink) {
     const cam = scene.cameras.main;
     cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => scene.scene.start(key, data));

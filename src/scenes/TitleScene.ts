@@ -19,7 +19,7 @@ import {
   queueMissingSheets,
   reportLoadErrors,
 } from './assets';
-import { audio, queueAudio } from '../core/audio';
+import { audio } from '../core/audio';
 
 /**
  * The menu sits above every atmospheric layer. Without this the fog sheets
@@ -29,6 +29,12 @@ import { audio, queueAudio } from '../core/audio';
  * to cut through. Chrome is at 900, so the menu goes between.
  */
 const MENU_DEPTH = 300;
+
+/** Continue has Start over under it; the loading line goes below both. */
+const hasRestartOffset = (scene: Phaser.Scene): boolean => {
+  const run = state.get();
+  return scene.scene.key === 'Title' && run.introSeen && !run.outroSeen;
+};
 
 export class TitleScene extends Phaser.Scene {
   /** The rest of the art has arrived. Begin waits for it. */
@@ -42,6 +48,9 @@ export class TitleScene extends Phaser.Scene {
    * fade-in — see `fetched`.
    */
   private pulse: Phaser.Tweens.Tween | null = null;
+  /** "Loading 43%" under Begin while the art is still coming, and a hairline that fills. */
+  private progressText: Phaser.GameObjects.Text | null = null;
+  private progressBar: Phaser.GameObjects.Graphics | null = null;
   private errorText: Phaser.GameObjects.Text | null = null;
   private retryText: Phaser.GameObjects.Text | null = null;
 
@@ -57,6 +66,8 @@ export class TitleScene extends Phaser.Scene {
     this.ready = false;
     this.wantBegin = false;
     this.pulse = null;
+    this.progressText = null;
+    this.progressBar = null;
     this.errorText = null;
     this.retryText = null;
 
@@ -203,6 +214,7 @@ export class TitleScene extends Phaser.Scene {
       restart?.setText(t(ui.restart));
       placeRestart?.();
       this.errorText?.setText(t(ui.loadFailed));
+      this.showProgress(this.load.progress);
       this.retryText?.setText(t(ui.retry));
     });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, off);
@@ -214,25 +226,36 @@ export class TitleScene extends Phaser.Scene {
   /** Pulls in the rest of the art behind the menu. Instant on a revisit. */
   private fetchRest(): void {
     this.hideLoadError();
-    // Sound is queued with the art, never before the menu: it must not gate play.
-    const sounds = queueAudio(this);
+    // Art only. Sound follows in its own scene once the art is in, so it never
+    // stands between the player and Begin.
     const art = queueMissing(this, GAME_ASSETS) + queueMissingSheets(this, GAME_SHEETS);
-    if (!art && !sounds) {
+    if (!art) {
       this.fetched();
       return;
     }
-    this.load.once(Phaser.Loader.Events.COMPLETE, () => this.fetched());
+    // Say that something is happening. A button that silently waits for 10 MB
+    // over mobile data reads as a button that is broken.
+    this.showProgress(0);
+    const onProgress = (v: number) => this.showProgress(v);
+    this.load.on(Phaser.Loader.Events.PROGRESS, onProgress);
+    this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+      this.load.off(Phaser.Loader.Events.PROGRESS, onProgress);
+      this.fetched();
+    });
     this.load.start();
   }
 
   private fetched(): void {
     const missing = [...missingFrom(this, GAME_ASSETS), ...missingFrom(this, GAME_SHEETS)];
     if (missing.length) {
+      this.hideProgress();
       this.showLoadError(missing);
       return;
     }
     defineAnims(this);
     this.ready = true;
+    this.hideProgress();
+    if (!this.scene.isActive('SoundLoader')) this.scene.launch('SoundLoader');
     // Stop the waiting-breath, and ONLY that.
     //
     // This used to be `killTweensOf(this.start)`, which was a much bigger
@@ -254,6 +277,35 @@ export class TitleScene extends Phaser.Scene {
       this.start.setAlpha(1);
     }
     if (this.wantBegin) this.begin();
+  }
+
+  private showProgress(v: number): void {
+    if (this.ready) return;
+    const { width, height } = Layout;
+    const x = width * 0.72;
+    const y = height * 0.62 + scaled(hasRestartOffset(this) ? 120 : 64);
+    if (!this.progressText) {
+      this.progressText = this.add
+        .text(x, y, '', { fontFamily: Fonts.body, fontSize: px(20), color: Hex.parchmentDim })
+        .setOrigin(0.5)
+        .setDepth(MENU_DEPTH + 1);
+      this.progressBar = this.add.graphics().setDepth(MENU_DEPTH + 1);
+    }
+    this.progressText.setText(`${t(ui.loading)} ${Math.round(v * 100)}%`);
+    const w = scaled(220);
+    const by = y + scaled(26);
+    this.progressBar!.clear();
+    this.progressBar!.fillStyle(Palette.timber, 0.5);
+    this.progressBar!.fillRect(x - w / 2, by, w, 3);
+    this.progressBar!.fillStyle(Palette.rye, 1);
+    this.progressBar!.fillRect(x - w / 2, by, w * v, 3);
+  }
+
+  private hideProgress(): void {
+    this.progressText?.destroy();
+    this.progressBar?.destroy();
+    this.progressText = null;
+    this.progressBar = null;
   }
 
   private showLoadError(missing: string[]): void {

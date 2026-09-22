@@ -19,42 +19,42 @@ export const GAME_ASSETS: readonly Asset[] = [
   // The same field after the swing, aligned to field.jpg for a cross-fade.
   ['bg-field-cut', 'field_cut.jpg'],
   ['bg-bog', 'bog.jpg'],
-  ['granary-good', 'granary_full.png'],
-  ['granary-poor', 'granary_poor.png'],
+  ['granary-good', 'granary_full.webp'],
+  ['granary-poor', 'granary_poor.webp'],
   // v3 is flat with a footing at each end, so it sits across the stream instead
   // of hanging over the path. v1 and v2 stay on disk.
-  ['bridge-good', 'bridge_full_v3.png'],
-  ['bridge-poor', 'bridge_poor.png'],
+  ['bridge-good', 'bridge_full_v3.webp'],
+  ['bridge-poor', 'bridge_poor.webp'],
   // The granary's store, made visible: one sheaf leaning on its wall per loaf
   // inside it. Two of them, alternated, so a stack of three is not the same
   // picture three times.
-  ['sheaf-a', 'sheaf_a.png'],
-  ['sheaf-b', 'sheaf_b.png'],
-  ['jumis-stalk', 'jumis_stalk.png'],
-  ['jumis-bound', 'jumis_bound.png'],
-  ['velns', 'velns.png'],
+  ['sheaf-a', 'sheaf_a.webp'],
+  ['sheaf-b', 'sheaf_b.webp'],
+  ['jumis-stalk', 'jumis_stalk.webp'],
+  ['jumis-bound', 'jumis_bound.webp'],
+  ['velns', 'velns.webp'],
   // Vecā Anna, who stands in the hub and hands out the run's two errands.
-  ['elder', 'elder.png'],
-  ['item-sickle', 'item_sickle.png'],
+  ['elder', 'elder.webp'],
+  ['item-sickle', 'item_sickle.webp'],
   // One loaf per kind of year. Same item, and the only way to see at a glance
   // whether the bread is worth anything before the Devil says so.
-  ['item-bread-good', 'item_bread_good.png'],
-  ['item-bread-poor', 'item_bread_poor.png'],
-  ['item-cat', 'item_cat.png'],
-  ['item-bag', 'item_bag.png'],
+  ['item-bread-good', 'item_bread_good.webp'],
+  ['item-bread-poor', 'item_bread_poor.webp'],
+  ['item-cat', 'item_cat.webp'],
+  ['item-bag', 'item_bag.webp'],
   // The Devil's hat, left for someone who answered him as an equal.
-  ['item-hat', 'item_hat.png'],
+  ['item-hat', 'item_hat.webp'],
   // Painted busts shown beside the narration while each of them talks.
-  ['portrait-anna', 'portrait_anna.png'],
-  ['portrait-velns', 'portrait_velns.png'],
+  ['portrait-anna', 'portrait_anna.webp'],
+  ['portrait-velns', 'portrait_velns.webp'],
   // Ink vignettes for the beliefs book, one per belief.
-  ['codex-jumis', 'codex_jumis.png'],
-  ['codex-jumjaKersana', 'codex_jumjaKersana.png'],
-  ['codex-maize', 'codex_maize.png'],
-  ['codex-pirmaisKumoss', 'codex_pirmaisKumoss.png'],
-  ['codex-maldugunis', 'codex_maldugunis.png'],
-  ['codex-velnaTilts', 'codex_velnaTilts.png'],
-  ['codex-gailis', 'codex_gailis.png'],
+  ['codex-jumis', 'codex_jumis.webp'],
+  ['codex-jumjaKersana', 'codex_jumjaKersana.webp'],
+  ['codex-maize', 'codex_maize.webp'],
+  ['codex-pirmaisKumoss', 'codex_pirmaisKumoss.webp'],
+  ['codex-maldugunis', 'codex_maldugunis.webp'],
+  ['codex-velnaTilts', 'codex_velnaTilts.webp'],
+  ['codex-gailis', 'codex_gailis.webp'],
 ];
 
 /**
@@ -67,7 +67,7 @@ export const GAME_ASSETS: readonly Asset[] = [
  * the cat backwards each time it wraps. `cat_walk.png` stays on disk.
  */
 export const GAME_SHEETS: readonly Sheet[] = [
-  ['cat-walk', 'cat_walk_sheet.png', { frameWidth: 300, frameHeight: 150 }],
+  ['cat-walk', 'cat_walk_sheet.webp', { frameWidth: 300, frameHeight: 150 }],
 ];
 
 /** Animation key. Distinct from the texture key so the two cannot be confused. */

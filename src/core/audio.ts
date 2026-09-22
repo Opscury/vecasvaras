@@ -234,6 +234,19 @@ class Audio {
     if (!this._muted) this.fadeSound(snd, def.volume, fade);
   }
 
+  /**
+   * A bed asked for before its file had arrived was silently skipped. The
+   * sound loader calls this as each file lands, so the village bed starts the
+   * moment it can instead of on the next change of scene.
+   */
+  arrived(key: string): void {
+    if (!this.enabled || !this.unlocked || this.current || !this.currentBed) return;
+    if (BEDS[this.currentBed].key !== key) return;
+    const bed = this.currentBed;
+    this.currentBed = null;
+    this.ambient(bed);
+  }
+
   setMuted(v: boolean): void {
     if (this._muted === v) return;
     this._muted = v;

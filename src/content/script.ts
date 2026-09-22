@@ -25,6 +25,7 @@ export const ui = {
   next: L('Tālāk', 'Next'),
   // Heading of the page that shows everything said so far (⟲ / H).
   history: L('Teiktais', 'Said so far'),
+  loading: L('Ielādē', 'Loading'),
   loadFailed: L('Neizdevās ielādēt zīmējumus.', 'Some of the pictures did not load.'),
   retry: L('Mēģināt vēlreiz', 'Try again'),
 };
