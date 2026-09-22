@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { flags } from './flags';
+import { settings } from './settings';
 
 /**
  * The game's one sound object.
@@ -39,6 +40,8 @@ const CUES = {
   splash: { key: 'sfx_splash', volume: 0.5 },
   sheaf: { key: 'sfx_sheaf', volume: 0.42 },
   chime: { key: 'sfx_chime', volume: 0.4 },
+  // The map unrolling. tools/build_paper.py.
+  paper: { key: 'sfx_paper', volume: 0.55 },
 } as const;
 
 /**
@@ -101,6 +104,11 @@ class Audio {
   /** Called once from `main.ts` after the game exists. */
   attach(game: Phaser.Game): void {
     this.game = game;
+    // The player's own level, over everything the game plays.
+    game.sound.volume = settings.get().volume;
+    settings.onChange((s) => {
+      game.sound.volume = s.volume;
+    });
     try {
       this._muted = localStorage.getItem(STORAGE_KEY) === '1';
     } catch {

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { type Loc, t, i18n } from '../core/i18n';
 import { Hex, Fonts, Layout, Palette, Timing, px, scaled } from '../core/theme';
+import { settings } from '../core/settings';
 import { ui } from '../content/script';
 import { audio } from '../core/audio';
 import { ignoreKey, isAdvanceKey, keysOf, markHandled } from './keys';
@@ -121,6 +122,11 @@ export class Narration {
    */
   get busy(): boolean {
     return this.queue.length > 0 || this.onDone !== null || this.choices.length > 0;
+  }
+
+  /** True while a line is still typing out — a portrait's mouth moves while this is. */
+  get isTyping(): boolean {
+    return this.typing;
   }
 
   /** True when the panel is folded away with nothing on it. */
@@ -346,7 +352,8 @@ export class Narration {
     this.remember(line);
     const full = t(line);
     // An empty line cannot be typed: a timer with `repeat: -1` never stops.
-    if (!animate || full.length === 0) {
+    // And a player who asked for instant text gets the line whole.
+    if (!animate || full.length === 0 || settings.typeMs === 0) {
       this.label.setText(full);
       this.typing = false;
       this.updateHint();
@@ -356,7 +363,7 @@ export class Narration {
     this.typing = true;
     let i = 0;
     this.typer = this.scene.time.addEvent({
-      delay: Timing.typeSpeed,
+      delay: settings.typeMs,
       repeat: full.length - 1,
       callback: () => {
         i++;

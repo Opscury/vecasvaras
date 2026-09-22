@@ -101,7 +101,7 @@ await page.waitForFunction(
   () => {
     const g = window.__game;
     if (!g) return false;
-    return ['bg-village', 'bg-field', 'bg-field-cut', 'jumis-stalk', 'jumis-bound', 'item-sickle', 'elder', 'velns', 'bg-bog'].every(
+    return ['bg-village', 'bg-field', 'bg-field-cut', 'jumis-stalk', 'jumis-bound', 'item-sickle', 'elder', 'velns', 'bg-bog', 'cat-walk', 'item-hat', 'portrait-anna', 'portrait-velns', 'codex-gailis', 'codex-velnaTilts', 'sheaf-a', 'sheaf-b'].every(
       (k) => g.textures.exists(k),
     );
   },

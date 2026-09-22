@@ -10,7 +10,7 @@
 
 import { type Loc, L } from './i18n';
 
-export type ItemId = 'sickle' | 'bread' | 'cat';
+export type ItemId = 'sickle' | 'bread' | 'cat' | 'hat';
 
 export interface ItemDef {
   id: ItemId;
@@ -53,6 +53,17 @@ export const ITEMS: Record<ItemId, ItemDef> = {
       'Nobody’s cat. It goes where it likes, and just now it likes going with you.',
     ),
   },
+  // Left on the planks by a Devil who was answered as an equal. It does
+  // nothing; it is proof, and a thing to be asked about.
+  hat: {
+    id: 'hat',
+    texture: 'item-hat',
+    name: L('Velna cepure', 'The Devil’s hat'),
+    note: L(
+      'Veca filca cepure ar diviem caurumiem virsā. Smaržo pēc purva un dūmiem.',
+      'An old felt hat with two holes in the crown. It smells of bog and smoke.',
+    ),
+  },
 };
 
 const STORAGE_KEY = 'vecasvaras.bag.v1';
@@ -73,7 +84,7 @@ class Inventory {
 
   list(): ItemId[] {
     // Stable order so the bag never reshuffles under the player's cursor.
-    return (['sickle', 'bread', 'cat'] as ItemId[]).filter((i) => this.held.has(i));
+    return (['sickle', 'bread', 'cat', 'hat'] as ItemId[]).filter((i) => this.held.has(i));
   }
 
   get count(): number {

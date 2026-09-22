@@ -1,3 +1,4 @@
+import { applyGrade } from '../fx/GradePipeline';
 import Phaser from 'phaser';
 import { intro } from '../content/script';
 import { state } from '../core/state';
@@ -28,6 +29,7 @@ export class IntroScene extends Phaser.Scene {
     fadeIn(this, Timing.fade * 2);
 
     const bg = this.add.image(width / 2, height / 2, 'bg-village').setDisplaySize(width, height);
+    applyGrade(bg);
     bg.setScale(bg.scaleX * 1.06, bg.scaleY * 1.06).setAlpha(0.82);
 
     // A single slow settle into the village over the narration, plus enough

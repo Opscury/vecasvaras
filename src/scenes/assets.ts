@@ -25,6 +25,11 @@ export const GAME_ASSETS: readonly Asset[] = [
   // of hanging over the path. v1 and v2 stay on disk.
   ['bridge-good', 'bridge_full_v3.png'],
   ['bridge-poor', 'bridge_poor.png'],
+  // The granary's store, made visible: one sheaf leaning on its wall per loaf
+  // inside it. Two of them, alternated, so a stack of three is not the same
+  // picture three times.
+  ['sheaf-a', 'sheaf_a.png'],
+  ['sheaf-b', 'sheaf_b.png'],
   ['jumis-stalk', 'jumis_stalk.png'],
   ['jumis-bound', 'jumis_bound.png'],
   ['velns', 'velns.png'],
@@ -37,6 +42,19 @@ export const GAME_ASSETS: readonly Asset[] = [
   ['item-bread-poor', 'item_bread_poor.png'],
   ['item-cat', 'item_cat.png'],
   ['item-bag', 'item_bag.png'],
+  // The Devil's hat, left for someone who answered him as an equal.
+  ['item-hat', 'item_hat.png'],
+  // Painted busts shown beside the narration while each of them talks.
+  ['portrait-anna', 'portrait_anna.png'],
+  ['portrait-velns', 'portrait_velns.png'],
+  // Ink vignettes for the beliefs book, one per belief.
+  ['codex-jumis', 'codex_jumis.png'],
+  ['codex-jumjaKersana', 'codex_jumjaKersana.png'],
+  ['codex-maize', 'codex_maize.png'],
+  ['codex-pirmaisKumoss', 'codex_pirmaisKumoss.png'],
+  ['codex-maldugunis', 'codex_maldugunis.png'],
+  ['codex-velnaTilts', 'codex_velnaTilts.png'],
+  ['codex-gailis', 'codex_gailis.png'],
 ];
 
 /**

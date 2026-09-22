@@ -4,6 +4,7 @@ import { ui } from '../content/script';
 import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { History } from './History';
 import { LorePage, showLoreToast } from './Lore';
+import { SettingsPage } from './SettingsPage';
 import { lore } from '../core/lore';
 import { walkSign } from './Sign';
 import { KeyNav } from './KeyNav';
@@ -36,6 +37,8 @@ export class Chrome {
   private muteBtn: Phaser.GameObjects.Text | null = null;
   private loreBtn: Phaser.GameObjects.Text | null = null;
   private loreGlyph: Phaser.GameObjects.Graphics | null = null;
+  private setBtn: Phaser.GameObjects.Text;
+  private setGlyph: Phaser.GameObjects.Graphics;
   private offLang: () => void;
   private offMute: () => void = () => {};
   private offLore: () => void = () => {};
@@ -50,15 +53,34 @@ export class Chrome {
       .setInteractive({ useHandCursor: true });
     this.chip(this.toggle, () => i18n.toggle());
 
-    // Sound is only offered when there is sound to turn off.
+    // Settings: drawn rather than a glyph, because the gear character comes
+    // out as a colour emoji on half the phones this runs on.
+    const page = new SettingsPage(scene, { restartOnSize: scene.scene.key === 'Title' });
+    this.setBtn = scene.add
+      .text(0, margin - 30, '\u2003', CHIP)
+      .setOrigin(1, 0)
+      .setDepth(900)
+      .setInteractive({ useHandCursor: true });
+    this.chip(this.setBtn, () => page.toggle());
+    this.setGlyph = scene.add.graphics().setDepth(901);
+    const k = scaled(1);
+    this.setGlyph.lineStyle(2 * k, Palette.parchmentDim, 1);
+    [-8, 0, 8].forEach((dy, i) => {
+      this.setGlyph.lineBetween(-12 * k, dy * k, 12 * k, dy * k);
+      const kx = [-5, 5, -1][i] * k;
+      this.setGlyph.fillStyle(Palette.parchmentDim, 1).fillCircle(kx, dy * k, 3.4 * k);
+    });
+    scene.input.keyboard?.on('keydown', (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape' && page.isOpen && !wasHandled(ev)) {
+        page.close();
+        markHandled(ev);
+      }
+    });
+
+    // Sound. The chip went when the settings page came — its volume slider is
+    // the control now, and the top edge only has room for so many chips on a
+    // phone. M still mutes.
     if (audio.enabled) {
-      this.muteBtn = scene.add
-        .text(0, margin - 30, audio.muted ? '♪̸' : '♪', CHIP)
-        .setOrigin(1, 0)
-        .setDepth(900)
-        .setInteractive({ useHandCursor: true });
-      this.chip(this.muteBtn, () => audio.toggleMute());
-      this.offMute = audio.onChange((m) => this.muteBtn?.setText(m ? '♪̸' : '♪'));
       scene.input.keyboard?.on('keydown', (ev: KeyboardEvent) => {
         if (ev.repeat || wasHandled(ev)) return;
         if (ev.key === 'm' || ev.key === 'M') {
@@ -158,6 +180,9 @@ export class Chrome {
   /** The chips stack leftward from the language one, whatever width it is. */
   private place(): void {
     let x = this.toggle.x - this.toggle.width - 10;
+    this.setBtn.setX(x);
+    this.setGlyph.setPosition(x - this.setBtn.width / 2, this.setBtn.y + this.setBtn.height / 2);
+    x -= this.setBtn.width + 10;
     if (this.logBtn) {
       this.logBtn.setX(x);
       x -= this.logBtn.width + 10;

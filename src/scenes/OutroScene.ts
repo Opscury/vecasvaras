@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { fillLoc, i18n, L, t, type Loc } from '../core/i18n';
 import { outro, tally, ui } from '../content/script';
 import { state } from '../core/state';
+import { bag } from '../core/inventory';
 import { holdings, BREAD_CAP } from '../core/holdings';
 import { ending, shortfalls } from '../core/rules';
 import { Hex, Fonts, Layout, Palette, Timing, px, scaled } from '../core/theme';
@@ -13,7 +14,7 @@ import { SignMark } from '../ui/Sign';
 import { padHit } from '../ui/hit';
 import { ignoreKey, isAdvanceKey, markHandled } from '../ui/keys';
 import { fadeIn, goTo, isLeaving } from './transition';
-import { CHIMNEYS, addEvening, addUpgrades } from './villageArt';
+import { CHIMNEYS, SHEAF_SLOTS, addEvening, addSheaf, addUpgrades } from './villageArt';
 import { audio } from '../core/audio';
 import { makeBlob } from '../fx/textures';
 
@@ -50,6 +51,8 @@ export class OutroScene extends Phaser.Scene {
 
     // The village as the player left it, at the end of the day.
     addUpgrades(this, painting, run, { animate: false, alpha: 0.9 });
+    // The store, still standing against the granary wall on the last evening.
+    for (let i = 0; i < Math.min(SHEAF_SLOTS, bread); i++) addSheaf(this, painting, i, false);
     addEvening(this, painting, { lit: 1 + bread, arriving: false });
 
     const air = new Atmosphere(this)
@@ -141,6 +144,10 @@ export class OutroScene extends Phaser.Scene {
       colour: run.catLost ? Hex.mist : Hex.parchmentDim,
       italic: true,
     });
+    // The Devil's hat, if he left it: the rarest thing a year can end with.
+    const hatLine = bag.has('hat')
+      ? add(rightX, subY + scaled(32), () => tally.hat, { size: px(21), colour: Hex.rye, italic: true })
+      : null;
 
     const verdictY = height * 0.64;
     const verdict = add(width / 2, verdictY, () => tally[kind], {
@@ -181,6 +188,7 @@ export class OutroScene extends Phaser.Scene {
         audio.play('tally');
         fadeUp(rowV, 0, 500);
         fadeUp(subV, 250, 500);
+        if (hatLine) fadeUp(hatLine, 700, 500);
       });
     });
     fadeUp(verdict, 3400);

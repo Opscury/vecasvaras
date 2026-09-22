@@ -1,0 +1,6 @@
+{
+  "vecasvaras.save.v3": { "jumis": "good", "jumisPick": "leave", "sheaves": 7, "fieldMask": "", "velns": "none", "velnsPick": "none", "catLost": false, "devilGone": false, "crumb": false, "introSeen": true, "outroSeen": false, "metElder": true, "jumisPaid": true, "velnsPaid": false, "scene": "Village", "shown": { "jumis": "good", "jumisPick": "leave", "jumisPaid": true, "sheaves": 7, "velns": "none" } },
+  "vecasvaras.bag.v1": ["bread"],
+  "vecasvaras.seen.v1": ["bagIntro"],
+  "vecasvaras.lang": "lv"
+}

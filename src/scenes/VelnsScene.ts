@@ -25,6 +25,7 @@ import { Bag } from '../ui/Bag';
 import { bag } from '../core/inventory';
 import { Painting } from '../ui/Painting';
 import { Prompt } from '../ui/Prompt';
+import { Portrait } from '../ui/Portrait';
 import { Layout } from '../core/theme';
 import { fadeIn, goTo } from './transition';
 import { CAT_PAW_SLIDE, CAT_WALK_ANIM, CAT_WALK_FPS, defineAnims } from './assets';
@@ -109,8 +110,52 @@ const CAT_CROSS = { from: { x: 1128, y: 604, h: 86 }, to: { x: 862, y: 432, h: 5
 
 type Phase = 'arrive' | 'wade' | 'talk' | 'night' | 'resolved';
 
+/**
+ * The Devil's cutout came with a hummock of bright daylight-green moss under
+ * him. The bog's moss is russet, and at night — with the narration panel down
+ * and nothing dimming him — that green patch gave the whole figure away as
+ * pasted in. This recolours the green in the lower part of the sprite towards
+ * the painting's own rust, once, into a texture of its own.
+ */
+function bogMossDevil(scene: Phaser.Scene): string {
+  const key = 'velns-bog';
+  if (scene.textures.exists(key)) return key;
+  const src = scene.textures.get('velns').getSourceImage() as HTMLImageElement;
+  const w = src.width;
+  const h = src.height;
+  const tex = scene.textures.createCanvas(key, w, h);
+  if (!tex) return 'velns';
+  const ctx = tex.getContext();
+  ctx.drawImage(src, 0, 0);
+  const img = ctx.getImageData(0, 0, w, h);
+  const d = img.data;
+  const from = Math.floor(h * 0.5);
+  for (let y = from; y < h; y++) {
+    // Fade the effect in over the top of the band, so nothing has a seam.
+    const k = Math.min(1, (y - from) / (h * 0.08));
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (d[i + 3] === 0) continue;
+      const r = d[i];
+      const g = d[i + 1];
+      const b = d[i + 2];
+      const green = g - Math.max(r, b);
+      if (green <= 4) continue;
+      const amt = Math.min(1, green / 40) * k;
+      const l = 0.3 * r + 0.55 * g + 0.15 * b;
+      d[i] = r + (l * 1.05 - r) * amt;
+      d[i + 1] = g + (l * 0.6 - g) * amt;
+      d[i + 2] = b + (l * 0.5 - b) * amt;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  tex.refresh();
+  return key;
+}
+
 export class VelnsScene extends Phaser.Scene {
   private narration!: Narration;
+  private portrait!: Portrait;
   private riddleRight = false;
   private quick = false;
   private bagUi!: Bag;
@@ -125,7 +170,11 @@ export class VelnsScene extends Phaser.Scene {
   private stepsTaken = 0;
   /** Which hummock the false light is over. */
   private lureAt = 0;
-  private lure: Phaser.GameObjects.Image | null = null;
+  private lure: Phaser.GameObjects.Container | null = null;
+  /** A second, dimmer light over the other hummock: the bog has more than one. */
+  private lure2: Phaser.GameObjects.Container | null = null;
+  private beckonTimer: Phaser.Time.TimerEvent | null = null;
+  private sparkTimer: Phaser.Time.TimerEvent | null = null;
   private hintTimer: Phaser.Time.TimerEvent | null = null;
 
   /** The cat walking the causeway ahead of the player, if it came. */
@@ -158,6 +207,9 @@ export class VelnsScene extends Phaser.Scene {
     this.stepsTaken = 0;
     this.lureAt = 0;
     this.lure = null;
+    this.lure2 = null;
+    this.beckonTimer = null;
+    this.sparkTimer = null;
     this.hintTimer = null;
     this.scout = null;
     this.scoutWalk = null;
@@ -178,7 +230,7 @@ export class VelnsScene extends Phaser.Scene {
 
     const devil = this.painting.add(
       this.add
-        .image(VELNS_POS.x, VELNS_POS.y, 'velns')
+        .image(VELNS_POS.x, VELNS_POS.y, bogMossDevil(this))
         .setOrigin(0.5, 1)
         // Cooled into the bog's twilight — the cutout's moss base is daylight
         // green otherwise, and it gives the whole figure away as pasted on.
@@ -213,8 +265,19 @@ export class VelnsScene extends Phaser.Scene {
       .breathe({ amount: 0.1, duration: 26000, tint: 0x060a10 });
 
     this.narration = new Narration(this);
+    // His face, close: glinting eyes that blink, the grin that nods on every line.
+    this.portrait = new Portrait(this, this.narration, {
+      key: 'portrait-velns',
+      name: velns.name,
+      eyes: [
+        { x: 209, y: 229 },
+        { x: 294, y: 193 },
+      ],
+      lid: 0x0e0b0a,
+      glint: 0xff9a40,
+    });
     new Chrome(this, { log: () => this.narration.history });
-    new Holdings(this);
+    new Holdings(this, undefined, { bread: false });
 
     // Registered before the bag's own handler, so it sees what was in hand at
     // the moment of the click.
@@ -239,7 +302,7 @@ export class VelnsScene extends Phaser.Scene {
         this.tell(velns.replies.sickle);
         return false;
       }
-      if (this.phase !== 'night') {
+      if (this.phase !== 'night' || id === 'hat') {
         this.tell(items.notYet);
         return false;
       }
@@ -300,30 +363,128 @@ export class VelnsScene extends Phaser.Scene {
   }
 
   /**
-   * A bog light that has settled over a hummock and pulses as if to say "here".
    * Maldugunis: the lights that show a path where there is none.
+   *
+   * It used to sit over a hummock and pulse. Now it does what the belief says
+   * they do: every few seconds it comes out over the water towards wherever the
+   * player is standing, hangs there brightening, and draws back to its hummock
+   * slowly, trailing sparks — follow me. A second, dimmer one idles over the
+   * other hummock, so the bog never shows only one light to trust.
    */
   private placeLure(which: number): void {
     this.lureAt = which;
     const h = HUMMOCKS[which];
     if (!this.lure) {
-      this.lure = this.painting.add(
-        this.add
-          .image(h.x, h.y - 70, 'fx-blob')
-          .setTint(0xffd27a)
-          .setBlendMode(Phaser.BlendModes.SCREEN)
-          .setScale(0.34)
-          .setAlpha(0),
-      );
-      this.tweens.add({ targets: this.lure, alpha: { from: 0.25, to: 0.75 }, duration: 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-      this.tweens.add({ targets: this.lure, scale: 0.42, duration: 2100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      this.lure = this.makeWisp(h.x, h.y - 70, 1);
+      this.lure2 = this.makeWisp(HUMMOCKS[1 - which].x, HUMMOCKS[1 - which].y - 60, 0.55);
+      this.beckonTimer = this.time.addEvent({ delay: 5600, startAt: 2600, loop: true, callback: () => this.beckon() });
+      this.sparkTimer = this.time.addEvent({ delay: 140, loop: true, callback: () => this.spark() });
     }
+    this.tweens.killTweensOf(this.lure);
+    this.showWisp(this.lure);
     this.tweens.add({
       targets: this.lure,
       x: h.x - Layout.width / 2,
       y: h.y - 70 - Layout.height / 2,
       duration: 1800,
       ease: 'Sine.easeInOut',
+    });
+    const other = HUMMOCKS[1 - which];
+    if (this.lure2) {
+      this.tweens.killTweensOf(this.lure2);
+      this.showWisp(this.lure2);
+      this.tweens.add({
+        targets: this.lure2,
+        x: other.x - Layout.width / 2,
+        y: other.y - 60 - Layout.height / 2,
+        duration: 2400,
+        ease: 'Sine.easeInOut',
+      });
+    }
+  }
+
+  /** A halo and a hot core, breathing on their own. `power` dims the lesser one. */
+  private makeWisp(x: number, y: number, power: number): Phaser.GameObjects.Container {
+    const halo = this.add
+      .image(0, 0, 'fx-blob')
+      .setTint(0xffc860)
+      .setBlendMode(Phaser.BlendModes.SCREEN)
+      .setScale(1.5 * power)
+      .setAlpha(0.45 * power);
+    const core = this.add
+      .image(0, 0, 'fx-blob')
+      .setTint(0xfff4c8)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setScale(0.3 * power)
+      .setAlpha(0.95 * power);
+    // Its light lying on the black water under it.
+    const pool = this.add
+      .image(0, 70, 'fx-blob')
+      .setTint(0xffb040)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setScale(1.3 * power, 0.28 * power)
+      .setAlpha(0.3 * power);
+    const w = this.painting.add(this.add.container(x, y, [pool, halo, core]).setAlpha(0));
+    this.tweens.add({ targets: halo, alpha: { from: 0.25 * power, to: 0.55 * power }, duration: 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    this.tweens.add({ targets: core, scale: 0.38 * power, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    // Never quite still.
+    this.tweens.add({ targets: [halo, core], y: { from: -7, to: 7 }, x: { from: -4, to: 4 }, duration: 2300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    return w;
+  }
+
+  /**
+   * Fades a wisp up if it is not already lit. Every move starts by killing the
+   * wisp's tweens, and the fade-in is one of them — killed half-way, it left
+   * the light at nothing.
+   */
+  private showWisp(w: Phaser.GameObjects.Container): void {
+    if (w.alpha < 1) this.tweens.add({ targets: w, alpha: 1, duration: 1000 });
+  }
+
+  /** Out over the water towards the player, a held breath, and slowly back. */
+  private beckon(): void {
+    const w = this.lure;
+    if (!w || this.phase !== 'wade' || this.narration.busy) return;
+    const home = HUMMOCKS[this.lureAt];
+    const standing =
+      this.stepsTaken === 0 ? { x: CAT_BANK.x + 60, y: 960 } : PLANKS.find((q) => q.order === this.stepsTaken - 1)!;
+    const toward = {
+      x: Phaser.Math.Linear(home.x, standing.x, 0.55),
+      y: Phaser.Math.Linear(home.y - 70, standing.y - 90, 0.55),
+    };
+    this.tweens.killTweensOf(w);
+    this.showWisp(w);
+    this.tweens.chain({
+      targets: w,
+      tweens: [
+        { x: toward.x - Layout.width / 2, y: toward.y - Layout.height / 2, scale: 1.25, duration: 1700, ease: 'Sine.easeInOut' },
+        { scale: 1.45, duration: 700, yoyo: true, ease: 'Sine.easeInOut' },
+        { x: home.x - Layout.width / 2, y: home.y - 70 - Layout.height / 2, scale: 1, duration: 2400, ease: 'Sine.easeInOut' },
+      ],
+    });
+    audio.play('chime', { volume: 0.12, rate: 1.7 });
+  }
+
+  /** Sparks shed by the lead light as it moves, drifting up and out. */
+  private spark(): void {
+    const w = this.lure;
+    if (!w || w.alpha < 0.5) return;
+    const sp = this.painting.add(
+      this.add
+        .image(w.x + Layout.width / 2 + Phaser.Math.Between(-10, 10), w.y + Layout.height / 2 + Phaser.Math.Between(-8, 8), 'fx-blob')
+        .setTint(0xffe0a0)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setScale(0.05)
+        .setAlpha(0.7),
+    );
+    this.tweens.add({
+      targets: sp,
+      y: sp.y - Phaser.Math.Between(18, 40),
+      x: sp.x + Phaser.Math.Between(-12, 12),
+      alpha: 0,
+      scale: 0.02,
+      duration: Phaser.Math.Between(700, 1200),
+      onComplete: () => sp.destroy(),
     });
   }
 
@@ -358,6 +519,8 @@ export class VelnsScene extends Phaser.Scene {
       lore.unlock('maldugunis');
       // The light moves on, as they do.
       this.placeLure(1 - this.lureAt);
+      // It flares — pleased with itself — as it moves on.
+      if (this.lure) this.tweens.add({ targets: this.lure, scale: 1.9, duration: 260, yoyo: true, ease: 'Quad.easeOut' });
     }
   }
 
@@ -382,7 +545,13 @@ export class VelnsScene extends Phaser.Scene {
     this.hintTimer?.remove(false);
     this.hintTimer = null;
     this.spots.forEach((s) => s.setEnabled(false));
-    if (this.lure) this.tweens.add({ targets: this.lure, alpha: 0, duration: 900, onComplete: () => this.lure?.destroy() });
+    this.beckonTimer?.remove(false);
+    this.sparkTimer?.remove(false);
+    [this.lure, this.lure2].forEach((w) => {
+      if (!w) return;
+      this.tweens.killTweensOf(w);
+      this.tweens.add({ targets: w, alpha: 0, duration: 900, onComplete: () => w.destroy() });
+    });
     // He does not walk on. He is simply there, the way he always was.
     this.tweens.add({
       targets: this.devil,
@@ -531,6 +700,7 @@ export class VelnsScene extends Phaser.Scene {
 
   private greet(): void {
     this.phase = 'talk';
+    this.portrait.show();
     const lines = bag.has('cat') ? [...velns.greet.slice(0, 1), velns.catNoticed, ...velns.greet.slice(1)] : velns.greet;
     this.narration.say(lines, () => this.askRiddle());
   }
@@ -804,9 +974,12 @@ export class VelnsScene extends Phaser.Scene {
 
     const r = gone ? reckoning.velns.gone : good ? reckoning.velns.good : reckoning.velns.poor;
     const keptCat = pick !== 'cat' && bag.has('cat');
-    const gain = keptCat ? joinLoc(r.gain, reckoning.velns.catKept) : r.gain;
+    // Answered as an equal and paid in full: he leaves his hat.
+    const respect = good && this.riddleRight;
+    let gain = keptCat ? joinLoc(r.gain, reckoning.velns.catKept) : r.gain;
+    if (respect) gain = joinLoc(gain, reckoning.velns.hatKept);
 
-    const finish = () => {
+    const reckon = () => {
       this.narration.hide();
       new Reckoning(this, {
         sign: 'crossing',
@@ -818,6 +991,7 @@ export class VelnsScene extends Phaser.Scene {
         onDone: () => goTo(this, 'Village'),
       });
     };
+    const finish = () => (respect ? this.leaveHat(reckon) : reckon());
 
     const crow = () => {
       audio.play('cock');
@@ -871,6 +1045,34 @@ export class VelnsScene extends Phaser.Scene {
         );
         break;
     }
+  }
+
+  /**
+   * The hat, set down on the planks where he sat, and into the bag. Said while
+   * it happens, so the gift is seen before the verdict card covers the bog.
+   */
+  private leaveHat(then: () => void): void {
+    const from = { x: VELNS_POS.x - 20, y: VELNS_POS.y - 360 };
+    const rest = { x: 1170, y: 628 };
+    const hat = this.painting.add(this.add.image(from.x, from.y, 'item-hat').setTint(BOG_TINT).setAlpha(0));
+    hat.setScale(96 / hat.width);
+    this.tweens.add({ targets: hat, alpha: 1, duration: 300 });
+    this.tweens.add({
+      targets: hat,
+      x: rest.x - Layout.width / 2,
+      y: rest.y - Layout.height / 2,
+      angle: -14,
+      duration: 900,
+      ease: 'Quad.easeIn',
+      onComplete: () => audio.play('bag', { volume: 0.3 }),
+    });
+    this.narration.say([velns.hat], () => {
+      this.narration.hide();
+      hat.destroy();
+      this.bagUi.fly('item-hat', rest.x, rest.y);
+      bag.add('hat');
+      this.time.delayedCall(700, then);
+    });
   }
 
   /** Whatever is still missing goes down in one breath: a kept bargain. */

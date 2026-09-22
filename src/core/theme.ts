@@ -1,3 +1,5 @@
+import { settings } from './settings';
+
 /**
  * One place for every colour, size and easing in the game.
  *
@@ -73,8 +75,12 @@ export const Compact: boolean = fitFactor() < 0.62 || Touch;
  */
 export const UI_SCALE = Compact ? 1.45 : 1;
 
-/** A font size in canvas pixels, scaled for the device. */
-export const px = (base: number): string => `${Math.round(base * UI_SCALE)}px`;
+/**
+ * A font size in canvas pixels, scaled for the device and for the player's own
+ * text-size setting. Read when a piece of text is made, so a change of setting
+ * reaches everything drawn from then on.
+ */
+export const px = (base: number): string => `${Math.round(base * UI_SCALE * settings.textScale)}px`;
 
 /** The same, for padding and spacing numbers. */
 export const scaled = (base: number): number => Math.round(base * UI_SCALE);

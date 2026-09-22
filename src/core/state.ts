@@ -5,11 +5,15 @@
  * localStorage on every mutation so a player who closes the tab mid-bog comes
  * back where they were.
  *
- * What outlives a run — the beliefs found — is kept elsewhere (`lore.ts`), so
- * starting over never wipes it.
+ * The beliefs found are kept in `lore.ts`, but they belong to the run: a new
+ * game starts the page empty. Carrying them across read as a bug — a freshly
+ * started game announcing four of seven beliefs already found — and it cost
+ * the page its whole point, which is to be filled by playing.
  */
 
 import { bag } from './inventory';
+import { lore } from './lore';
+import { once } from './once';
 import type { JumisPick, VelnsPick } from './rules';
 
 export type Outcome = 'none' | 'poor' | 'good';
@@ -171,8 +175,15 @@ class GameState {
   reset(): void {
     this.data = blank();
     this.save();
-    // Starting over means walking out of the house with nothing again.
+    // Starting over means walking out of the house with nothing again, and
+    // knowing nothing again: an empty bag and an empty beliefs page.
     bag.clear();
+    lore.clear();
+    // The bag explains itself again. The verses stay skippable: they are the
+    // game's content, not its instructions, and a second year should be quicker.
+    once.forget('bagIntro');
+    // And the new bridge is struck onto the map again when it is built.
+    once.forget('map:bridge');
     this.listeners.forEach((fn) => fn());
   }
 

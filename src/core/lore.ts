@@ -6,7 +6,8 @@
  * and each is recorded here the first time the player runs into it, so the
  * folklore is something they collect rather than something the game lectures.
  *
- * Per install, not per year: a belief once learnt stays learnt.
+ * Per run, not per install: `state.reset()` empties this, so a new game has
+ * a new page to fill. That is the whole reward for playing again.
  */
 
 export type LoreId =
@@ -81,7 +82,7 @@ class Lore {
     return () => this.listeners.delete(fn);
   }
 
-  /** For tests. */
+  /** Emptied by `state.reset()` when a new game starts, and by the tests. */
   clear(): void {
     this.found.clear();
     try {

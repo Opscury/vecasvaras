@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Layout } from '../core/theme';
+import { applyGrade } from '../fx/GradePipeline';
 
 type Placeable = Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform;
 
@@ -26,6 +27,8 @@ export class Painting {
     this.root = scene.add.container(width / 2, height / 2);
     this.bg = scene.add.image(0, 0, key).setDisplaySize(width, height);
     this.root.add(this.bg);
+    // Every painting through the same grade, so the scenes read as one hand.
+    applyGrade(this.root);
   }
 
   /**

@@ -196,6 +196,42 @@ transparent padding above and below the bread — that is what makes it draw sma
 ghost while staying centred in the tray slot. Trim that padding and the poor loaf starts
 drawing *bigger* than the good one.
 
+## The sheaves on the granary
+
+`sheaf_a.png` / `sheaf_b.png`, Flux 2 Pro through Picsart, keyed with `picsart-sod-v8-2`,
+trimmed to their alpha box and scaled to a 420-high canvas like everything else here.
+
+Two things were learnt making them. The first attempts were prompted as a sheaf "isolated on
+a plain white background", and every one came with a painted cast shadow, which the keyer
+read as part of the subject and left behind as a grey veil down one side. Asking for the
+object **floating**, with "no shadow, no ground plane, no surface, no reflection" in both the
+prompt and the negative prompt, is what produced a cutout with nothing to clean up.
+
+The second is that they are tinted `0xe4e0d6` in `villageArt.ts` rather than the `BLEND`
+(`0xd9d5cc`) the buildings take. Straw catches what light there is; at the buildings' tint a
+sheaf on that dark ground read as a bush.
+
+Positions are in `SHEAVES` in `scenes/villageArt.ts`, measured against the granary — it
+stands 235 tall on the old foundation, so a sheaf at that depth is a little under half of
+it. They stand on the open ground in front of the foundation rather than against the wall:
+tucked against the granary they were half in its shadow and unreadable at phone scale.
+
+## Portraits, the hat and the codex vignettes (22 Sept)
+
+**Portraits.** Picsart's generator only takes a reference image by public URL, so Anna's
+portrait is generated from a description of `elder.png` rather than from the sprite. At the
+size she stands in the yard (about 100px) the two cannot be compared, and the portrait is
+where her face actually is. The Devil's portrait is the opposite case: `velns.png` is large
+enough that a head-and-shoulders crop, upscaled, holds up at portrait size — so it *is* the
+sprite, and cannot disagree with it. His eye positions (texture px, 480x640) are `(209,229)`
+and `(294,193)`; the blink and the glint in `ui/Portrait.ts` are placed on them.
+
+**Codex vignettes.** Prompted as "sepia ink etching vignette for a 19th-century folklore
+book, fine hatched pen lines only, on plain white paper". One came back with a coloured cat;
+it does not matter, because every vignette is converted to a single ink colour
+(`#48301a`) with alpha taken from darkness, so they sit on the book's parchment like printed
+ink rather than like pictures pasted onto it. The oval feather is applied at the same time.
+
 ## Still needs commissioning
 
 The audio is done — twelve one-shots and three ambient beds are in and wired; see

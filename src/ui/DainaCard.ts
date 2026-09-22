@@ -3,7 +3,7 @@ import { i18n, t } from '../core/i18n';
 import { dainas, dainaText } from '../content/dainas';
 import { ui } from '../content/script';
 import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
-import { ignoreKey, isAdvanceKey, markHandled } from './keys';
+import { ignoreKey, isAdvanceKey, markHandled, setCard } from './keys';
 import { once } from '../core/once';
 import { audio, type Tune } from '../core/audio';
 
@@ -51,6 +51,7 @@ export class DainaCard {
 
   constructor(scene: Phaser.Scene, key: keyof typeof dainas, onDone: () => void) {
     this.key = key;
+    setCard(scene, true);
     const { width, height } = Layout;
 
     const veil = scene.add.graphics();
@@ -139,6 +140,7 @@ export class DainaCard {
         ease: 'Quad.easeIn',
         onComplete: () => {
           this.root.destroy(true);
+          setCard(scene, false);
           onDone();
         },
       });

@@ -33,6 +33,22 @@ class Once {
     return this.seen.has(key);
   }
 
+  /**
+   * Makes a moment new again. Used when a game is started over: the bag's
+   * card is teaching, not content, and a player starting a fresh year — or a
+   * stranger picking up a demo someone else has played — needs it again.
+   */
+  forget(key: string): void {
+    this.seen.delete(key);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...this.seen]));
+      const old = LEGACY[key];
+      if (old) localStorage.removeItem(old);
+    } catch {
+      /* ignore */
+    }
+  }
+
   /** Marks it seen. Returns true if this was the first time. */
   mark(key: string): boolean {
     if (this.seen.has(key)) return false;

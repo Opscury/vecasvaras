@@ -26,9 +26,9 @@ No attribution is required by Picsart. Attribution is given here for the project
 ## Audio — synthesised
 
 `mus_kokle_jumis` · `mus_kokle_velns` · `sfx_frog` · `sfx_gust` · `sfx_splash` · `sfx_sheaf` ·
-`sfx_chime`
+`sfx_chime` · `sfx_paper`
 
-Made from nothing by `tools/build_synth.py` (NumPy/SciPy, encoded with ffmpeg) in September 2026:
+Made from nothing by `tools/build_synth.py` (and `sfx_paper`, the map unrolling, by `tools/build_paper.py`) (NumPy/SciPy, encoded with ffmpeg) in September 2026:
 no samples, no generator service, no third-party material. The two kokle melodies were
 composed for this project in a traditional idiom and are not arrangements of any existing
 tune. Original work of the project; nothing to credit, nothing to clear.
@@ -84,6 +84,15 @@ Images, **Flux 2 Pro**:
 | `bridge_full_v3.png` | The same bridge as a flat deck with a stone footing at each end. This is the one in the build |
 | `item_bread_good.png` | A tall dark rye loaf — the bread from a good year |
 | `item_bread_poor.png` | A flat pale slab — the bread from a stripped field |
+| `sheaf_a.png` | A bound sheaf of rye, standing. One per loaf in the granary, leaning on its wall |
+| `sheaf_b.png` | A second sheaf, so a stack of three is not the same picture three times |
+| `portrait_anna.png` | Vecā Anna, head and shoulders, for the portrait beside the narration. Generated from a description — no reference image — and masked to an oval locally |
+| `item_hat.png` | The Devil's hat, keyed with `picsart-sod-v8-2` |
+| `codex_*.png` (7) | Sepia ink vignettes for the beliefs book, one per belief. Converted locally to single-ink with alpha taken from darkness, and feathered to an oval |
+
+`portrait_velns.png` is **not** a new generation: it is a crop of `velns.png` (head and
+shoulders), upscaled with Lanczos, set on a painted dark backdrop and masked to an oval —
+so it carries whatever provenance `velns.png` has.
 
 Video, **Hailuo 2.3 Fast** (image-to-video):
 

@@ -54,7 +54,9 @@ export class History {
 
   private build(): void {
     const { width, height } = Layout;
-    const veil = this.scene.add.rectangle(width / 2, height / 2, width, height, Palette.ink, 0.93);
+    // Opaque over a full-screen card, whose lettering reads through anything less.
+    const veil = this.scene.add
+      .rectangle(width / 2, height / 2, width, height, Palette.ink, keysOf(this.scene).cards > 0 ? 1 : 0.93);
 
     // Swallows every click under the page; a click anywhere closes it.
     const hit = this.scene.add.zone(width / 2, height / 2, width, height).setInteractive();

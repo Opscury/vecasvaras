@@ -59,3 +59,12 @@ parts, not routes. `<name>-en.mjs` re-runs a route with an English seed.
 | `audio` | which sounds loaded and decoded (no screenshots) |
 
 Needs `npm i -D playwright` and a Chromium; see the header of `shot.mjs`.
+
+## Added in the HUD-and-map pass (Sept 2026)
+
+| script | what it is for |
+|---|---|
+| `map` | The map at two stages: the bog road open, the crossing still missing |
+| `map2` | The map once the bridge is built, and the village that evening |
+| `pages` | The title, the bog under a daina card, the beliefs page, the log |
+| `errand` | `yard` plus Anna's second errand, to catch the "a way has opened" beat |

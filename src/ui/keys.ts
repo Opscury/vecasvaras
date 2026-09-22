@@ -18,6 +18,24 @@ export interface SceneKeys {
   holding: boolean;
   /** Screen position of the keyboard-focused hotspot, if any. */
   focus: { x: number; y: number } | null;
+  /** How many full-screen cards are up. The corner furniture stands down above zero. */
+  cards: number;
+}
+
+/** Fired on the scene when the last card goes up or comes down. */
+export const CARD = 'vv-card';
+
+/**
+ * A full-screen card — a verse, a verdict — has appeared or gone.
+ *
+ * The strip along the top is the village's standing, and while a card is up
+ * the village is not what is being said. Counted rather than set, so two cards
+ * overlapping by a frame cannot leave the furniture hidden for good.
+ */
+export function setCard(scene: Phaser.Scene, on: boolean): void {
+  const k = keysOf(scene);
+  k.cards = Math.max(0, k.cards + (on ? 1 : -1));
+  scene.events.emit(CARD, k.cards > 0);
 }
 
 const byScene = new WeakMap<Phaser.Scene, SceneKeys>();
@@ -25,7 +43,7 @@ const byScene = new WeakMap<Phaser.Scene, SceneKeys>();
 export function keysOf(scene: Phaser.Scene): SceneKeys {
   let k = byScene.get(scene);
   if (!k) {
-    k = { modal: false, bagOpen: false, holding: false, focus: null };
+    k = { modal: false, bagOpen: false, holding: false, focus: null, cards: 0 };
     byScene.set(scene, k);
     // Scene instances are reused, so the state has to be dropped on the way out.
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => byScene.delete(scene));

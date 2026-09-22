@@ -84,6 +84,60 @@ export function addEvening(
 }
 
 /**
+ * The hour, before evening.
+ *
+ * The run is one day. It starts early — cool, the mist still lying in the
+ * hollows, the sun low over the bog road in the east — and by the time the cart
+ * is home from the field it is afternoon: the light warm and coming from the
+ * west, where the field is. Evening (`addEvening`) follows the bog.
+ *
+ * Two layers each: the whole painting multiplied towards the hour's colour, and
+ * a broad soft glow screened in from the side the sun is on. `arriving` turns
+ * morning into afternoon in front of the player, on the walk home.
+ */
+export type Hour = 'morning' | 'afternoon';
+
+const HOURS: Record<Hour, { wash: number; sun: number; at: { x: number; y: number }; sunAlpha: number }> = {
+  morning: { wash: 0xdfe5ec, sun: 0xffe9c8, at: { x: 1780, y: 180 }, sunAlpha: 0.2 },
+  afternoon: { wash: 0xf4e4c6, sun: 0xffc26e, at: { x: 150, y: 170 }, sunAlpha: 0.26 },
+};
+
+export function addDaylight(
+  scene: Phaser.Scene,
+  painting: Painting,
+  hour: Hour,
+  opts: { arriving?: boolean } = {},
+): void {
+  const make = (h: Hour, alpha: number) => {
+    const def = HOURS[h];
+    const wash = painting.add(
+      scene.add.rectangle(960, 540, 1920, 1080, def.wash, 1).setBlendMode(Phaser.BlendModes.MULTIPLY).setAlpha(alpha),
+    );
+    const sun = painting.add(
+      scene.add
+        .image(def.at.x, def.at.y, 'fx-blob')
+        .setTint(def.sun)
+        .setBlendMode(Phaser.BlendModes.SCREEN)
+        .setScale(15, 11)
+        .setAlpha(def.sunAlpha * alpha),
+    );
+    return { wash, sun, def };
+  };
+
+  if (!opts.arriving || hour === 'morning') {
+    make(hour, 1);
+    return;
+  }
+  // Morning going over into afternoon while the player watches.
+  const from = make('morning', 1);
+  const to = make('afternoon', 0);
+  scene.tweens.add({ targets: [from.wash], alpha: 0, duration: 3200, delay: 600, ease: 'Sine.easeInOut' });
+  scene.tweens.add({ targets: [from.sun], alpha: 0, duration: 3200, delay: 600, ease: 'Sine.easeInOut' });
+  scene.tweens.add({ targets: [to.wash], alpha: 1, duration: 3200, delay: 600, ease: 'Sine.easeInOut' });
+  scene.tweens.add({ targets: [to.sun], alpha: to.def.sunAlpha, duration: 3200, delay: 600, ease: 'Sine.easeInOut' });
+}
+
+/**
  * A faint cool tint that knocks the generated sprites back into the painting's
  * own light; without it they read as stickers pasted on top.
  */
@@ -130,6 +184,61 @@ const UPGRADES = {
     poor: { key: 'bridge-poor', x: 1575, y: 690, h: 85 },
   },
 } as const;
+
+/**
+ * The sheaves leaning on the granary's near wall — one per loaf in the store.
+ *
+ * The gauge along the top of the screen says how much bread there is; this is
+ * the same fact standing in the painting, where the player is actually
+ * looking. A store you can count from across the yard is worth more than a
+ * number, and it is the difference between a building that changed once behind
+ * a fade and a village that is visibly better off than it was this morning.
+ *
+ * Measured against the granary: it stands 235 tall on the old foundation, so a
+ * sheaf at that depth is a little under a third of it.
+ */
+const SHEAVES = [
+  // Middle first: a lean year stands one sheaf here, and one sheaf at the end
+  // of the row reads as something left behind rather than as the store.
+  { x: 474, y: 716, h: 120, angle: 4, key: 'sheaf-b' },
+  { x: 392, y: 704, h: 112, angle: -7, key: 'sheaf-a' },
+  { x: 556, y: 708, h: 108, angle: -3, key: 'sheaf-a' },
+] as const;
+
+/** How many can stand there. The bread gauge is capped to the same number. */
+export const SHEAF_SLOTS = SHEAVES.length;
+
+/**
+ * Stands one sheaf against the wall. `animate` drops it in, for a sheaf that
+ * arrives while the player is watching Anna thresh the cart.
+ */
+export function addSheaf(
+  scene: Phaser.Scene,
+  painting: Painting,
+  index: number,
+  animate: boolean,
+): Phaser.GameObjects.Image | null {
+  const spot = SHEAVES[index];
+  if (!spot) return null;
+
+  const shade = scene.add.graphics();
+  shade.fillStyle(0x14161a, 0.3);
+  shade.fillEllipse(spot.x, spot.y - 3, spot.h * 0.4, spot.h * 0.1);
+  painting.add(shade);
+
+  const img = painting.add(scene.add.image(spot.x, spot.y, spot.key).setOrigin(0.5, 1));
+  // Lighter than the buildings take: straw catches what light there is, and at
+  // the buildings' tint a sheaf on the dark ground read as a bush.
+  img.setScale(spot.h / img.height).setAngle(spot.angle).setTint(0xe4e0d6);
+  if (!animate) return img;
+
+  shade.setAlpha(0);
+  const rest = img.y;
+  img.setY(rest - 40).setAlpha(0);
+  scene.tweens.add({ targets: shade, alpha: 1, duration: 400, delay: 120 });
+  scene.tweens.add({ targets: img, y: rest, alpha: 1, duration: 420, ease: 'Back.easeOut' });
+  return img;
+}
 
 interface Spot {
   key: string;

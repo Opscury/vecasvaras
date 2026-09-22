@@ -572,10 +572,14 @@ export class Bag {
 
       // A warm timber ground rather than ink: the dark iron sickle vanished
       // against a near-black plate.
+      // Over a sunlit field a see-through plate vanished, and the dark sickle
+      // with it: an ink ground under the timber keeps it readable anywhere.
       const plate = this.scene.add.graphics();
-      plate.fillStyle(Palette.timber, 0.35);
+      plate.fillStyle(Palette.ink, 0.72);
       plate.fillRoundedRect(ix - half, iy - half, half * 2, half * 2, scaled(10));
-      plate.lineStyle(1, Palette.timberLight, 0.6);
+      plate.fillStyle(Palette.timber, 0.4);
+      plate.fillRoundedRect(ix - half, iy - half, half * 2, half * 2, scaled(10));
+      plate.lineStyle(1.5, Palette.ryeBright, 0.55);
       plate.strokeRoundedRect(ix - half, iy - half, half * 2, half * 2, scaled(10));
 
       const icon = this.scene.add

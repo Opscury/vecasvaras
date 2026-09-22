@@ -1,0 +1,6 @@
+{
+  "vecasvaras.save.v3": { "year": 1, "jumis": "poor", "jumisPick": "all", "sheaves": 10, "fieldMask": "", "velns": "none", "velnsPick": "none", "catLost": false, "devilGone": false, "crumb": false, "introSeen": true, "outroSeen": false, "metElder": true, "jumisPaid": false, "velnsPaid": false, "scene": "Village" },
+  "vecasvaras.bag.v1": ["sickle"],
+  "vecasvaras.seen.v1": ["bagIntro", "daina:jumis"],
+  "vecasvaras.lang": "lv"
+}

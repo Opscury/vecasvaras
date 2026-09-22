@@ -242,6 +242,89 @@ export function makePlank(scene: Phaser.Scene, key = 'fx-plank'): string {
   return key;
 }
 
+/**
+ * A sheet of old paper, for the map.
+ *
+ * Drawn rather than shipped for the same reasons as everything else here, plus
+ * one of its own: a map is the only surface in the game the player looks AT
+ * rather than into, so it has to be lit like paper — warm, mottled, darker
+ * where it has been handled, with a rubbed edge. Flat parchment-coloured
+ * rectangle reads as a dialog box.
+ */
+export function makeParchment(scene: Phaser.Scene, key = 'fx-parchment'): string {
+  const w = 1024;
+  const h = 576;
+  const tex = canvas(scene, key, w, h);
+  if (!tex) return key;
+  const ctx = tex.getContext();
+
+  let s = 20260920;
+  const rnd = () => {
+    s = (s * 1664525 + 1013904223) % 4294967296;
+    return s / 4294967296;
+  };
+
+  ctx.fillStyle = '#d8c39a';
+  ctx.fillRect(0, 0, w, h);
+
+  // Blotching: wide soft stains, warm and cool, so no two areas match.
+  for (let i = 0; i < 90; i++) {
+    const cx = rnd() * w;
+    const cy = rnd() * h;
+    const rad = 40 + rnd() * 200;
+    const warm = rnd() > 0.45;
+    const a = 0.03 + rnd() * 0.07;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+    g.addColorStop(0, warm ? `rgba(168,131,80,${a})` : `rgba(236,222,192,${a})`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
+  }
+
+  // Fibres.
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 260; i++) {
+    const x = rnd() * w;
+    const y = rnd() * h;
+    const len = 6 + rnd() * 26;
+    const ang = rnd() * Math.PI;
+    ctx.strokeStyle = `rgba(150,118,72,${0.04 + rnd() * 0.08})`;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+    ctx.stroke();
+  }
+
+  // Two old fold lines, because a map that has been folded has been carried.
+  ctx.strokeStyle = 'rgba(126,98,58,0.16)';
+  ctx.lineWidth = 2;
+  [w / 3, (w * 2) / 3].forEach((x) => {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x + (rnd() - 0.5) * 6, h);
+    ctx.stroke();
+  });
+
+  // Rubbed edges: darker and thinner towards the border, on all four sides.
+  const edge = ctx.createLinearGradient(0, 0, 0, h);
+  edge.addColorStop(0, 'rgba(92,70,42,0.42)');
+  edge.addColorStop(0.16, 'rgba(92,70,42,0)');
+  edge.addColorStop(0.84, 'rgba(92,70,42,0)');
+  edge.addColorStop(1, 'rgba(92,70,42,0.42)');
+  ctx.fillStyle = edge;
+  ctx.fillRect(0, 0, w, h);
+  const side = ctx.createLinearGradient(0, 0, w, 0);
+  side.addColorStop(0, 'rgba(92,70,42,0.38)');
+  side.addColorStop(0.12, 'rgba(92,70,42,0)');
+  side.addColorStop(0.88, 'rgba(92,70,42,0)');
+  side.addColorStop(1, 'rgba(92,70,42,0.38)');
+  ctx.fillStyle = side;
+  ctx.fillRect(0, 0, w, h);
+
+  tex.refresh();
+  return key;
+}
+
 /** Everything the atmosphere module needs, made once per scene. */
 export function ensureFxTextures(scene: Phaser.Scene): void {
   makeBlob(scene);

@@ -32,7 +32,7 @@ export class Objective {
 
     this.heading = scene.add.text(scaled(18), scaled(12), t(objectives.heading).toUpperCase(), {
       fontFamily: Fonts.body,
-      fontSize: px(17),
+      fontSize: px(19),
       color: Hex.rye,
     });
     this.heading.setLetterSpacing?.(scaled(3));

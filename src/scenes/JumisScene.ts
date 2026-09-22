@@ -26,7 +26,7 @@ import { Painting } from '../ui/Painting';
 import { Prompt } from '../ui/Prompt';
 import { ignoreKey, keysOf, markHandled } from '../ui/keys';
 import { attachWind, type WindPipeline } from '../fx/WindPipeline';
-import { makeBlob, makeGroundBird, makeIslandEraser, makeSwathBrush } from '../fx/textures';
+import { makeBird, makeBlob, makeGroundBird, makeIslandEraser, makeSwathBrush } from '../fx/textures';
 import { flags } from '../core/flags';
 import { fadeIn, goTo } from './transition';
 import { audio } from '../core/audio';
@@ -129,6 +129,14 @@ export class JumisScene extends Phaser.Scene {
   private lastWarn = -99999;
   private lastSwish = -99999;
   private lastSample: { x: number; y: number } | null = null;
+  /** When the last sample of a stroke arrived, for its speed. */
+  private lastSampleAt = 0;
+  /** How fast the blade is moving, px/ms, smoothed. Sets the pitch of the swish. */
+  private strokeSpeed = 0;
+  /** When the blade last took any rye; the wind rises when it has been still a while. */
+  private lastCutAt = 0;
+  private lastGust = -99999;
+  private lastBirds = -99999;
   /**
    * Where the current stroke began, or null between strokes. The double ear is
    * only cut by a stroke that STARTS on it: a sweep across the field at the
@@ -237,7 +245,7 @@ export class JumisScene extends Phaser.Scene {
 
     this.narration = new Narration(this);
     new Chrome(this, { log: () => this.narration.history });
-    new Holdings(this);
+    new Holdings(this, undefined, { bread: false });
     this.tally = new SheafTally(this, {
       title: jumis.sheaves,
       enough: { label: jumis.enough, onPress: () => this.finishCut() },
@@ -323,6 +331,7 @@ export class JumisScene extends Phaser.Scene {
 
   update(): void {
     this.band?.setVisible(this.phase === 'cutting' && this.bagUi?.holding === 'sickle');
+    this.breeze();
     this.bagUi?.attention(this.phase === 'cutting' && !this.bagUi.holding && !this.narration.busy);
   }
 
@@ -478,6 +487,13 @@ export class JumisScene extends Phaser.Scene {
   private sweep(x: number, y: number): void {
     const from = this.lastSample;
     this.lastSample = { x, y };
+    const now = this.time.now;
+    if (from) {
+      const dt = Math.max(8, now - this.lastSampleAt);
+      const v = Phaser.Math.Distance.Between(from.x, from.y, x, y) / dt;
+      this.strokeSpeed = Phaser.Math.Linear(this.strokeSpeed, v, 0.5);
+    }
+    this.lastSampleAt = now;
     if (!from) {
       this.strike(x, y);
       this.protectTuft();
@@ -503,7 +519,9 @@ export class JumisScene extends Phaser.Scene {
     this.revealSky();
     this.paint(x, y);
     if (this.cover.stamp(x, y, SWATH_W, SWATH_H) > 0) {
+      this.lastCutAt = this.time.now;
       this.swish();
+      this.scatter(x, y);
       this.onProgress();
     }
   }
@@ -636,7 +654,72 @@ export class JumisScene extends Phaser.Scene {
     const now = this.time.now;
     if (now - this.lastSwish < SWISH_MS) return;
     this.lastSwish = now;
-    audio.play('sickle', { volume: 0.5 });
+    // A lazy stroke hisses low; a fast one sings. The volume follows too.
+    const v = Math.min(3, this.strokeSpeed);
+    audio.play('sickle', {
+      volume: 0.34 + v * 0.1,
+      rate: Phaser.Math.Clamp(0.8 + v * 0.17, 0.8, 1.32) * Phaser.Math.FloatBetween(0.97, 1.03),
+    });
+  }
+
+  /**
+   * The wind rises when the blade stops. While the player is cutting, the rye
+   * they are standing in is what moves least; give them a breath and the whole
+   * field starts to lean — which is the moment they actually look at it.
+   */
+  private breeze(): void {
+    const wind = this.wind;
+    if (!wind) return;
+    const now = this.time.now;
+    const cutting = this.phase === 'cutting';
+    const still = cutting && this.lastCutAt > 0 && now - this.lastCutAt > 1500;
+    const want = still ? 2.3 : 1;
+    const was = wind.boost;
+    wind.boost = Phaser.Math.Linear(wind.boost, want, still ? 0.012 : 0.06);
+    if (was < 1.5 && wind.boost >= 1.5 && now - this.lastGust > 8000) {
+      this.lastGust = now;
+      audio.play('gust', { volume: 0.36 });
+    }
+  }
+
+  /**
+   * Birds that were down in the rye, flushed by the blade. Not every swath has
+   * them, and never twice in a second.
+   */
+  private scatter(x: number, y: number): void {
+    const now = this.time.now;
+    if (now - this.lastBirds < 1300 || Math.random() > 0.45) return;
+    this.lastBirds = now;
+    const key = makeBird(this);
+    const n = Phaser.Math.Between(3, 5);
+    const away = x < Layout.width / 2 ? -1 : 1;
+    for (let i = 0; i < n; i++) {
+      const b = this.add
+        .image(x + Phaser.Math.Between(-40, 40), y - 10 + Phaser.Math.Between(-12, 12), key)
+        .setTint(0x2c2b26)
+        .setDepth(185)
+        // Close to the viewer, so big: these are the birds at your feet.
+        .setScale(1.9 + Math.random() * 0.8)
+        .setFlipX(away < 0)
+        .setAlpha(0.95);
+      const base = b.scaleY;
+      // Wings, beating.
+      this.tweens.add({ targets: b, scaleY: base * 0.35, duration: 90 + i * 12, yoyo: true, repeat: -1 });
+      this.tweens.add({
+        targets: b,
+        x: b.x + away * Phaser.Math.Between(150, 420),
+        y: b.y - Phaser.Math.Between(320, 560),
+        scaleX: b.scaleX * 0.45,
+        alpha: 0,
+        duration: Phaser.Math.Between(1400, 2100),
+        delay: i * 70,
+        ease: 'Quad.easeOut',
+        onComplete: () => {
+          this.tweens.killTweensOf(b);
+          b.destroy();
+        },
+      });
+    }
   }
 
   /** What is left of the wind goes with the last of the crop. */

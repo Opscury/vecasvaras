@@ -3,7 +3,7 @@ import { type Loc, i18n, t } from '../core/i18n';
 import { reckoning, ui } from '../content/script';
 import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { SignMark, type SignKey } from './Sign';
-import { ignoreKey, isAdvanceKey, markHandled } from './keys';
+import { ignoreKey, isAdvanceKey, markHandled, setCard } from './keys';
 
 /**
  * The card shown after an encounter resolves, before the player walks home.
@@ -56,6 +56,7 @@ export class Reckoning {
   constructor(scene: Phaser.Scene, opts: ReckoningOpts) {
     this.scene = scene;
     this.onDone = opts.onDone;
+    setCard(scene, true);
     const { width, height } = Layout;
 
     this.veil = scene.add
@@ -64,10 +65,13 @@ export class Reckoning {
     this.items.push(this.veil);
     scene.tweens.add({ targets: this.veil, fillAlpha: 0.88, duration: 700, ease: 'Sine.easeOut' });
 
-    const heading = this.line(width / 2, height * 0.07, reckoning.title, {
-      size: '24px',
+    // Under the chips, at a size that can be read on a phone: it was a fixed
+    // 24px, which came out at ten real pixels held sideways.
+    const heading = this.line(width / 2, Layout.margin, reckoning.title, {
+      size: px(24),
       colour: Hex.parchmentDim,
     });
+    heading.setLetterSpacing?.(scaled(3));
     scene.tweens.add({ targets: heading, alpha: 1, duration: 600, delay: 200, ease: 'Quad.easeOut' });
 
     this.mark = new SignMark(scene, {
@@ -271,6 +275,7 @@ export class Reckoning {
       onComplete: () => {
         this.mark.destroy();
         this.items.forEach((o) => o.destroy());
+        setCard(this.scene, false);
         this.onDone();
       },
     });

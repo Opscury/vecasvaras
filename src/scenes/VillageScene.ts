@@ -16,11 +16,12 @@ import { SheafTally } from '../ui/SheafTally';
 import { Atmosphere } from '../fx/Atmosphere';
 import { Bag } from '../ui/Bag';
 import { Painting } from '../ui/Painting';
+import { Portrait } from '../ui/Portrait';
 import { Palette } from '../core/theme';
 import { bag, type ItemId } from '../core/inventory';
 import { textureFor } from '../core/itemArt';
 import { fadeIn, goTo } from './transition';
-import { CHIMNEYS, addEvening, addUpgrades } from './villageArt';
+import { CHIMNEYS, SHEAF_SLOTS, addDaylight, addEvening, addSheaf, addUpgrades } from './villageArt';
 import { audio } from '../core/audio';
 import { makeBlob } from '../fx/textures';
 
@@ -76,10 +77,14 @@ export class VillageScene extends Phaser.Scene {
   private catSprite: Phaser.GameObjects.Image | null = null;
   private catSpot: Hotspot | null = null;
   private objective!: Objective;
+  /** Anna's face, beside the panel while she is the one talking. */
+  private portrait!: Portrait;
   private holdings!: Holdings;
   private chimneys: Array<{ setLevel: (level: 0 | 1 | 2 | 3) => void } | null> = [];
   /** What the player was last shown here, so the changes can land in front of them. */
   private lastSeen: Shown = NOTHING_SHOWN;
+  /** Sheaves standing against the granary — the store, counted, in the painting. */
+  private sheaves = 0;
 
   constructor() {
     super('Village');
@@ -90,6 +95,7 @@ export class VillageScene extends Phaser.Scene {
 
     // Phaser reuses this instance on every visit, so every field starts over.
     this.spots = [];
+    this.sheaves = 0;
     this.catSprite = null;
     this.catSpot = null;
     this.chimneys = [];
@@ -102,11 +108,13 @@ export class VillageScene extends Phaser.Scene {
     const s = state.get();
     const news = this.readNews();
     const evening = s.velns !== 'none';
+    // Before the harvest it is early: the mist lies heavier in the hollows.
+    const morning = s.jumis === 'none';
 
     const air = new Atmosphere(this)
       .drift(painting.root, { scale: 1.03, duration: 40000 })
       .fog({ band: 0.12, height: 260, tint: evening ? 0x9aa3b0 : 0xe6ecef, alpha: 0.24, speed: 75000, layers: 2 })
-      .fog({ band: 0.44, height: 330, tint: evening ? 0x8e97a2 : 0xdfe4e2, alpha: 0.16, speed: 95000, layers: 2 })
+      .fog({ band: 0.44, height: 330, tint: evening ? 0x8e97a2 : 0xdfe4e2, alpha: morning ? 0.27 : 0.16, speed: 95000, layers: 2 })
       .birds({ band: [0.06, 0.22], every: evening ? [12000, 24000] : [6000, 14000] })
       .motes({ tint: evening ? 0xc8c0b0 : 0xfff0cc, count: evening ? 18 : 40, driftX: 18, scale: 0.16, alpha: 0.6, band: [0.36, 0.92] })
       .breathe({ amount: 0.06, duration: 27000 });
@@ -116,16 +124,29 @@ export class VillageScene extends Phaser.Scene {
 
     // --- everything set into the painting, in drawing order
     addUpgrades(this, painting, s, { animate: true, seen: this.lastSeen });
+    // The store as they left it. Anything earned while they were away arrives
+    // in front of them, below.
+    this.setSheaves(holdings(this.lastSeen).bread, false);
     this.addElder();
     this.addCat();
     if (s.crumb) this.drawCrumb(false);
     if (evening) addEvening(this, painting, { lit: 1 + holdings().bread, arriving: news.bridge !== null });
+    else addDaylight(this, painting, morning ? 'morning' : 'afternoon', { arriving: news.granary !== null });
 
     // --- the furniture
     this.narration = new Narration(this);
+    this.portrait = new Portrait(this, this.narration, { key: 'portrait-anna', name: elder.label });
     new Chrome(this, { log: () => this.narration.history });
     this.objective = new Objective(this);
-    this.holdings = new Holdings(this, this.lastSeen);
+    // The map walks you somewhere exactly as the path there would.
+    this.holdings = new Holdings(this, this.lastSeen, {
+      travel: (id) => {
+        const spot = this.spots.find((s) => s.id === (id === 'field' ? 'pathField' : id === 'bog' ? 'pathBog' : ''));
+        if (!spot) return false;
+        spot.activate();
+        return true;
+      },
+    });
     this.setSmoke(this.lastSeen);
 
     // Registered before the bag's own handler, so it sees what was in hand at
@@ -151,6 +172,7 @@ export class VillageScene extends Phaser.Scene {
     if (news.granary || news.bridge) {
       this.time.delayedCall(ARRIVAL_LINE_MS, () => {
         this.holdings.refresh(true);
+        this.setSheaves(holdings().bread, true);
         if (this.narration.busy) return;
         if (news.granary) {
           this.narration.say([news.granary]);
@@ -291,6 +313,19 @@ export class VillageScene extends Phaser.Scene {
       ease: 'Sine.easeInOut',
       onComplete: () => glow.destroy(),
     });
+  }
+
+  /**
+   * Stands sheaves against the granary until there are as many as there are
+   * loaves in the store. It only ever adds: a store does not empty inside one
+   * year, and a sheaf vanishing between two visits would read as a bug.
+   */
+  private setSheaves(want: number, animate: boolean): void {
+    const target = Math.min(SHEAF_SLOTS, want);
+    while (this.sheaves < target) {
+      addSheaf(this, this.painting, this.sheaves, animate);
+      this.sheaves++;
+    }
   }
 
   /** The chimneys follow the granary. */
@@ -503,6 +538,16 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private spot(o: ConstructorParameters<typeof Hotspot>[1]): Hotspot {
+    // Anna's face comes up when she is spoken to, and goes when anything else is.
+    const click = o.onClick;
+    o = {
+      ...o,
+      onClick: () => {
+        if (o.id === 'anna') this.portrait.show();
+        else this.portrait.hide();
+        click();
+      },
+    };
     const h = new Hotspot(this, o);
     this.spots.push(h);
     return h;
@@ -517,17 +562,21 @@ export class VillageScene extends Phaser.Scene {
    */
   private useItem(id: ItemId, x: number, y: number): boolean {
     const target = hotspotAt(this, x, y)?.id ?? null;
+    if (target !== 'anna') this.portrait.hide();
     const r = village.replies;
     const run = state.get();
     let line: Loc = items.cutWrongTool;
     switch (target) {
       case 'anna':
-        line = id === 'sickle' ? r.sickleOnAnna : id === 'cat' ? r.catOnAnna : r.breadOnAnna;
+        this.portrait.show();
+        line =
+          id === 'sickle' ? r.sickleOnAnna : id === 'cat' ? r.catOnAnna : id === 'hat' ? r.hatOnAnna : r.breadOnAnna;
         break;
       case 'cat':
         if (run.catLost) break;
         if (id === 'bread') line = r.breadOnCat;
         else if (id === 'sickle') line = r.sickleOnCat;
+        else if (id === 'hat') line = r.hatOnCat;
         break;
       case 'stone':
         if (id === 'bread') {
@@ -539,6 +588,8 @@ export class VillageScene extends Phaser.Scene {
           }
         } else if (id === 'sickle') {
           line = r.sickleOnStone;
+        } else if (id === 'hat') {
+          line = r.hatOnStone;
         } else if (id === 'cat') {
           this.bagUi.putBack();
           this.catAroundStone();
@@ -660,16 +711,23 @@ export class VillageScene extends Phaser.Scene {
       cart.show(250);
       cart.set(run.sheaves);
       this.time.delayedCall(700 + run.sheaves * 90, () => {
+        this.portrait.show();
         this.narration.say(elder.harvestBack[pick], () => {
           this.narration.hide();
           this.holdings.pulse();
           cart.thresh(
             this.holdings.breadSlot,
             bread,
-            () => this.holdings.addLoaf(),
+            () => {
+              this.holdings.addLoaf();
+              this.setSheaves(this.sheaves + 1, true);
+            },
             () => {
               state.set('jumisPaid', true);
-              this.holdings.refresh(false);
+              // Deliberately not `refresh` here: that would quietly take note
+              // of the bog road opening, and the road opening is the point of
+              // Anna's next sentence. The gauge is already up to date — every
+              // loaf was counted into it as the cart was threshed.
               this.setSmoke();
               cart.hide();
               this.handOverLoaf(loaf);
@@ -681,6 +739,8 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private handOverLoaf(loaf: 'jumis' | 'good' | 'thin'): void {
+    // The threshing folded the panel away; she is talking again.
+    this.portrait.show();
     const line = elder.harvestBack.bread[loaf];
     this.narration.say([line], () => {
       this.bagUi.fly(textureFor('bread'), ELDER.x, ELDER.y - ELDER.h * 0.55);
@@ -690,7 +750,14 @@ export class VillageScene extends Phaser.Scene {
       // Straight on into the second errand: she has the player's attention.
       this.narration.say(elder.bog, () => {
         this.narration.ask(elder.bogAsk, [
-          { label: elder.choices.accept, onPick: () => this.narration.flash(elder.farewell) },
+          {
+            label: elder.choices.accept,
+            onPick: () => {
+              this.narration.flash(elder.farewell);
+              // She has just told them where to go; the map says the way is open.
+              this.holdings.refresh(true);
+            },
+          },
         ]);
       });
     });
@@ -702,6 +769,7 @@ export class VillageScene extends Phaser.Scene {
     if (run.devilGone) lines.push(elder.bogBack.devilGone);
     if (run.velnsPick === 'dawn') lines.push(elder.bogBack.dawn);
     if (run.catLost) lines.push(elder.bogBack.catLost);
+    if (bag.has('hat')) lines.push(elder.bogBack.hat);
     if (run.crumb) lines.push(elder.bogBack.crumb);
     lines.push(elder.toStone);
     this.narration.say(lines, () => {

@@ -1,3 +1,4 @@
+import { applyGrade } from '../fx/GradePipeline';
 import Phaser from 'phaser';
 import { t, i18n } from '../core/i18n';
 import { ui } from '../content/script';
@@ -61,6 +62,7 @@ export class TitleScene extends Phaser.Scene {
 
     const { width, height } = Layout;
     const bg = this.add.image(width / 2, height / 2, 'bg-title').setDisplaySize(width, height);
+    applyGrade(bg);
 
     // The menu is the first thing anyone sees, and a still menu says "slideshow"
     // before a single line of the game has been read. Mist rolling through the

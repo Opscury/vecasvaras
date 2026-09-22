@@ -116,8 +116,8 @@ export const elder = {
   /** The second errand, given once the first has been brought home. */
   bog: [
     L(
-      '«Un vēl viena daļa jāatstāj. Strauts aiznesa tiltu, un aiz purva sēž tas, kas to var uzcelt.»',
-      '“And one more share to leave. The stream took the bridge, and the one who can build it sits out past the bog.”',
+      '«Un vēl vienam jāatstāj savs. Strauts aiznesa tiltu, un aiz purva sēž tas, kas to var uzcelt.»',
+      '“And there is one more to leave something to. The stream took the bridge, and the one who can build it sits out past the bog.”',
     ),
     // Used to add "And do not go alone" — which was the answer to the bog,
     // given before the question had been asked.
@@ -151,6 +151,10 @@ export const elder = {
     dawn: L(
       '«Gaidīji līdz gaiļiem.» Viņa pašūpo galvu. «Ar velnu nevilcinās.»',
       '“You waited for the cocks.” She shakes her head. “You do not dawdle with the Devil.”',
+    ),
+    hat: L(
+      'Viņa ierauga cepuri tavā kulē un ilgi klusē. «Tātad viņš tevi cienīja.» Viņa nopūšas. «Pakar to klētī. Lai redz.»',
+      'She sees the hat in your bag and says nothing for a long while. “So he respected you.” She sighs. “Hang it in the granary. Let it be seen.”',
     ),
     crumb: L(
       '«Un akmeni tu atcerējies.» Viņa to saka tā, it kā tas būtu pats svarīgākais.',

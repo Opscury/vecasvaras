@@ -85,6 +85,12 @@ export class WindPipeline extends Phaser.Renderer.WebGL.Pipelines.PostFXPipeline
   horizon = 0.42;
   /** Everything below this fraction of the screen is left alone — the foreground. */
   ground = 0.82;
+  /**
+   * A multiplier the scene can lean on without touching `amp`: the field
+   * raises it when the blade stops, so the rye moves most when the player is
+   * still and looking at it.
+   */
+  boost = 1;
 
   private elapsed = 0;
 
@@ -109,7 +115,7 @@ export class WindPipeline extends Phaser.Renderer.WebGL.Pipelines.PostFXPipeline
     // Gusts: a slow envelope so the field breathes instead of buzzing. It never
     // drops below 40% — at 10% the rye stood dead still for seconds at a time.
     this.set1f('uGust', 0.7 + 0.3 * Math.sin(this.elapsed * 0.23));
-    this.set1f('uAmp', this.amp);
+    this.set1f('uAmp', this.amp * this.boost);
     this.set1f('uHorizon', this.horizon);
     this.set1f('uGround', this.ground);
 
