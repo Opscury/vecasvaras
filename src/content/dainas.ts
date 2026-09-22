@@ -41,11 +41,18 @@ export interface Daina {
 
 export const dainas: Record<'jumis' | 'velns', Daina> = {
   jumis: {
-    lv: 'Jumīti, Jumīti,\nKur tu paliki?\nAiz kalna ganos,\nAr raibu gotiņu.',
-    en: 'Jumis, little Jumis,\nwhere have you gone?\nBeyond the hill, herding,\nwith a dappled cow.',
-    source: 'https://tautasdziesmas.lv/tag/jumis',
-    verified: false,
+    // Checked Sept 2026 against tautasdziesmas.lv. The field and the grey stone
+    // are the encounter's own: the boundary stone stands in the rye.
+    // Still to add: its Barons (LD) number, from dainuskapis.lv.
+    lv: 'Kur, Jumīti, tu gulēji\nŠo garaju vasariņu? –\nTīrumiņa vidiņā,\nZem pelēka akmentiņa.',
+    en: 'Where, little Jumis, did you sleep\nall this long summer? –\nIn the middle of the field,\nunder a grey stone.',
+    source: 'https://tautasdziesmas.lv/vasara/kur-jumiti-tu-guleji',
+    verified: true,
   },
+  // NOT A REAL DAINA. Written from memory for the prototype and not found in
+  // any collection (searched Sept 2026). Replace it with an attested verse
+  // before release — a devil, a bog or the cocks — or drop the card for this
+  // encounter. dainuskapis.lv (search «velniņ*», «purv*») or ask LFK.
   velns: {
     lv: 'Velniņš tiltu darināja\nPurva vidū, naktiņā;\nGaiļi dzied, tilts nogrima,\nVelniņš sēž un noskatās.',
     en: 'The little devil built a bridge\nin the middle of the bog, by night;\nthe cocks crowed, the bridge sank,\nand the devil sat and watched.',

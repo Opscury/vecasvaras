@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds public/art/cat_walk_sheet.png from tools/src/catwalk.mp4.
+"""Builds art-src/cat_walk_sheet.png from tools/src/catwalk.mp4.
 
 The cat that crosses the planks in the bog used to be one still image slid
 across the screen. This turns the image-to-video take it was made from into a
@@ -40,8 +40,8 @@ from scipy import ndimage as nd
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / 'tools' / 'src' / 'catwalk.mp4'
-REFERENCE = ROOT / 'public' / 'art' / 'cat_walk.png'
-OUT = ROOT / 'public' / 'art' / 'cat_walk_sheet.png'
+REFERENCE = ROOT / 'art-src' / 'cat_walk.png'
+OUT = ROOT / 'art-src' / 'cat_walk_sheet.png'  # then: python tools/build_webp.py
 
 SAMPLE_FPS = 8          # the take is 24 fps; every third frame is plenty
 FRAMES = range(15, 27)  # one stride, ends matched -- see note 4

@@ -5,9 +5,11 @@
  * or hand the Latvian to a proofreader, this is the only file that matters
  * (with `elder.ts` and `ticejumi.ts` beside it).
  *
- * NOTE ON THE RIDDLES (velns.riddle, velns.riddle2): both are traditional
- * formulas, but like the dainas they should be checked against a primary
- * source (valoda.ailab.lv or a printed mīklu krājums) before public release.
+ * NOTE ON THE RIDDLES (velns.riddle, velns.riddle2, velns.askBack.riddle):
+ * none could be found in an online mīklu collection (checked Sept 2026). The
+ * wind riddle has the shape of a widespread European formula; the other two
+ * were written for this game. Present them as the game's own, in the shape of
+ * mīklas — never as quoted folklore — unless a printed source turns up.
  *
  * Lines added in the September "fun pass" are marked NEW in a comment and have
  * not been through a proofreader yet.

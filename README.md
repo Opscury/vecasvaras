@@ -1,12 +1,13 @@
 # Vecās Varas
 
-A short point-and-click game about paying what you owe to the old powers of
+A short point-and-click game about what you leave for the old powers of
 Latvian folklore. You are a villager. You go out past the fence, you meet
 something older than the village, and what you bring back — or fail to bring
 back — changes the place you came from.
 
 This repository is the **vertical slice**: one village hub and two complete
-encounters, roughly 5–10 minutes of play, in Latvian and English.
+encounters, roughly 5–10 minutes of play, in Latvian and English. Live at
+[vecasvaras.protu.lv](https://vecasvaras.protu.lv); `main` deploys to Netlify.
 
 ---
 
@@ -38,8 +39,8 @@ as it was left:
 
 | What was done | Called | The year |
 |---|---|---|
-| cut around the double ear, then **bent it down and tied it** (drag down) | *leave* — the tithe | whole share, full granary, honest loaf |
-| cut around it, then **pulled it up and carried it home** (drag up) | *take* — Jumja ķeršana | whole share, a granary one loaf lighter, **a loaf with Jumis in it** |
+| cut around the double ear, then **bent it down and tied it** (drag down) | *leave* — the tithe | Jumis left in peace, full granary, honest loaf |
+| cut around it, then **pulled it up and carried it home** (drag up) | *take* — Jumja ķeršana | Jumis carried home, a granary one loaf lighter, **a loaf with Jumis in it** |
 | **put the blade through it** (drag across, after one warning) | *all* | poor: the biggest cart, the least bread, a thin loaf |
 | stopped with **a third of the field or more** still standing (asked once) | *spare* | poor the other way: good bread, too little of it |
 
@@ -90,8 +91,9 @@ loaf, what kind of year it was baked in, which is the whole bog puzzle.
 **Keyboard.** Space or Enter does what a click does; the number keys pick a
 choice. Tab / Shift+Tab walk the hotspots and Enter uses the focused one. B opens
 the bag, the number keys take an item, Enter uses it, Escape puts it back. H (or
-the ⟲ chip) shows everything said so far in the scene, T (or the ◇ chip) the
-beliefs, M mutes. In the field, with the sickle in hand, Enter cuts the next
+the ⟲ chip) shows everything said so far in the scene, T (or the Jumis-sign
+chip) opens the beliefs book, K opens the map, M mutes; the ☰ chip holds the
+settings (text size, text speed, volume). In the field, with the sickle in hand, Enter cuts the next
 piece still standing and P says the day is done; Tab to the double ear and Enter
 gives the choice as a list, or cuts it if the sickle is in hand. Escape skips the
 intro. The game can be finished without a mouse.
@@ -102,8 +104,8 @@ subsystem:
 - **The sickle** hangs under the lean-to in the village. You cannot walk to the
   field without it, and the harvest is done with it, stroke by stroke — the
   difference between picking an option and doing a day's work.
-- **The rye loaf** is baked from the harvest and lands in your bag on the way
-  home. It is the offering the bog demands, and its worth depends on how you
+- **The rye loaf** is baked by Anna from the cart you bring home, and handed
+  over in her yard. It is the offering the bog demands, and its worth depends on how you
   handled Jumis.
 - **The village cat** sits on a doorstep and can be picked up. Nothing forces
   you to, and nobody says what it is for. At the bog it goes ahead of you on the
@@ -116,45 +118,50 @@ yourself. The bag glows while he waits; the list of options (the cat only if you
 brought it) is the fallback, not the first offer.
 
 **How the game tells you how you did.** After each encounter the screen darkens
-and a mark is carved: the Jumis sign, or the crossing. A debt paid in full gets
-a whole mark, cut deep and warm gold. A debt half paid gets the *same* mark,
-left unfinished — the crossing literally stops halfway over the water. Under it,
-three lines: whether the spirit is satisfied, what you are walking home with,
-and — only when you fell short — what you should have done instead and what it
-would have got you. That last line is the important one. "You did badly" is not
-feedback; *"the bread was thin because the field was left bare, with a full
-granary behind it that argument would have held"* is. A good answer that still
-cost something — the cat, or the loaf Jumis takes back out of the granary — says
-its price on a fourth line.
-
-The card cannot be clicked away until the verdict is on screen, because a
-player who has been click-advancing narration for a minute will otherwise skip
-straight past their own result.
+on a card, *Kā palika*, and a mark is carved: the Jumis sign, or the crossing.
+Seen off well, the mark is whole, cut deep and warm gold; poorly, the *same* mark
+is left unfinished — the crossing literally stops halfway over the water. Under
+it, three lines: how you parted, what you are walking home with, and — only when
+you fell short — what you could have done instead and what it would have got
+you. That last line is the important one. "You did badly" is not feedback;
+*"the bread was thin because the field was left bare"* is. A good answer that
+still cost something — the cat, or the loaf Jumis takes back out of the granary —
+says its price on a fourth line. The card cannot be clicked away until the
+verdict is on screen.
 
 Walking back into the village, the first line spoken names what changed, so the
 choice you made three clicks ago is connected to the building that is suddenly
-on the foundation. And the ending opens with a tally: both marks side by side,
-each whole or broken, a line per debt, and the total said plainly.
+on the foundation.
 
-**The village keeps the record.** On the walk home each new mark is carved
-large above the rune stone and set into its face; earlier years' marks sit above
-it, fainter. The granary and bridge settle in only when they are new. The
-chimneys smoke as the granary allows, and after the bog it is evening, with one
-lit window and one more per loaf. The cat goes back to its doorstep and
-sleeps — or the doorstep stays empty. The field can be walked back out to and
-looked at, exactly as it was cut. And the stone text says everyone gives it the
-first crumb of the first loaf: bread used on the stone does just that. Items
-used on the wrong thing get their own answers.
+**The village answers.** The granary and bridge settle in only when they are new.
+Bread is a gauge at the top centre, filling as Anna threshes the cart, and one
+bound sheaf stands in front of the granary per loaf. The chimneys smoke as the
+granary allows; the village is morning before the harvest, afternoon after it,
+and evening after the bog, with one lit window and one more per loaf. The cat
+goes back to its doorstep and sleeps — or the doorstep stays empty. The field can
+be walked back out to and looked at, exactly as it was cut. Bread used on the
+stone leaves a crumb at its foot. Items used on the wrong thing get their own
+answers.
 
-**Beliefs.** Each custom the game is built on is recorded as the player meets it
-— the ◇ chip or T opens the page, *Ticējumi 4 / 7*, with a hint where each
-missing one is found.
+**Anna and the errand.** Vecā Anna stands in her yard and gives the errands; a
+*TO DO* line top-left always says what the next one is. Portraits appear over
+the panel for whoever is speaking — Anna, and the Devil, whose eyes are alive.
 
-**The year.** The ending shows both marks, the bread and the cat, and the total
-said plainly. *Nākamais gads* writes the year into the stone's ledger and starts
-the next one with a short intro and a short greeting; the verse cards, the bag's
-introduction and the beliefs found are kept. *Dalīties* renders the year as a
-1200×630 picture for the system share sheet, or downloads it.
+**The map.** A hand-drawn sheet (the roll in the top strip, or K) shows every
+way out of the valley and why a shut one is shut. In the village, touch a place
+to hear what it is and touch it again to go; out in the world it only tells.
+Finished encounters get a red wax seal; the new bridge is drawn in. The mill to
+the north, and the road beyond the bog, are drawn and closed — the promise of
+more.
+
+**Beliefs.** Each custom the game is built on is recorded as the player meets it,
+in a book of engravings — *Ticējumi 4 / 7* — with a hint where each missing one
+is found. Verified entries cite their Šmits record.
+
+**The ending.** A tally headed *Vecās varas*: both marks, a line for each power —
+who was met and how you parted — the bread and the cat. It ends on one button, a
+fresh start. (Marks carved into the stone, a ledger of years and a share card
+were built and then cut in `2484468`; the slice is one run.)
 
 ## Layout
 
@@ -168,11 +175,13 @@ src/
     rules.ts           the encounter branch table — pure, tested
     rules.test.ts      every route a player can take, end to end
     field.ts           the field as a grid: how much is down, saved for the revisit
-    holdings.ts        bread and roads, as the corner panel counts them
-    ledger.ts          the stone's record of finished years
+    holdings.ts        bread and roads, as the village counts them
+    atlas.ts           the map's model: places, ways, and why each is shut
+    quest.ts           the current errand, derived from the run — tested
     lore.ts            which beliefs have been found
+    settings.ts        text size, text speed, volume
     once.ts            things shown once per install (verse cards, the bag's card)
-    state.ts           run state + localStorage persistence (save.v3)
+    state.ts           run state + localStorage persistence
     theme.ts           palette, fonts, layout constants
   content/
     script.ts          every player-facing line, both languages
@@ -180,12 +189,15 @@ src/
     ticejumi.ts        the beliefs page — SEE THE WARNING BELOW
     dainas.ts          the epigraphs — SEE THE WARNING BELOW
   scenes/              Boot, Title, Intro, Village, Jumis, Velns, Outro
-    transition.ts      fade to the next scene, guarded so a double-click cannot start it twice
+    SoundLoaderScene.ts fetches the audio in the background so it never gates play
+    transition.ts      ink to the next scene, guarded so a double-click cannot start it twice
     villageArt.ts      chimneys and the granary/bridge upgrades, shared by hub, intro and ending
     assets.ts          what loads before the title (one image) and what loads behind it
   fx/
     Atmosphere.ts      fog, motes, chimney smoke, birds, bog lights, drift
     WindPipeline.ts    the shader that moves the rye
+    InkPipeline.ts     scene changes as ink bleeding in from the edges
+    GradePipeline.ts   one colour grade over every painting
     textures.ts        every particle texture, drawn at boot rather than shipped
   ui/
     Bag.ts             the inventory: open it, take an item, use it on the world
@@ -194,21 +206,27 @@ src/
     DainaCard.ts       the epigraph card that opens each encounter
     Reckoning.ts       the verdict card shown after an encounter
     Sign.ts            the carved marks, drawn as vector paths
-    Chrome.ts          the language toggle, ♪, ⟲ history and the ◇ beliefs chip
-    Lore.ts            the beliefs page, and the card when one is found
+    Chrome.ts          the chips: language, settings, ⟲ history, beliefs
+    Lore.ts            the beliefs book, and the card when one is found
+    MapPanel.ts        the hand-drawn map (draws core/atlas.ts)
+    Portrait.ts        the speaker's painted bust over the panel
+    Objective.ts       the TO DO line
+    Notice.ts          a one-button card that introduces a system once
+    SettingsPage.ts    text size, text speed, volume
     SheafTally.ts      the sheaf count in the field and the threshing in Anna's yard
-    Holdings.ts        the bread and roads panel in the corner
-    ShareCard.ts       the year as a picture, for the share sheet
+    Holdings.ts        the bread gauge and the map roll in the top strip
     History.ts         the page of everything said so far in a scene
     KeyNav.ts          Tab/Enter across hotspots — the keyboard path through the world
     keys.ts            who took a key: shared keyboard state for one scene
     hit.ts             fixed-size hit boxes for text buttons, so they survive a phone's scale
     Painting.ts        the background plus everything set into it, drifted as one
     Prompt.ts          the one-line instruction at the top of the frame
-public/art/            backgrounds, scene sprites and item art
+public/art/            what ships: JPEG paintings, WebP cut-outs
+art-src/               the PNG masters of the cut-outs — never deployed
 public/audio/          one-shots, beds and the kokle lines — see AUDIO_NOTES.md
 tools/shot.mjs         the headless screenshot harness; routes in tools/shots/
 tools/build_synth.py   the kokle lines and the synthesised one-shots
+tools/build_webp.py    art-src/*.png → public/art/*.webp (run after new art)
 ```
 
 Two conventions worth keeping as this grows:
@@ -219,39 +237,32 @@ Two conventions worth keeping as this grows:
   is unit-tested in milliseconds; the scenes only decide how that *looks*.
   Adding an encounter means adding a rule function and a test, then a scene.
 
-## ⚠ Before any public release: verify the dainas
+## ⚠ Before any public release: the folklore gate
 
-`src/content/dainas.ts` contains the two epigraphs, and **they have not been
-checked against a primary source.** Traditional dainas are public domain, so
-there is no clearance problem — the risk is purely accuracy, and a misquoted
-daina in a VKKF application is the kind of thing a Latvian reviewer spots
-immediately.
+Checked in September 2026 against [tautasdziesmas.lv](https://tautasdziesmas.lv)
+and Šmits' *Latviešu tautas ticējumi* ([valoda.ailab.lv](http://valoda.ailab.lv/folklora/ticejumi/)).
+Each open item says why in a comment beside it.
 
-Open each entry's `source` URL, copy the stanza verbatim, paste it over the
-`lv` field, adjust the English, and set `verified: true`. Nothing else needs to
-change. While any entry is unverified the dev console prints a warning on every
-boot, so it is hard to forget.
+| Item | Status |
+|---|---|
+| Jumis daina — «Kur, Jumīti, tu gulēji» | ✅ real, verified; LD number still to add |
+| Velns daina | ❌ **not a real daina** — written from memory; replace or drop |
+| Riddles (wind, thought, the cock) | ⚠ not found in a mīklu collection — present as the game's own |
+| Ticējumi: jumis 11992, jumjaKersana 11998, maize 18623, vadātājs 31472, gailis 32406 | ✅ matched, cited on the page |
+| Ticējums: pirmais kumoss | ❌ not in Šmits' bread section; nearest are 18166 and 18168 |
+| Ticējums: velna tilts («the first living thing») | ❌ a tale motif, not a belief — ask LFK for a Latvian teika |
+| Native proofread of every `// NEW` line | open |
 
-The riddles in `content/script.ts` deserve the same treatment: `velns.riddle`
-(the wind), `velns.riddle2` (what is faster than the wind — thought) and
-`velns.askBack.riddle` (what sings and the night is over — the cock, which he
-will not name). The second and third were written for this game in the shape of
-traditional *mīklas*; either find attested versions or keep them as the game's own.
-
-**`src/content/ticejumi.ts` is under the same gate.** The seven beliefs are real
-and widely attested, but the wording is this game's summary, not a quotation.
-Match each to a record in Šmits, put the record number in `ref`, set
-`verified: true`, and the page starts showing "after Šmits, no. …" for it.
-Nothing unverified is ever shown as a citation.
-
-**All of the new Latvian text wants a native proofread** before release —
-the lines marked `// NEW` in `content/` especially.
+`assertDainasVerified()` and `assertBeliefsVerified()` warn in the dev console
+while anything is open. A local lead worth following for the Devil's bridge: the
+teika *Velna grava un tiltiņš* near Vilce manor (LTT 1991 : 134).
 
 Primary sources:
 
 - [dainuskapis.lv](https://dainuskapis.lv) — the Barons cabinet, authoritative
 - [tautasdziesmas.lv](https://tautasdziesmas.lv) — readable browsing by theme
 - [valoda.ailab.lv/folklora/ticejumi](http://valoda.ailab.lv/folklora/ticejumi) — Šmits' folk beliefs, the source of the puzzle logic
+- [garamantas.lv](https://garamantas.lv) — the Latvian Folklore Archive (LFK)
 
 ## Rights
 
@@ -262,7 +273,8 @@ Primary sources:
 - Pumpurs' 1888 *Lāčplēsis* is public domain; the English translations are not.
   Neither is used in this slice.
 - The backgrounds and sprites in `public/art/` are AI-generated for this
-  project, styled after Latvian national-romantic landscape painting
+  project (provenance per file in `CREDITS.md`), with a repaint by a human
+  illustrator planned, styled after Latvian national-romantic landscape painting
   (Purvītis d. 1945, Rozentāls d. 1916 — both public domain) as a palette and
   brush reference, not as reused assets.
 
@@ -329,11 +341,12 @@ Two implementation notes worth keeping:
 
 ## Still open
 
-- Final subdomain / repo name (`vecasvaras.protu.lv` assumed — it is also printed
-  on the share card, in `OutroScene.ts`).
-- The daina, riddle and ticējumi verification above, and a Latvian proofread.
+- The folklore gate above, and a Latvian proofread.
 - The sung verses: each verse card has a slot for one sung line over the kokle
   (`voiceJumis` / `voiceVelns` in `core/audio.ts`). It needs a singer.
-- A playthrough on a real phone.
-- A written design document covering the full game vision, for VKKF and
-  publisher conversations — the demo is the proof, not the pitch.
+- A playtest with strangers on their own phones.
+- The art repaint — keep the file names and sizes in `art-src/`, run
+  `tools/build_webp.py`, and re-read the placement coordinates noted in
+  `villageArt.ts`, `VelnsScene.ts` and `JumisScene.ts`.
+- A written design document for the full game, for VKKF and the NVA plan — the
+  demo is the proof, not the pitch.
