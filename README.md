@@ -189,7 +189,8 @@ src/
     ticejumi.ts        the beliefs page — SEE THE WARNING BELOW
     dainas.ts          the epigraphs — SEE THE WARNING BELOW
   scenes/              Boot, Title, Intro, Village, Jumis, Velns, Outro
-    SoundLoaderScene.ts fetches the audio in the background so it never gates play
+    StreamScene.ts     streams the art per scene (village → sound → field → bog → book);
+                       a scene waits only for its own group, under the ink
     transition.ts      ink to the next scene, guarded so a double-click cannot start it twice
     villageArt.ts      chimneys and the granary/bridge upgrades, shared by hub, intro and ending
     assets.ts          what loads before the title (one image) and what loads behind it
@@ -221,7 +222,7 @@ src/
     hit.ts             fixed-size hit boxes for text buttons, so they survive a phone's scale
     Painting.ts        the background plus everything set into it, drifted as one
     Prompt.ts          the one-line instruction at the top of the frame
-public/art/            what ships: JPEG paintings, WebP cut-outs
+public/art/            what ships: JPEG paintings, WebP cut-outs (grouped in scenes/assets.ts)
 art-src/               the PNG masters of the cut-outs — never deployed
 public/audio/          one-shots, beds and the kokle lines — see AUDIO_NOTES.md
 tools/shot.mjs         the headless screenshot harness; routes in tools/shots/

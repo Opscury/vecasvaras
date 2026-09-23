@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { Palette, Timing } from '../core/theme';
 import { flags } from '../core/flags';
 import { inkOff, inkOn } from '../fx/InkPipeline';
+import { SCENE_NEEDS } from './assets';
+import { StreamScene } from './StreamScene';
 
 /** The ink ground every fade passes through. */
 const INK = Phaser.Display.Color.IntegerToRGB(Palette.ink);
@@ -63,6 +65,26 @@ export function fadeIn(scene: Phaser.Scene, duration: number = Timing.fade): voi
 export function goTo(scene: Phaser.Scene, key: string, data?: object): void {
   if (leaving.has(scene)) return;
   leaving.add(scene);
+  // The next scene's art may still be streaming. The frame inks over as usual
+  // and, if it has to, waits there under a loading line until the art is in.
+  const needs = SCENE_NEEDS[key] ?? [];
+  const stream = StreamScene.get(scene);
+  // Ask now, not once the ink is down, so the group jumps the queue at once.
+  let arrived = false;
+  let covered = false;
+  const start = () => scene.scene.start(key, data);
+  if (needs.length) {
+    stream.whenReady(needs, () => {
+      arrived = true;
+      if (covered) start();
+    });
+  } else {
+    arrived = true;
+  }
+  const whenCovered = () => {
+    covered = true;
+    if (arrived) start();
+  };
   // Phaser reuses scene instances, so the flag has to come off on the way out
   // or the next visit to this scene could never leave.
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -84,7 +106,7 @@ export function goTo(scene: Phaser.Scene, key: string, data?: object): void {
   }
   if (!ink) {
     const cam = scene.cameras.main;
-    cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => scene.scene.start(key, data));
+    cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, whenCovered);
     // Forced, because a fade-out requested while the fade-in is still running
     // is otherwise dropped — and then the completion event never comes.
     cam.fade(Timing.fade, INK.r, INK.g, INK.b, true);
@@ -105,7 +127,7 @@ export function goTo(scene: Phaser.Scene, key: string, data?: object): void {
     onUpdate: () => {
       ink.progress = k.v;
     },
-    onComplete: () => scene.scene.start(key, data),
+    onComplete: whenCovered,
   });
   running.set(scene, tw);
 }

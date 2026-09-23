@@ -10,15 +10,6 @@ import { Atmosphere } from '../fx/Atmosphere';
 import { padHit } from '../ui/hit';
 import { ignoreKey, isAdvanceKey, markHandled } from '../ui/keys';
 import { goTo, isLeaving } from './transition';
-import {
-  GAME_ASSETS,
-  GAME_SHEETS,
-  defineAnims,
-  missingFrom,
-  queueMissing,
-  queueMissingSheets,
-  reportLoadErrors,
-} from './assets';
 import { audio } from '../core/audio';
 
 /**
@@ -30,29 +21,7 @@ import { audio } from '../core/audio';
  */
 const MENU_DEPTH = 300;
 
-/** Continue has Start over under it; the loading line goes below both. */
-const hasRestartOffset = (scene: Phaser.Scene): boolean => {
-  const run = state.get();
-  return scene.scene.key === 'Title' && run.introSeen && !run.outroSeen;
-};
-
 export class TitleScene extends Phaser.Scene {
-  /** The rest of the art has arrived. Begin waits for it. */
-  private ready = false;
-  /** Begin was pressed before the art arrived; go as soon as it does. */
-  private wantBegin = false;
-  private start!: Phaser.GameObjects.Text;
-  /**
-   * The slow breath on Begin while the art is still coming, and nothing else.
-   * Held by reference because it must be stopped WITHOUT touching the menu's
-   * fade-in — see `fetched`.
-   */
-  private pulse: Phaser.Tweens.Tween | null = null;
-  /** "Loading 43%" under Begin while the art is still coming, and a hairline that fills. */
-  private progressText: Phaser.GameObjects.Text | null = null;
-  private progressBar: Phaser.GameObjects.Graphics | null = null;
-  private errorText: Phaser.GameObjects.Text | null = null;
-  private retryText: Phaser.GameObjects.Text | null = null;
 
   constructor() {
     super('Title');
@@ -62,14 +31,6 @@ export class TitleScene extends Phaser.Scene {
     // One ambient channel for the whole game; this cross-fades from whatever
     // the last scene was playing.
     audio.ambient('village');
-
-    this.ready = false;
-    this.wantBegin = false;
-    this.pulse = null;
-    this.progressText = null;
-    this.progressBar = null;
-    this.errorText = null;
-    this.retryText = null;
 
     const { width, height } = Layout;
     const bg = this.add.image(width / 2, height / 2, 'bg-title').setDisplaySize(width, height);
@@ -139,7 +100,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setAlpha(0)
       .setDepth(MENU_DEPTH + 1);
-    this.start = start;
+
     const placeStart = padHit(start, 360, 64);
 
     let restart: Phaser.GameObjects.Text | null = null;
@@ -213,149 +174,16 @@ export class TitleScene extends Phaser.Scene {
       placeStart();
       restart?.setText(t(ui.restart));
       placeRestart?.();
-      this.errorText?.setText(t(ui.loadFailed));
-      this.showProgress(this.load.progress);
-      this.retryText?.setText(t(ui.retry));
     });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, off);
-
-    reportLoadErrors(this);
-    this.fetchRest();
-  }
-
-  /** Pulls in the rest of the art behind the menu. Instant on a revisit. */
-  private fetchRest(): void {
-    this.hideLoadError();
-    // Art only. Sound follows in its own scene once the art is in, so it never
-    // stands between the player and Begin.
-    const art = queueMissing(this, GAME_ASSETS) + queueMissingSheets(this, GAME_SHEETS);
-    if (!art) {
-      this.fetched();
-      return;
-    }
-    // Say that something is happening. A button that silently waits for 10 MB
-    // over mobile data reads as a button that is broken.
-    this.showProgress(0);
-    const onProgress = (v: number) => this.showProgress(v);
-    this.load.on(Phaser.Loader.Events.PROGRESS, onProgress);
-    this.load.once(Phaser.Loader.Events.COMPLETE, () => {
-      this.load.off(Phaser.Loader.Events.PROGRESS, onProgress);
-      this.fetched();
-    });
-    this.load.start();
-  }
-
-  private fetched(): void {
-    const missing = [...missingFrom(this, GAME_ASSETS), ...missingFrom(this, GAME_SHEETS)];
-    if (missing.length) {
-      this.hideProgress();
-      this.showLoadError(missing);
-      return;
-    }
-    defineAnims(this);
-    this.ready = true;
-    this.hideProgress();
-    if (!this.scene.isActive('SoundLoader')) this.scene.launch('SoundLoader');
-    // Stop the waiting-breath, and ONLY that.
-    //
-    // This used to be `killTweensOf(this.start)`, which was a much bigger
-    // hammer than it looked: the menu fades in on a single tween whose targets
-    // are the title, the rule, the subtitle and this button together, so
-    // killing every tween on the button killed the fade for all four. The
-    // button was then set to alpha 1 by hand and the other three were simply
-    // abandoned at whatever alpha they had reached. How much of the title you
-    // saw depended on a race — how long the art took against a 250ms delay and
-    // a 900ms fade. Cold cache: a faint title. Warm cache: `fetched` beat the
-    // delay, the fade never started, and the title, rule and subtitle stayed
-    // at alpha 0 over a menu that otherwise looked finished.
-    if (this.pulse) {
-      this.pulse.remove();
-      this.pulse = null;
-      // Only now does the button need putting right by hand; the pulse left it
-      // mid-breath. With no pulse the shared fade is still running and must be
-      // left alone to finish.
-      this.start.setAlpha(1);
-    }
-    if (this.wantBegin) this.begin();
-  }
-
-  private showProgress(v: number): void {
-    if (this.ready) return;
-    const { width, height } = Layout;
-    const x = width * 0.72;
-    const y = height * 0.62 + scaled(hasRestartOffset(this) ? 120 : 64);
-    if (!this.progressText) {
-      this.progressText = this.add
-        .text(x, y, '', { fontFamily: Fonts.body, fontSize: px(20), color: Hex.parchmentDim })
-        .setOrigin(0.5)
-        .setDepth(MENU_DEPTH + 1);
-      this.progressBar = this.add.graphics().setDepth(MENU_DEPTH + 1);
-    }
-    this.progressText.setText(`${t(ui.loading)} ${Math.round(v * 100)}%`);
-    const w = scaled(220);
-    const by = y + scaled(26);
-    this.progressBar!.clear();
-    this.progressBar!.fillStyle(Palette.timber, 0.5);
-    this.progressBar!.fillRect(x - w / 2, by, w, 3);
-    this.progressBar!.fillStyle(Palette.rye, 1);
-    this.progressBar!.fillRect(x - w / 2, by, w * v, 3);
-  }
-
-  private hideProgress(): void {
-    this.progressText?.destroy();
-    this.progressBar?.destroy();
-    this.progressText = null;
-    this.progressBar = null;
-  }
-
-  private showLoadError(missing: string[]): void {
-    const { width, height } = Layout;
-    const x = width * 0.72;
-    console.warn('[Vecās Varas] missing art:', missing.join(', '));
-    this.errorText = this.add
-      .text(x, height * 0.84, t(ui.loadFailed), {
-        fontFamily: Fonts.body,
-        fontSize: px(22),
-        color: Hex.parchment,
-      })
-      .setOrigin(0.5)
-      .setDepth(MENU_DEPTH + 1);
-    this.retryText = this.add
-      .text(x, height * 0.84 + scaled(50), t(ui.retry), {
-        fontFamily: Fonts.body,
-        fontSize: px(24),
-        color: Hex.rye,
-      })
-      .setOrigin(0.5)
-      .setDepth(MENU_DEPTH + 1);
-    padHit(this.retryText, 320, 64);
-    this.retryText.on('pointerdown', () => this.fetchRest());
-  }
-
-  private hideLoadError(): void {
-    this.errorText?.destroy();
-    this.retryText?.destroy();
-    this.errorText = null;
-    this.retryText = null;
   }
 
   private begin(): void {
     if (isLeaving(this)) return;
-    if (!this.ready) {
-      // The art is still coming. Say so by breathing the button, and go the
-      // moment it lands rather than making the player press again.
-      if (!this.wantBegin) {
-        this.wantBegin = true;
-        this.pulse = this.tweens.add({
-          targets: this.start,
-          alpha: 0.45,
-          duration: 500,
-          yoyo: true,
-          repeat: -1,
-        });
-      }
-      return;
-    }
+    // No waiting here any more: the art streams in the background, and if the
+    // first scene's pictures are not in yet the ink waits for them with a
+    // percentage (see StreamScene). A button that does nothing when pressed
+    // was the bug.
     // After the ending, the way on is a fresh run, not a walk back into the old one.
     if (state.get().outroSeen) state.reset();
     goTo(this, this.resumeTarget());

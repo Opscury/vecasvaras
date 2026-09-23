@@ -9,7 +9,7 @@ import { VillageScene } from './scenes/VillageScene';
 import { JumisScene } from './scenes/JumisScene';
 import { VelnsScene } from './scenes/VelnsScene';
 import { OutroScene } from './scenes/OutroScene';
-import { SoundLoaderScene } from './scenes/SoundLoaderScene';
+import { StreamScene } from './scenes/StreamScene';
 
 document.documentElement.lang = i18n.lang;
 
@@ -27,7 +27,7 @@ const game = new Phaser.Game({
     antialias: true,
     roundPixels: false,
   },
-  scene: [BootScene, TitleScene, IntroScene, VillageScene, JumisScene, VelnsScene, OutroScene, SoundLoaderScene],
+  scene: [BootScene, TitleScene, IntroScene, VillageScene, JumisScene, VelnsScene, OutroScene, StreamScene],
 });
 
 audio.attach(game);

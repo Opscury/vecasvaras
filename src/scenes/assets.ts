@@ -12,63 +12,101 @@ type Sheet = readonly [string, string, Phaser.Types.Loader.FileTypes.ImageFrameC
  */
 export const TITLE_ASSETS: readonly Asset[] = [['bg-title', 'title.jpg']];
 
-/** Everything else, fetched while the player is looking at the title. */
-export const GAME_ASSETS: readonly Asset[] = [
-  ['bg-village', 'village.jpg'],
-  ['bg-field', 'field.jpg'],
-  // The same field after the swing, aligned to field.jpg for a cross-fade.
-  ['bg-field-cut', 'field_cut.jpg'],
-  ['bg-bog', 'bog.jpg'],
-  ['granary-good', 'granary_full.webp'],
-  ['granary-poor', 'granary_poor.webp'],
-  // v3 is flat with a footing at each end, so it sits across the stream instead
-  // of hanging over the path. v1 and v2 stay on disk.
-  ['bridge-good', 'bridge_full_v3.webp'],
-  ['bridge-poor', 'bridge_poor.webp'],
-  // The granary's store, made visible: one sheaf leaning on its wall per loaf
-  // inside it. Two of them, alternated, so a stack of three is not the same
-  // picture three times.
-  ['sheaf-a', 'sheaf_a.webp'],
-  ['sheaf-b', 'sheaf_b.webp'],
-  ['jumis-stalk', 'jumis_stalk.webp'],
-  ['jumis-bound', 'jumis_bound.webp'],
-  ['velns', 'velns.webp'],
-  // Vecā Anna, who stands in the hub and hands out the run's two errands.
-  ['elder', 'elder.webp'],
-  ['item-sickle', 'item_sickle.webp'],
-  // One loaf per kind of year. Same item, and the only way to see at a glance
-  // whether the bread is worth anything before the Devil says so.
-  ['item-bread-good', 'item_bread_good.webp'],
-  ['item-bread-poor', 'item_bread_poor.webp'],
-  ['item-cat', 'item_cat.webp'],
-  ['item-bag', 'item_bag.webp'],
-  // The Devil's hat, left for someone who answered him as an equal.
-  ['item-hat', 'item_hat.webp'],
-  // Painted busts shown beside the narration while each of them talks.
-  ['portrait-anna', 'portrait_anna.webp'],
-  ['portrait-velns', 'portrait_velns.webp'],
-  // Ink vignettes for the beliefs book, one per belief.
-  ['codex-jumis', 'codex_jumis.webp'],
-  ['codex-jumjaKersana', 'codex_jumjaKersana.webp'],
-  ['codex-maize', 'codex_maize.webp'],
-  ['codex-pirmaisKumoss', 'codex_pirmaisKumoss.webp'],
-  ['codex-maldugunis', 'codex_maldugunis.webp'],
-  ['codex-velnaTilts', 'codex_velnaTilts.webp'],
-  ['codex-gailis', 'codex_gailis.webp'],
-];
+/**
+ * The rest of the art, in groups, streamed in the background by `StreamScene`
+ * in this order. Each scene waits only for its own group (`SCENE_NEEDS`), so
+ * Begin never waits for the bog, and the bog's art arrives while the player is
+ * still cutting rye.
+ *
+ * The item icons ride with the village: the bag can be opened in any scene,
+ * and all of them together are smaller than one painting.
+ */
+export type ArtGroup = 'village' | 'field' | 'bog' | 'book';
+
+export const ART_GROUPS: Record<ArtGroup, readonly Asset[]> = {
+  village: [
+    ['bg-village', 'village.jpg'],
+    ['granary-good', 'granary_full.webp'],
+    ['granary-poor', 'granary_poor.webp'],
+    // v3 is flat with a footing at each end, so it sits across the stream instead
+    // of hanging over the path. v1 and v2 stay in art-src/.
+    ['bridge-good', 'bridge_full_v3.webp'],
+    ['bridge-poor', 'bridge_poor.webp'],
+    // The granary's store, made visible: one sheaf leaning on its wall per loaf
+    // inside it. Two of them, alternated, so a stack of three is not the same
+    // picture three times.
+    ['sheaf-a', 'sheaf_a.webp'],
+    ['sheaf-b', 'sheaf_b.webp'],
+    // Vecā Anna, who stands in the hub and hands out the run's two errands.
+    ['elder', 'elder.webp'],
+    ['portrait-anna', 'portrait_anna.webp'],
+    ['item-sickle', 'item_sickle.webp'],
+    // One loaf per kind of year. Same item, and the only way to see at a glance
+    // whether the bread is worth anything before the Devil says so.
+    ['item-bread-good', 'item_bread_good.webp'],
+    ['item-bread-poor', 'item_bread_poor.webp'],
+    ['item-cat', 'item_cat.webp'],
+    ['item-bag', 'item_bag.webp'],
+    // The Devil's hat, left for someone who answered him as an equal.
+    ['item-hat', 'item_hat.webp'],
+  ],
+  field: [
+    ['bg-field', 'field.jpg'],
+    // The same field after the swing, aligned to field.jpg for a cross-fade.
+    ['bg-field-cut', 'field_cut.jpg'],
+    ['jumis-stalk', 'jumis_stalk.webp'],
+    ['jumis-bound', 'jumis_bound.webp'],
+  ],
+  bog: [
+    ['bg-bog', 'bog.jpg'],
+    ['velns', 'velns.webp'],
+    ['portrait-velns', 'portrait_velns.webp'],
+  ],
+  // Ink vignettes for the beliefs book, one per belief. The book draws an empty
+  // frame for any that have not arrived, so nothing waits on these.
+  book: [
+    ['codex-jumis', 'codex_jumis.webp'],
+    ['codex-jumjaKersana', 'codex_jumjaKersana.webp'],
+    ['codex-maize', 'codex_maize.webp'],
+    ['codex-pirmaisKumoss', 'codex_pirmaisKumoss.webp'],
+    ['codex-maldugunis', 'codex_maldugunis.webp'],
+    ['codex-velnaTilts', 'codex_velnaTilts.webp'],
+    ['codex-gailis', 'codex_gailis.webp'],
+  ],
+};
+
+/** The order the groups are fetched in, when nothing is asking for one. */
+export const ART_ORDER: readonly ArtGroup[] = ['village', 'field', 'bog', 'book'];
+
+/** What each scene must have before it may start. Scenes not listed need nothing. */
+export const SCENE_NEEDS: Readonly<Record<string, readonly ArtGroup[]>> = {
+  Intro: ['village'],
+  Village: ['village'],
+  Outro: ['village'],
+  Jumis: ['village', 'field'],
+  Velns: ['village', 'bog'],
+};
+
+/** Every image in every group, flat — for checks that want the whole set. */
+export const GAME_ASSETS: readonly Asset[] = ART_ORDER.flatMap((g) => ART_GROUPS[g]);
 
 /**
  * Sheets load through a different Phaser call than plain images, so they are
  * listed apart rather than given a nullable frame field on every image above.
  *
- * `cat_walk_sheet.png` is one full stride in twelve frames, 4x3. Every frame
+ * `cat_walk_sheet` is one full stride in twelve frames, 4x3. Every frame
  * sits on the same canvas with the same ground line, and the cat's own drift
  * across the source footage has been taken out, so the loop does not shunt
- * the cat backwards each time it wraps. `cat_walk.png` stays on disk.
+ * the cat backwards each time it wraps. `cat_walk.png` stays in art-src/.
  */
-export const GAME_SHEETS: readonly Sheet[] = [
-  ['cat-walk', 'cat_walk_sheet.webp', { frameWidth: 300, frameHeight: 150 }],
-];
+export const ART_SHEETS: Record<ArtGroup, readonly Sheet[]> = {
+  village: [],
+  field: [],
+  bog: [['cat-walk', 'cat_walk_sheet.webp', { frameWidth: 300, frameHeight: 150 }]],
+  book: [],
+};
+
+export const GAME_SHEETS: readonly Sheet[] = ART_ORDER.flatMap((g) => ART_SHEETS[g]);
 
 /** Animation key. Distinct from the texture key so the two cannot be confused. */
 export const CAT_WALK_ANIM = 'cat-walk-cycle';

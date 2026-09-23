@@ -59,6 +59,8 @@ export class BootScene extends Phaser.Scene {
       el.style.opacity = '0';
       setTimeout(() => el.remove(), 600);
     }
+    // The rest of the art starts streaming now, behind the title.
+    this.scene.launch('Stream');
     this.scene.start('Title');
   }
 
