@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { fillLoc, i18n, L, t } from '../core/i18n';
-import { lore, LORE_ORDER, type LoreId } from '../core/lore';
+import { lore, LORE_SHOWN, type LoreId } from '../core/lore';
 import { beliefs } from '../content/ticejumi';
 import { loreUi } from '../content/script';
 import { Hex, Fonts, Layout, Palette, UI_SCALE, px, scaled } from '../core/theme';
@@ -88,7 +88,7 @@ export class LorePage {
 
   /** Pages: the contents, then one per belief. Two to a spread. */
   private get spreads(): number {
-    return Math.ceil((LORE_ORDER.length + 1) / 2);
+    return Math.ceil((LORE_SHOWN.length + 1) / 2);
   }
 
   private build(): void {
@@ -201,7 +201,7 @@ export class LorePage {
     pages.forEach((page, side) => {
       const cx = side === 0 ? -LEAF / 2 : LEAF / 2;
       if (page === 0) spread.add(this.contents(cx));
-      else if (page - 1 < LORE_ORDER.length) spread.add(this.beliefPage(cx, LORE_ORDER[page - 1], page));
+      else if (page - 1 < LORE_SHOWN.length) spread.add(this.beliefPage(cx, LORE_SHOWN[page - 1], page));
     });
     book.add(spread);
     // Arrows only where there is somewhere to go.
@@ -247,8 +247,8 @@ export class LorePage {
     out.push(heading, count, epi);
 
     let y = epi.y + epi.height + 40;
-    const rowH = Math.min(64, (BOOK.h / 2 - 100 - y) / LORE_ORDER.length);
-    LORE_ORDER.forEach((id, i) => {
+    const rowH = Math.min(64, (BOOK.h / 2 - 100 - y) / LORE_SHOWN.length);
+    LORE_SHOWN.forEach((id, i) => {
       const found = lore.has(id);
       const x0 = cx - LEAF / 2 + 110;
       const mark = this.scene.add.graphics().setPosition(x0, y + rowH / 2);

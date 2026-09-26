@@ -6,6 +6,7 @@ import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { ignoreKey, isAdvanceKey, markHandled, setCard } from './keys';
 import { once } from '../core/once';
 import { audio, type Tune } from '../core/audio';
+import { flags } from '../core/flags';
 
 const TUNES: Record<keyof typeof dainas, { kokle: Tune; voice: Tune }> = {
   jumis: { kokle: 'kokleJumis', voice: 'voiceJumis' },
@@ -34,6 +35,13 @@ export class DainaCard {
   static open(scene: Phaser.Scene, key: keyof typeof dainas, onDone: () => void): void {
     const tunes = TUNES[key];
     audio.music(tunes.kokle);
+    // A verse not yet checked against a collection is not presented to players
+    // as a daina at all — neither sung nor shown. The encounter opens on its
+    // kokle line alone.
+    if (!dainas[key].verified && !flags.draftFolklore) {
+      onDone();
+      return;
+    }
     audio.music(tunes.voice, { delay: 600 });
     if (!once.mark(`daina:${key}`)) {
       onDone();

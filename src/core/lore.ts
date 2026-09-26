@@ -10,6 +10,9 @@
  * a new page to fill. That is the whole reward for playing again.
  */
 
+import { beliefs } from '../content/ticejumi';
+import { flags } from './flags';
+
 export type LoreId =
   | 'jumis'
   | 'jumjaKersana'
@@ -30,6 +33,14 @@ export const LORE_ORDER: readonly LoreId[] = [
   'gailis',
 ];
 
+/**
+ * The beliefs this build shows. One not yet matched to a Šmits record is left
+ * out of a production build altogether — not listed, not counted, never
+ * unlocked — so the page only ever presents checked folklore as folklore.
+ * See `flags.draftFolklore`.
+ */
+export const LORE_SHOWN: readonly LoreId[] = LORE_ORDER.filter((id) => beliefs[id].verified || flags.draftFolklore);
+
 const STORAGE_KEY = 'vecasvaras.lore.v1';
 
 type Listener = (id: LoreId) => void;
@@ -44,7 +55,7 @@ class Lore {
       const list = raw ? (JSON.parse(raw) as unknown) : [];
       if (Array.isArray(list)) {
         list.forEach((id) => {
-          if ((LORE_ORDER as readonly unknown[]).includes(id)) this.found.add(id as LoreId);
+          if ((LORE_SHOWN as readonly unknown[]).includes(id)) this.found.add(id as LoreId);
         });
       }
     } catch {
@@ -61,12 +72,12 @@ class Lore {
   }
 
   get total(): number {
-    return LORE_ORDER.length;
+    return LORE_SHOWN.length;
   }
 
   /** Records a belief. Returns true, and tells listeners, only the first time. */
   unlock(id: LoreId): boolean {
-    if (this.found.has(id)) return false;
+    if (this.found.has(id) || !LORE_SHOWN.includes(id)) return false;
     this.found.add(id);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify([...this.found]));
