@@ -8,12 +8,14 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "smoke": "vite build && node tools/shot.mjs smoke"
   },
   "dependencies": {
     "phaser": "^3.90.0"
   },
   "devDependencies": {
+    "playwright": "^1.56.1",
     "typescript": "^5.6.3",
     "vite": "^7.1.0",
     "vitest": "^5.0.0"

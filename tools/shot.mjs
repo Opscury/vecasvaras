@@ -87,7 +87,12 @@ if (fs.existsSync(seedPath)) {
 }
 
 const page = await ctx.newPage();
-page.on('pageerror', (e) => console.log('PAGE ERROR:', e.message));
+// A route fails if the page throws, as well as when one of its own checks does.
+const failures = [];
+page.on('pageerror', (e) => {
+  console.log('PAGE ERROR:', e.message);
+  failures.push(e.message);
+});
 page.on('console', (m) => {
   const t = m.text();
   if (m.type() === 'error' || t.startsWith('DBG')) console.log(t);
@@ -258,6 +263,11 @@ await page.evaluate(() => {
     },
     state: () => JSON.parse(localStorage.getItem('vecasvaras.save.v3') || '{}'),
     log: (...a) => console.log('DBG', ...a.map((v) => (typeof v === 'string' ? v : JSON.stringify(v)))),
+    /** A check: throws, and so fails the route, unless `ok`. */
+    assert: (ok, ...what) => {
+      if (!ok) throw new Error('ASSERT ' + what.map((v) => (typeof v === 'string' ? v : JSON.stringify(v))).join(' '));
+      console.log('DBG ok', ...what.map((v) => (typeof v === 'string' ? v : JSON.stringify(v))));
+    },
   };
 });
 
@@ -267,7 +277,14 @@ const steps = (await import(`./shots/${name}.mjs`)).default;
 let n = 0;
 for (const step of steps) {
   if (typeof step === 'function') {
-    await page.evaluate(step);
+    try {
+      await page.evaluate(step);
+    } catch (e) {
+      const msg = String(e.message ?? e).split('\n')[0];
+      console.log('FAIL:', msg);
+      failures.push(msg);
+      break;
+    }
   } else if (step.wait) {
     await page.evaluate((ms) => window.__advance(ms), step.wait);
   } else if (step.grab) {
@@ -287,3 +304,7 @@ for (const step of steps) {
 
 await browser.close();
 server.close();
+if (failures.length) {
+  console.log(`\n${failures.length} failure(s) in ${name}.`);
+  process.exit(1);
+}

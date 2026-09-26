@@ -1,9 +1,13 @@
 [build]
-  command = "npm run build"
+  # The tests gate the deploy: the rules, the saves, and the folklore quotes.
+  command = "npm test && npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "22"
+  # Playwright is a dev dependency for the screenshot harness only; the deploy
+  # never runs a browser, so it never needs to download one.
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
 
 # Long-cache the hashed build assets; never cache the entry document.
 [[headers]]

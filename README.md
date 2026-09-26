@@ -18,11 +18,14 @@ npm install
 npm run dev      # http://localhost:5173
 npm run build    # → dist/
 npm run preview  # serve the production build
-npm test         # the rules, the field model and old saves
+npm test         # the rules, the field model, old saves, and the folklore quotes
+npm run smoke    # build, then play the moments that have broken before — pass/fail
 node tools/shot.mjs <script>   # headless screenshots of a route — see tools/shots/README.md
 ```
 
-Node 20.19+ (Vite 7).
+Node 20.19+ (Vite 7). The screenshot harness and `npm run smoke` use Playwright
+(a dev dependency) and a Chromium: `npx playwright install chromium` once, or
+point `CHROMIUM_PATH` at one. Netlify runs `npm test` before every build.
 
 ## What is in the slice
 

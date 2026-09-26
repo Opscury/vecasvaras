@@ -2,6 +2,9 @@ import Phaser from 'phaser';
 import { Layout, Palette } from './core/theme';
 import { i18n } from './core/i18n';
 import { audio } from './core/audio';
+import { state } from './core/state';
+import { bag } from './core/inventory';
+import { lore } from './core/lore';
 import { BootScene } from './scenes/BootScene';
 import { TitleScene } from './scenes/TitleScene';
 import { IntroScene } from './scenes/IntroScene';
@@ -47,5 +50,7 @@ window.addEventListener(
   { once: true },
 );
 
-// Handy for debugging and for automated playtests.
+// Handy for debugging and for automated playtests: the game, and the run it is
+// playing, so a smoke test can set up a moment without playing up to it.
 (window as unknown as { __game: Phaser.Game }).__game = game;
+(window as unknown as { __vv: object }).__vv = { state, bag, lore };

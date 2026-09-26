@@ -41,11 +41,18 @@ parts, not routes. `<name>-en.mjs` re-runs a route with an English seed.
 | `sweep(key, ys, x0?, x1?)` | a sickle stroke along each row |
 | `catchDownload()` | route the next download to a `{ grab }` step |
 | `state()` / `nar(key)` / `log(...)` | the saved run, the panel's state, a `DBG` line in the output |
+| `assert(ok, ...what)` | a check: fails the route (exit code 1) unless `ok` |
+
+The page also exposes `__vv` — `{ state, bag, lore }`, the live run — so a
+route can set a moment up directly (`__vv.state.patch({...})`, `__vv.bag.add('cat')`)
+instead of playing up to it. A page error or a failed `assert` stops the route
+and exits non-zero, so a route can gate a push.
 
 ## Routes
 
 | Script | Covers |
 |---|---|
+| `smoke` | **pass/fail** — `npm run smoke`: Anna tapped mid-threshing, the cat after a reload, the night waiting for the book, the folklore in a production build |
 | `run` | a whole first year from a fresh install, into the next year |
 | `tithe`, `spare`, `take`, `greed`, `jumisloaf` | the four field endings, and the Jumis loaf at the bog |
 | `endings` | all four field reckoning cards in a row |
