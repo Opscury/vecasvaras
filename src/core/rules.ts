@@ -45,6 +45,12 @@ export const CLEAN_AT = 0.97;
 export const FULL_CART = 8;
 /** The patch the double ear stands in is the heaviest sheaf in the field. */
 export const HEAVY_SHEAF = 2;
+/**
+ * The smallest cart a field that kept its share can come home with: cut just
+ * past the point where it stops counting as spared. Every share is at least
+ * this, so a tithe never reads "Granary: full" and threshes short.
+ */
+export const SHARE_CART = Math.round(FULL_CART * (1 - SPARE_AT));
 
 /** How much bread the village can hold. Sized to what the game can give. */
 export const BREAD_CAP = 3;
@@ -94,9 +100,9 @@ export function loafFrom(pick: JumisPick | 'none'): Loaf {
 export function breadFrom(pick: JumisPick | 'none', sheaves: number): number {
   switch (pick) {
     case 'leave':
-      return sheaves >= 6 ? 3 : 2;
+      return sheaves >= SHARE_CART ? 3 : 2;
     case 'take':
-      return sheaves >= 6 ? 2 : 1;
+      return sheaves >= SHARE_CART ? 2 : 1;
     case 'spare':
     case 'all':
       return 1;

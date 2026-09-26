@@ -38,6 +38,7 @@ export class LorePage {
   private spread: Phaser.GameObjects.Container | null = null;
   private book: Phaser.GameObjects.Container | null = null;
   private offLang: (() => void) | null = null;
+  private offUnlock: (() => void) | null = null;
   /** Which pair of leaves is open. 0 is the contents and the first belief. */
   private at = 0;
   private downX: number | null = null;
@@ -72,6 +73,12 @@ export class LorePage {
       this.root?.destroy(true);
       this.build();
     });
+    // A belief found while the book is open — the cocks crowing behind it —
+    // goes onto its page at once, rather than the count reading one short.
+    this.offUnlock = lore.onUnlock(() => {
+      this.root?.destroy(true);
+      this.build();
+    });
   }
 
   close(): void {
@@ -83,6 +90,8 @@ export class LorePage {
     this.scene.input.keyboard?.off('keydown', this.onKey);
     this.offLang?.();
     this.offLang = null;
+    this.offUnlock?.();
+    this.offUnlock = null;
     setModal(this.scene, this, false);
   }
 

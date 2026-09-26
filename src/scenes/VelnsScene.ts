@@ -130,23 +130,30 @@ function bogMossDevil(scene: Phaser.Scene): string {
   ctx.drawImage(src, 0, 0);
   const img = ctx.getImageData(0, 0, w, h);
   const d = img.data;
-  const from = Math.floor(h * 0.5);
+  // The hummock is the bottom quarter of the cutout. Starting higher took the
+  // olive of his coat with it; starting there and going gently left the moss
+  // still reading green at night, so the band is lower and the change firmer.
+  const from = Math.floor(h * 0.7);
   for (let y = from; y < h; y++) {
     // Fade the effect in over the top of the band, so nothing has a seam.
-    const k = Math.min(1, (y - from) / (h * 0.08));
+    const k = Math.min(1, (y - from) / (h * 0.05));
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
       if (d[i + 3] === 0) continue;
       const r = d[i];
       const g = d[i + 1];
       const b = d[i + 2];
-      const green = g - Math.max(r, b);
-      if (green <= 4) continue;
-      const amt = Math.min(1, green / 40) * k;
+      // Green and olive both: moss where red is level with green still reads
+      // as green beside the bog's rust.
+      const green = g - Math.max(r * 0.82, b);
+      if (green <= 2) continue;
+      const amt = Math.min(1, green / 14) * k;
       const l = 0.3 * r + 0.55 * g + 0.15 * b;
-      d[i] = r + (l * 1.05 - r) * amt;
-      d[i + 1] = g + (l * 0.6 - g) * amt;
-      d[i + 2] = b + (l * 0.5 - b) * amt;
+      // Russet, and a shade brighter than the moss was: under the bog's cold
+      // tint a straight swap read as a dark hole rather than a hummock.
+      d[i] = r + (l * 1.4 - r) * amt;
+      d[i + 1] = g + (l * 0.72 - g) * amt;
+      d[i + 2] = b + (l * 0.55 - b) * amt;
     }
   }
   ctx.putImageData(img, 0, 0);

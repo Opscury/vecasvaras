@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   BREAD_CAP,
   breadFrom,
+  SHARE_CART,
+  SPARE_AT,
   catLost,
   devilGone,
   ending,
@@ -214,5 +216,18 @@ describe('the whole year', () => {
       }),
     );
     expect(perfect.map(([jp, rr, vp]) => `${jp}/${rr}/${vp}`)).toEqual(['leave/true/bread']);
+  });
+});
+
+describe('the tithe and the granary agree', () => {
+  it('fills the granary for every field the stone calls a share', () => {
+    // Just past a third standing is a share, and the card says "Granary: full".
+    // It used to come home at 5 sheaves and thresh to 2 loaves.
+    for (let left = 0; left < SPARE_AT; left += 0.005) {
+      expect(judgeField(left)).toBe('share');
+      const sheaves = sheavesFrom(1 - left, false);
+      expect(sheaves).toBeGreaterThanOrEqual(SHARE_CART);
+      expect(breadFrom('leave', sheaves)).toBe(BREAD_CAP);
+    }
   });
 });
