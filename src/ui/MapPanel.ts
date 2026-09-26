@@ -5,7 +5,7 @@ import { once } from '../core/once';
 import { mapUi } from '../content/script';
 import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
 import { makeParchment } from '../fx/textures';
-import { keysOf } from './keys';
+import { setModal } from './keys';
 import { signEnd, walkSign, type SignKey } from './Sign';
 import { audio } from '../core/audio';
 
@@ -93,7 +93,7 @@ export class MapPanel {
 
   open(): void {
     if (this.isOpen) return;
-    keysOf(this.scene).modal = true;
+    setModal(this.scene, this, true);
     audio.play('paper');
     this.armed = null;
     this.build(true);
@@ -111,7 +111,7 @@ export class MapPanel {
     this.root = null;
     this.offLang?.();
     this.offLang = null;
-    keysOf(this.scene).modal = false;
+    setModal(this.scene, this, false);
   }
 
   // --- drawing ---------------------------------------------------------------

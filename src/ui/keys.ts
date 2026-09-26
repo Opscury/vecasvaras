@@ -10,8 +10,13 @@ import Phaser from 'phaser';
  * importing one another.
  */
 export interface SceneKeys {
-  /** A panel is covering the world (the history); nothing under it may act. */
+  /**
+   * A panel is covering the world (the history, the book, the map, the
+   * settings); nothing under it may act. Set through `setModal`, never directly.
+   */
   modal: boolean;
+  /** Which panels are open — so closing one of two does not uncover the world. */
+  overlays: Set<object>;
   /** The bag's tray is open, so the number keys belong to it. */
   bagOpen: boolean;
   /** Something is in hand, so Enter means "use it here". */
@@ -24,6 +29,25 @@ export interface SceneKeys {
 
 /** Fired on the scene when the last card goes up or comes down. */
 export const CARD = 'vv-card';
+
+/** Fired on the scene when the first panel opens over the world or the last one closes. */
+export const MODAL = 'vv-modal';
+
+/**
+ * A panel has opened over the world, or closed.
+ *
+ * The world under it is not only deaf to keys: anything in it that runs on a
+ * clock the player is racing — the night at the bog — has to stop while they
+ * are reading, or the book about the Devil's bridge costs them the bridge.
+ */
+export function setModal(scene: Phaser.Scene, owner: object, on: boolean): void {
+  const k = keysOf(scene);
+  const was = k.modal;
+  if (on) k.overlays.add(owner);
+  else k.overlays.delete(owner);
+  k.modal = k.overlays.size > 0;
+  if (k.modal !== was) scene.events.emit(MODAL, k.modal);
+}
 
 /**
  * A full-screen card — a verse, a verdict — has appeared or gone.
@@ -43,7 +67,7 @@ const byScene = new WeakMap<Phaser.Scene, SceneKeys>();
 export function keysOf(scene: Phaser.Scene): SceneKeys {
   let k = byScene.get(scene);
   if (!k) {
-    k = { modal: false, bagOpen: false, holding: false, focus: null, cards: 0 };
+    k = { modal: false, overlays: new Set(), bagOpen: false, holding: false, focus: null, cards: 0 };
     byScene.set(scene, k);
     // Scene instances are reused, so the state has to be dropped on the way out.
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => byScene.delete(scene));

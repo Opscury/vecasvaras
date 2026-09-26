@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { type Loc, i18n, t } from '../core/i18n';
 import { ui } from '../content/script';
 import { Hex, Fonts, Layout, Palette, px, scaled } from '../core/theme';
-import { keysOf } from './keys';
+import { keysOf, setModal } from './keys';
 
 /**
  * Everything said so far in this scene, on one page.
@@ -35,7 +35,7 @@ export class History {
 
   open(): void {
     if (this.isOpen) return;
-    keysOf(this.scene).modal = true;
+    setModal(this.scene, this, true);
     this.build();
     this.offLang = i18n.onChange(() => {
       this.root?.destroy(true);
@@ -49,7 +49,7 @@ export class History {
     this.root = null;
     this.offLang?.();
     this.offLang = null;
-    keysOf(this.scene).modal = false;
+    setModal(this.scene, this, false);
   }
 
   private build(): void {

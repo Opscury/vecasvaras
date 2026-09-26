@@ -4,7 +4,7 @@ import { lore, LORE_SHOWN, type LoreId } from '../core/lore';
 import { beliefs } from '../content/ticejumi';
 import { loreUi } from '../content/script';
 import { Hex, Fonts, Layout, Palette, UI_SCALE, px, scaled } from '../core/theme';
-import { keysOf } from './keys';
+import { keysOf, setModal } from './keys';
 import { audio } from '../core/audio';
 import { walkSign } from './Sign';
 import { makeParchment } from '../fx/textures';
@@ -63,7 +63,7 @@ export class LorePage {
 
   open(): void {
     if (this.isOpen) return;
-    keysOf(this.scene).modal = true;
+    setModal(this.scene, this, true);
     audio.play('paper');
     this.at = 0;
     this.build();
@@ -83,7 +83,7 @@ export class LorePage {
     this.scene.input.keyboard?.off('keydown', this.onKey);
     this.offLang?.();
     this.offLang = null;
-    keysOf(this.scene).modal = false;
+    setModal(this.scene, this, false);
   }
 
   /** Pages: the contents, then one per belief. Two to a spread. */

@@ -3,7 +3,7 @@ import { type Loc, i18n, t } from '../core/i18n';
 import { settingsUi } from '../content/script';
 import { settings, type TextSize, type TextSpeed } from '../core/settings';
 import { Hex, Fonts, Layout, Palette, UI_SCALE, px, scaled } from '../core/theme';
-import { keysOf } from './keys';
+import { setModal } from './keys';
 import { audio } from '../core/audio';
 
 /**
@@ -45,7 +45,7 @@ export class SettingsPage {
 
   open(): void {
     if (this.isOpen) return;
-    keysOf(this.scene).modal = true;
+    setModal(this.scene, this, true);
     this.build(true);
     this.offLang = i18n.onChange(() => this.rebuild());
   }
@@ -58,7 +58,7 @@ export class SettingsPage {
     this.root = null;
     this.offLang?.();
     this.offLang = null;
-    keysOf(this.scene).modal = false;
+    setModal(this.scene, this, false);
   }
 
   private rebuild(): void {

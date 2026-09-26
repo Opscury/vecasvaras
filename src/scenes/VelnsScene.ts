@@ -33,6 +33,7 @@ import { audio } from '../core/audio';
 import { textureFor } from '../core/itemArt';
 import { attachWind, type WindPipeline } from '../fx/WindPipeline';
 import { makeBlob, makePlank } from '../fx/textures';
+import { MODAL, keysOf } from '../ui/keys';
 
 /**
  * Encounter two — the folk-tale Devil at the bog crossing.
@@ -187,6 +188,8 @@ export class VelnsScene extends Phaser.Scene {
   private built: Phaser.GameObjects.Image[] = [];
   private nightTimers: Phaser.Time.TimerEvent[] = [];
   private dawn: Phaser.GameObjects.Graphics | null = null;
+  /** The sky greying towards the cocks, once it has started. */
+  private dawnTween: Phaser.Tweens.Tween | null = null;
   private listedBargain = false;
   private greyed = false;
   private wind: WindPipeline | null = null;
@@ -219,8 +222,15 @@ export class VelnsScene extends Phaser.Scene {
     this.built = [];
     this.nightTimers = [];
     this.dawn = null;
+    this.dawnTween = null;
     this.wind = null;
     state.set('scene', 'Velns');
+
+    // The night waits while the player reads the book, the map, the settings
+    // or the history. Scene events outlive a visit, so the listener goes with it.
+    const onModal = (on: boolean) => this.holdNight(on);
+    this.events.on(MODAL, onModal);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(MODAL, onModal));
 
     fadeIn(this);
     this.painting = new Painting(this, 'bg-bog');
@@ -815,6 +825,19 @@ export class VelnsScene extends Phaser.Scene {
     g.fillGradientStyle(0xaeb9c6, 0xb8c0cc, 0x3c4450, 0x3c4450, 1, 1, 0, 0);
     g.fillRect(0, 0, Layout.width, 470);
     this.dawn = g;
+    if (keysOf(this).modal) this.holdNight(true);
+  }
+
+  /**
+   * Stops the night where it is, or lets it go on. Only the night's own clock:
+   * the scene's timers also type the settings page's sample line, and the
+   * panels drawn over the bog animate on its tweens.
+   */
+  private holdNight(on: boolean): void {
+    if (this.phase !== 'night') return;
+    this.nightTimers.forEach((t) => (t.paused = on));
+    if (on) this.dawnTween?.pause();
+    else this.dawnTween?.resume();
   }
 
   private stopNight(): void {
@@ -899,7 +922,7 @@ export class VelnsScene extends Phaser.Scene {
     this.greyed = true;
     if (!this.narration.busy) this.prompt.flash(velns.night.greying, 3000);
     const rest = NIGHT.cockMs - NIGHT.dawnFromMs;
-    this.tweens.add({ targets: this.dawn, alpha: 0.42, duration: rest, ease: 'Sine.easeIn' });
+    this.dawnTween = this.tweens.add({ targets: this.dawn, alpha: 0.42, duration: rest, ease: 'Sine.easeIn' });
     // The frogs fall quiet over the same half-minute.
     audio.bedLevel(0.35, rest);
   }
@@ -941,8 +964,17 @@ export class VelnsScene extends Phaser.Scene {
     const gone = devilGone(pick, loaf);
     const good = outcome === 'good';
 
-    // Commit now, in the same moment the offering left the bag.
+    // Answered as an equal and paid in full: he leaves his hat.
+    const respect = good && this.riddleRight;
+
+    // Commit now, in the same moment the offering left the bag — the hat
+    // included, so a tab closed while it is still falling does not lose it.
+    // It stays out of the tray until it has visibly landed in the bag.
     state.patch({ velns: outcome, velnsPick: pick, catLost: catLost(pick), devilGone: gone });
+    if (respect) {
+      this.bagUi.setAway('hat', true);
+      bag.add('hat');
+    }
     if (pick === 'cat') lore.unlock('velnaTilts');
 
     const o = velns.outcomes;
@@ -974,8 +1006,6 @@ export class VelnsScene extends Phaser.Scene {
 
     const r = gone ? reckoning.velns.gone : good ? reckoning.velns.good : reckoning.velns.poor;
     const keptCat = pick !== 'cat' && bag.has('cat');
-    // Answered as an equal and paid in full: he leaves his hat.
-    const respect = good && this.riddleRight;
     let gain = keptCat ? joinLoc(r.gain, reckoning.velns.catKept) : r.gain;
     if (respect) gain = joinLoc(gain, reckoning.velns.hatKept);
 
@@ -1070,7 +1100,7 @@ export class VelnsScene extends Phaser.Scene {
       this.narration.hide();
       hat.destroy();
       this.bagUi.fly('item-hat', rest.x, rest.y);
-      bag.add('hat');
+      this.time.delayedCall(420, () => this.bagUi.setAway('hat', false));
       this.time.delayedCall(700, then);
     });
   }

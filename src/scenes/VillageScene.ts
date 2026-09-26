@@ -85,6 +85,12 @@ export class VillageScene extends Phaser.Scene {
   private lastSeen: Shown = NOTHING_SHOWN;
   /** Sheaves standing against the granary — the store, counted, in the painting. */
   private sheaves = 0;
+  /**
+   * The cart is being counted and threshed in Anna's yard. The panel folds
+   * away while the loaves fly, so the narration no longer holds the clicks —
+   * and a second tap on her used to start the whole cart over on top of itself.
+   */
+  private threshing = false;
 
   constructor() {
     super('Village');
@@ -96,6 +102,7 @@ export class VillageScene extends Phaser.Scene {
     // Phaser reuses this instance on every visit, so every field starts over.
     this.spots = [];
     this.sheaves = 0;
+    this.threshing = false;
     this.catSprite = null;
     this.catSpot = null;
     this.chimneys = [];
@@ -107,6 +114,11 @@ export class VillageScene extends Phaser.Scene {
     const painting = this.painting;
     const s = state.get();
     const news = this.readNews();
+    // Home from the bog, a cat that was not given away belongs on its step.
+    // The walk home plays that out in front of the player; on any later visit
+    // — a reload in the middle of that walk, say — it is simply there, rather
+    // than left in the bag for the rest of the year.
+    if (s.velns !== 'none' && !news.bridge && bag.has('cat')) bag.remove('cat');
     const evening = s.velns !== 'none';
     // Before the harvest it is early: the mist lies heavier in the hollows.
     const morning = s.jumis === 'none';
@@ -660,6 +672,8 @@ export class VillageScene extends Phaser.Scene {
 
   /** What Anna says, which depends entirely on where the run has got to. */
   private talkTo(): void {
+    // She is busy with the cart; she will speak when the grain is in.
+    if (this.threshing) return;
     switch (currentStep()) {
       case 'meetElder':
         return this.giveFieldErrand();
@@ -706,6 +720,7 @@ export class VillageScene extends Phaser.Scene {
     const bread = breadFrom(pick, run.sheaves);
     const loaf = loafFrom(pick);
     const cart = new SheafTally(this, { title: jumisText.sheaves, y: 250 });
+    this.threshing = true;
 
     this.narration.say([elder.harvestBack.cart], () => {
       cart.show(250);
@@ -723,6 +738,7 @@ export class VillageScene extends Phaser.Scene {
               this.setSheaves(this.sheaves + 1, true);
             },
             () => {
+              this.threshing = false;
               state.set('jumisPaid', true);
               // Deliberately not `refresh` here: that would quietly take note
               // of the bog road opening, and the road opening is the point of
