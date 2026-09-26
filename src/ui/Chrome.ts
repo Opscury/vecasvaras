@@ -20,6 +20,19 @@ const CHIP = {
   padding: { x: scaled(26), y: scaled(18) },
 };
 
+/** Fired on the scene when the chips move or change width. */
+export const CHROME_MOVED = 'vv-chrome-moved';
+
+const edges = new WeakMap<Phaser.Scene, number>();
+
+/**
+ * Where the row of chips begins, from the left — so a line at the top of the
+ * frame can keep clear of it. Null in a scene without chips.
+ */
+export function chromeLeft(scene: Phaser.Scene): number | null {
+  return edges.get(scene) ?? null;
+}
+
 /**
  * Persistent top-corner furniture: the language toggle and, in scenes that
  * talk, the ⟲ that opens everything said so far (H on the keyboard). Kept above
@@ -175,6 +188,22 @@ export class Chrome {
     this.loreGlyph?.setVisible(on);
     if (on) this.loreBtn?.setInteractive({ useHandCursor: true });
     else this.loreBtn?.disableInteractive();
+    this.publishEdge();
+  }
+
+  /** Tells the rest of the scene where the chips now begin. */
+  private publishEdge(): void {
+    const scene = this.toggle.scene;
+    if (!scene) return;
+    const chips = [this.toggle, this.setBtn, this.logBtn, this.muteBtn, this.loreBtn].filter(
+      (c): c is Phaser.GameObjects.Text => !!c && c.visible,
+    );
+    // Every chip hangs from its top-right corner.
+    const left = Math.min(...chips.map((c) => c.x - c.width));
+    if (edges.get(scene) === left) return;
+    if (!edges.has(scene)) scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => edges.delete(scene));
+    edges.set(scene, left);
+    scene.events.emit(CHROME_MOVED);
   }
 
   /** The chips stack leftward from the language one, whatever width it is. */
@@ -195,6 +224,7 @@ export class Chrome {
       this.loreBtn.setX(x);
       this.loreGlyph?.setPosition(x - this.loreBtn.width + scaled(34), this.loreBtn.y + this.loreBtn.height / 2);
     }
+    this.publishEdge();
   }
 
   private chip(txt: Phaser.GameObjects.Text, onPress: () => void): void {

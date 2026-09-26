@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { type Loc, i18n, t } from '../core/i18n';
 import { Hex, Fonts, Layout, px, scaled } from '../core/theme';
+import { CHROME_MOVED, chromeLeft } from './Chrome';
 
 /**
  * The one-line instruction at the top of the frame while the player is meant
@@ -39,9 +40,14 @@ export class Prompt {
       .setAlpha(0);
 
     const off = i18n.onChange(() => {
-      if (this.shown) this.text.setText(t(this.shown));
+      if (this.shown) this.put(this.shown);
     });
-    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, off);
+    const refit = () => this.fit();
+    scene.events.on(CHROME_MOVED, refit);
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      off();
+      scene.events.off(CHROME_MOVED, refit);
+    });
   }
 
   show(loc: Loc, duration = 400): void {
@@ -72,6 +78,30 @@ export class Prompt {
   private put(loc: Loc): void {
     this.shown = loc;
     this.text.setText(t(loc));
+    this.fit();
+  }
+
+  /**
+   * Keeps the line clear of the chips in the top-right corner. Centred when
+   * it fits; otherwise moved left just far enough, and wrapped narrower only
+   * if moving is not enough. On a phone, at one and a half times the type
+   * size, the night's instruction used to run under the beliefs chip.
+   */
+  private fit(): void {
+    const full = Layout.width - scaled(560);
+    const edge = chromeLeft(this.scene);
+    if (edge === null) {
+      this.text.setWordWrapWidth(full).setX(Layout.width / 2);
+      return;
+    }
+    const gap = scaled(20);
+    const padX = scaled(18);
+    const room = edge - gap - Layout.margin;
+    this.text.setWordWrapWidth(Math.min(full, room - padX * 2));
+    // The object's width includes its padding.
+    const half = this.text.width / 2;
+    const x = Math.min(Layout.width / 2, edge - gap - half);
+    this.text.setX(Math.max(Layout.margin + half, x));
   }
 
   private cancelFlash(): void {

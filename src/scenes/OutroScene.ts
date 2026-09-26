@@ -149,8 +149,7 @@ export class OutroScene extends Phaser.Scene {
       ? add(rightX, subY + scaled(32), () => tally.hat, { size: px(21), colour: Hex.rye, italic: true })
       : null;
 
-    const verdictY = height * 0.64;
-    const verdict = add(width / 2, verdictY, () => tally[kind], {
+    const verdict = add(width / 2, height * 0.64, () => tally[kind], {
       size: px(42),
       colour: kind === 'both' ? Hex.parchment : Hex.parchmentDim,
     });
@@ -166,11 +165,30 @@ export class OutroScene extends Phaser.Scene {
       parts.push(tally.again);
       return { lv: parts.map((p) => p.lv).join(' '), en: parts.map((p) => p.en).join(' ') };
     };
-    const note = add(width / 2, verdictY + scaled(60), noteLoc, { size: px(24), colour: Hex.rye });
+    const note = add(width / 2, height * 0.64 + scaled(60), noteLoc, { size: px(24), colour: Hex.rye });
+
+    // Stacked by measured height, not by fixed fractions of the frame. At phone
+    // type size — or the large text setting — the Devil's column (the cat, then
+    // the hat) ran down into the verdict when each line had a fixed place.
+    const layout = () => {
+      const below = (o: Phaser.GameObjects.Text, gap: number) => o.y + o.height / 2 + gap;
+      const place = (o: Phaser.GameObjects.Text, top: number) => o.setY(top + o.height / 2);
+      const subTop = Math.max(below(rowJ, scaled(8)), below(rowV, scaled(8)));
+      place(subJ, subTop);
+      place(subV, subTop);
+      if (hatLine) place(hatLine, below(subV, scaled(4)));
+      const lowest = Math.max(below(subJ, 0), below(hatLine ?? subV, 0));
+      verdict.setY(Math.max(height * 0.64, lowest + scaled(34) + verdict.height / 2));
+      place(note, below(verdict, scaled(14)));
+    };
+    layout();
 
     // The way on.
     const next = this.button(width / 2, height * 0.85, ui.restart, true);
     next.txt.on('pointerdown', () => this.playAgain());
+    const placeNext = () =>
+      next.txt.setY(Math.max(height * 0.85, note.y + note.height / 2 + scaled(28) + next.txt.height / 2));
+    placeNext();
 
     // Carve the marks one after the other, then let the words follow.
     const fadeUp = (target: Phaser.GameObjects.GameObject, delay: number, duration = 700, onComplete?: () => void) =>
@@ -199,7 +217,9 @@ export class OutroScene extends Phaser.Scene {
 
     const off = i18n.onChange(() => {
       texts.forEach((x) => x.obj.setText(t(x.loc())));
+      layout();
       next.refresh();
+      placeNext();
     });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, off);
   }
