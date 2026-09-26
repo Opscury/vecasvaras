@@ -52,6 +52,8 @@ export class DainaCard {
 
   private root: Phaser.GameObjects.Container;
   private verse: Phaser.GameObjects.Text;
+  /** The Barons number under the verse: the game shows its sources. */
+  private cite: Phaser.GameObjects.Text;
   /** "Next ▸" at the foot of the card — a word, because a lone glyph read as decoration. */
   private go!: Phaser.GameObjects.Text;
   private key: keyof typeof dainas;
@@ -82,6 +84,15 @@ export class DainaCard {
       })
       .setOrigin(0.5, 0.5);
 
+    this.cite = scene.add
+      .text(width / 2, 0, dainas[key].ld, {
+        fontFamily: Fonts.body,
+        fontSize: px(20),
+        color: Hex.parchmentDim,
+        fontStyle: 'italic',
+      })
+      .setOrigin(0.5, 0);
+
     const go = (this.go = scene.add
       .text(width / 2, height * 0.86, t(ui.next) + '  ▸', {
         fontFamily: Fonts.body,
@@ -93,7 +104,7 @@ export class DainaCard {
       .setOrigin(0.5));
 
     this.root = scene.add
-      .container(0, 0, [veil, rule, this.verse, go])
+      .container(0, 0, [veil, rule, this.verse, this.cite, go])
       .setDepth(800)
       .setAlpha(0);
 
@@ -167,5 +178,6 @@ export class DainaCard {
   private refresh(): void {
     this.go.setText(t(ui.next) + '  ▸');
     this.verse.setText(t(dainaText(this.key)));
+    this.cite.setY(this.verse.y + this.verse.height / 2 + scaled(28));
   }
 }

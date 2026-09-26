@@ -5,11 +5,16 @@
  * or hand the Latvian to a proofreader, this is the only file that matters
  * (with `elder.ts` and `ticejumi.ts` beside it).
  *
- * NOTE ON THE RIDDLES (velns.riddle, velns.riddle2, velns.askBack.riddle):
- * none could be found in an online mīklu collection (checked Sept 2026). The
- * wind riddle has the shape of a widespread European formula; the other two
- * were written for this game. Present them as the game's own, in the shape of
- * mīklas — never as quoted folklore — unless a printed source turns up.
+ * THE RIDDLES are all traditional, and quoted (checked Sept 2026 — sources
+ * in FOLKLORE.md and src/content/sources.ts, tested by lore.test.ts):
+ *   velns.riddle          — the wind: I. Kalniņa, «Latviešu tautas mīklas –
+ *                           lieliem un maziem» (Avots, 2015)
+ *   velns.riddle2         — sweeter than honey: asked by the Devil himself in
+ *                           Šmits, «Latviešu pasakas un teikas» X, «Velna
+ *                           uzdotās mīklas» 2 (Valmiera district)
+ *   velns.askBack.riddle  — the cock: «Latviešu bērnu folklora»
+ * The earlier "faster than the wind — a thought" and "what sings, and the
+ * night is over" were not traditional and are gone.
  *
  * Lines added in the September "fun pass" are marked NEW in a comment and have
  * not been through a proofreader yet.
@@ -39,6 +44,8 @@ export const loreUi = {
   toast: L('Jauns ticējums', 'A new belief'),
   locked: L('Vēl nav atrasts.', 'Not found yet.'),
   source: L('Pēc P. Šmita «Latviešu tautas ticējumiem», Nr. {}', 'After P. Šmits, Latvian Folk Beliefs, no. {}'),
+  /** For a legend rather than a belief: volume and tale. */
+  sourceTale: L('Pēc P. Šmita «Latviešu pasakām un teikām», {}', 'After P. Šmits, Latvian Tales and Legends, {}'),
   close: L('Pieskaries ārpus grāmatas, lai aizvērtu', 'Touch outside the book to close'),
   /** Under the heading on the book's first page. */
   epigraph: L(
@@ -164,9 +171,11 @@ export const village = {
         'Pelēks akmens ciema vidū, vecāks par visām mājām ap to. Neviens vairs neatceras, kas tajā iekalts.',
         'A grey stone in the middle of the village, older than every house around it. Nobody remembers any more what was cut into it.',
       ),
+      // Šmits 19325: the house spirit may dwell «pašu laukā kādā akmenī»;
+      // 19340: the first bite of baked bread is his.
       L(
-        'Bet visi joprojām met tam pirmo graudu no pirmās maizes. Katru gadu. Nedomājot.',
-        'But everyone still throws it the first crumb of the first loaf. Every year. Without thinking.',
+        'Vecie saka, ka tajā mīt mājas kungs, un pirmais kumoss no jaunās maizes pienākas viņam. Katru gadu. Nedomājot.',
+        'The old people say the house spirit lives in it, and the first bite of the new bread is his. Every year. Without thinking.',
       ),
     ],
     // NEW — after the crumb.
@@ -175,12 +184,12 @@ export const village = {
       'At the foot of the stone lies your crumb. The birds have not had it yet.',
     ),
   },
-  /** NEW — the first crumb, which the stone text has always described and nobody could do. */
+  /** NEW — the first bite, which the stone text has always described and nobody could do. */
   crumb: {
     give: [
       L(
-        'Tu atlauz no klaipa pirmo kumosu un noliec to akmens pakājē. Kā visi. Nedomājot.',
-        'You break the first crumb off the loaf and set it at the foot of the stone. Like everyone. Without thinking.',
+        'Tu atlauz no klaipa pirmo kumosu un noliec to akmens pakājē — mājas kungam. Kā visi. Nedomājot.',
+        'You break the first bite off the loaf and set it at the foot of the stone — for the house spirit. Like everyone. Without thinking.',
       ),
       L('Tikai šoreiz tu padomāji.', 'Only this time you did think.'),
     ],
@@ -353,13 +362,14 @@ export const jumis = {
     'The double ear is there. Cut it and it is gone.',
   ),
   /** NEW — what the double ear asks of the hand, once the field is down. */
+  // The tithe as Šmits 11992 has it: the ears tied in a knot.
   gesturePrompt: L(
-    'Pieliec to pie zemes — velc uz leju. Vai izrauj ar saknēm — velc uz augšu.',
-    'Bend it to the ground — drag down. Or pull it up by the roots — drag up.',
+    'Sasien vārpas mezglā — velc uz leju. Vai izrauj ar saknēm — velc uz augšu.',
+    'Tie its ears in a knot — drag down. Or pull it up by the roots — drag up.',
   ),
   gestureTap: L(
-    'Velc, nevis spied: uz leju — pieliekt, uz augšu — izraut.',
-    'Drag, do not tap: down to bend it, up to pull it.',
+    'Velc, nevis spied: uz leju — sasiet, uz augšu — izraut.',
+    'Drag, do not tap: down to tie it, up to pull it.',
   ),
   gestureNoBlade: L('Nocirst to var tikai ar sirpi.', 'Only the sickle will cut it.'),
   hintStone: {
@@ -375,8 +385,8 @@ export const jumis = {
   // The list is the fallback now; the double ear is bent or pulled by hand.
   choices: {
     leave: L(
-      'Pieliekt to pie zemes un piesiet pie rugājiem.',
-      'Bend it down and tie it into the stubble.',
+      'Sasiet tās vārpas mezglā un atstāt laukam.',
+      'Tie its ears in a knot and leave it to the field.',
     ),
     take: L(
       'Izraut to ar saknēm un nest mājās klētī.',
@@ -396,16 +406,17 @@ export const jumis = {
     ],
     leave: [
       L(
-        'Tu pieliec divvārpu pie zemes un piesien ar salmu grīsti, kā to dara vecās sievas.',
-        'You bend the double ear to the ground and tie it with a twist of straw, the way the old women do.',
+        'Tu sasien divvārpu mezglā, kā to darīja vecie, un atstāj to laukam.',
+        'You tie the double ear in a knot, the way the old people did, and leave it to the field.',
       ),
       L(
         'Pār saliņu uz mirkli pārskrien vējš, lai gan citur lauks stāv mierā.',
         'For a moment a wind runs over the little island, though the rest of the field is still.',
       ),
     ],
-    // NEW — the other good. Jumja ķeršana is attested; the game's reading is
-    // that Jumis then takes his share from the granary instead of the field.
+    // NEW — the other good. Carrying Jumis home to the granary is attested
+    // (Šmits 11992, 11998). That he then eats from the granary is the game's
+    // own reading, and the records say otherwise — see FOLKLORE.md, «Open».
     take: [
       L(
         'Tu izrauj divvārpu ar visām saknēm. Zeme nāk līdzi, smaga un melna.',
@@ -460,8 +471,8 @@ export const jumis = {
     holeLabel: L('Bedrīte', 'The hole'),
     patchLabel: L('Nenopļautais', 'The uncut rye'),
     bound: L(
-      'Divvārpa guļ pieliekta, sasieta ar salmu grīsti. Kāds — ne tu — tai blakus nolicis graudu.',
-      'The double ear lies bent and tied with a twist of straw. Someone — not you — has left a grain beside it.',
+      'Divvārpa guļ, vārpas sasietas mezglā. Kāds — ne tu — tai blakus nolicis graudu.',
+      'The double ear lies with its ears tied in a knot. Someone — not you — has left a grain beside it.',
     ),
     hole: L(
       'Tur, kur stāvēja divvārpa, ir tukša bedrīte. Zeme vēl irdena.',
@@ -561,9 +572,10 @@ export const velns = {
       'Seeing who sits on the hummock, the cat hops back into your bag.',
     ),
   },
+  // Quoted: «Bez kājām, bez rokām, bet durvis attaisa. (vējš)» — Kalniņa 2015.
   riddle: L(
-    '„Bez rokām, bez kājām, bet durvis ver. Kas tas ir?“',
-    '“Without hands, without feet, and yet it opens doors. What is it?”',
+    '„Bez kājām, bez rokām, bet durvis attaisa. Kas tas ir?“',
+    '“Without feet, without hands, and yet it opens doors. What is it?”',
   ),
   riddleChoices: {
     wind: L('Vējš.', 'The wind.'),
@@ -579,10 +591,15 @@ export const velns = {
     lead: L('„Nu? Par tiltu?“', '“Well? The bridge?”'),
     ask: L('„Pagaidi. Tagad es tev vienu.“', '“Wait. Now one from me.”'),
     skip: L('„Par tiltu.“', '“The bridge.”'),
-    riddle: L('„Kas dzied, un nakts ir galā?“', '“What sings, and the night is over?”'),
+    // Quoted: the cock, from «Latviešu bērnu folklora». The Devil will not
+    // name what drives him off (Šmits 32406).
+    riddle: L(
+      '„Vīrs niķu, niķiem, svārki stiķu, stiķiem, kaula deguns, gaļas bārda. Kas tas ir?“',
+      '“A man all airs and graces, a coat all stitch on stitch, a nose of bone and a beard of flesh. What is it?”',
+    ),
     stumped: L(
-      '„Tas ir… tas…“ Viņš saviebjas un nesaka. „To vārdu purvā nesauc. Labi, tu esi viltīgs. Strādāšu ātri, lai tev neatliek laika vēl ko izdomāt.“',
-      '“That is… that…” He grimaces and does not say it. “That word is not spoken on a bog. All right, you are sly. I will work fast, so you have no time to think up anything else.”',
+      '„Tas ir… tas…“ Viņš saviebjas un nesaka. „To vārdu es nesaukšu. Labi, tu esi viltīgs. Strādāšu ātri, lai tev neatliek laika vēl ko izdomāt.“',
+      '“That is… that…” He grimaces and does not say it. “That word I will not say. All right, you are sly. I will work fast, so you have no time to think up anything else.”',
     ),
   },
   /** NEW — a wrong first answer is not the end of it: he wants to keep playing. */
@@ -590,19 +607,21 @@ export const velns = {
     'Viņš smejas tā, ka no ciņa nokrīt sūnas. „Nē! Vējš, muļķi, vējš! Labi, vēl vienu — man vienalga garlaicīgi.“',
     'He laughs so hard the moss falls off the hummock. “No! The wind, fool, the wind! All right, one more — I am bored anyway.”',
   ),
-  riddle2: L('„Kas ir ātrāks par vēju?“', '“What is faster than the wind?”'),
+  // Quoted: the Devil's own riddle, and its answer, in Šmits LPT X, «Velna
+  // uzdotās mīklas» 2 — «Kas ir saldāks par medu?» «Miegs.»
+  riddle2: L('„Kas ir saldāks par medu?“', '“What is sweeter than honey?”'),
   riddle2Choices: {
-    horse: L('Zirgs.', 'A horse.'),
-    thought: L('Doma.', 'A thought.'),
-    hawk: L('Vanags.', 'A hawk.'),
+    beer: L('Alus.', 'Beer.'),
+    sleep: L('Miegs.', 'Sleep.'),
+    berries: L('Ogas.', 'Berries.'),
   },
   riddle2Right: L(
-    '„Doma,“ viņš nopūšas. „Tātad tomēr esi dzirdējis vecos ļaudis. Labi. Tad par tiltu.“',
-    '“A thought,” he sighs. “So you have listened to the old people after all. Very well. The bridge, then.”',
+    '„Miegs,“ viņš nopūšas. „Tātad tomēr esi dzirdējis vecos ļaudis. Labi. Tad par tiltu.“',
+    '“Sleep,” he sighs. “So you have listened to the old people after all. Very well. The bridge, then.”',
   ),
   riddle2Wrong: L(
-    '„Doma, doma! Nu, tad tilts būs tik labs, cik labas bija tavas atbildes.“',
-    '“A thought, a thought! Then the bridge will be as good as your answers were.”',
+    '„Miegs, miegs! Nu, tad tilts būs tik labs, cik labas bija tavas atbildes.“',
+    '“Sleep, sleep! Then the bridge will be as good as your answers were.”',
   ),
   terms: [
     L(

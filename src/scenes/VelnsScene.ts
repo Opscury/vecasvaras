@@ -769,9 +769,9 @@ export class VelnsScene extends Phaser.Scene {
     this.devilLaugh();
     this.narration.say([velns.riddleWrong], () => {
       this.narration.ask(velns.riddle2, [
-        { label: velns.riddle2Choices.horse, onPick: () => this.answerSecond(false) },
-        { label: velns.riddle2Choices.hawk, onPick: () => this.answerSecond(false) },
-        { label: velns.riddle2Choices.thought, onPick: () => this.answerSecond(true) },
+        { label: velns.riddle2Choices.beer, onPick: () => this.answerSecond(false) },
+        { label: velns.riddle2Choices.berries, onPick: () => this.answerSecond(false) },
+        { label: velns.riddle2Choices.sleep, onPick: () => this.answerSecond(true) },
       ]);
     });
   }
@@ -806,6 +806,8 @@ export class VelnsScene extends Phaser.Scene {
 
   private beginNight(): void {
     this.phase = 'night';
+    // The legend is this: a bridge in one night, before the cock crows.
+    lore.unlock('velnaTilts');
     const every = this.quick ? NIGHT.quickEveryMs : NIGHT.everyMs;
 
     this.nightTimers.push(
@@ -975,7 +977,6 @@ export class VelnsScene extends Phaser.Scene {
       this.bagUi.setAway('hat', true);
       bag.add('hat');
     }
-    if (pick === 'cat') lore.unlock('velnaTilts');
 
     const o = velns.outcomes;
     const fumbled = !this.riddleRight;

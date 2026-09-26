@@ -1,23 +1,20 @@
 /**
  * ============================================================================
- *  DAINAS — NEEDS HUMAN VERIFICATION BEFORE PUBLIC RELEASE
+ *  DAINAS — every verse here is checked against a printed collection
  * ============================================================================
  *
  *  Traditional dainas from the Barons collection are public domain worldwide,
- *  so there is no clearance problem here. The problem is ACCURACY: the texts
- *  below were written from memory and have NOT been checked character-by-
- *  character against a primary source.
+ *  so there is no clearance problem here. The problem is ACCURACY: a
+ *  misquoted daina in a VKKF application or a press build is the kind of
+ *  mistake a Latvian reviewer notices immediately. So:
  *
- *  A misquoted daina in a VKKF application or a press build is the kind of
- *  mistake a Latvian reviewer notices immediately. Before you ship:
+ *    1. Every verse is copied verbatim from a printed source, diacritics and
+ *       punctuation included, with its Barons (LD) number.
+ *    2. Nothing is written from memory. An entry that cannot be checked is
+ *       `verified: false`, and a production build does not show it at all
+ *       (see `flags.draftFolklore`).
  *
- *    1. Open the `source` URL on each entry below.
- *    2. Copy the stanza verbatim, diacritics and punctuation included.
- *    3. Paste it over `lv`, adjust `en` to match, and set `verified: true`.
- *
- *  Nothing else in the codebase needs to change — the scenes read this file.
- *  `assertDainasVerified()` prints a console warning in dev while any entry
- *  is still unverified, so you cannot quietly forget.
+ *  See FOLKLORE.md for the full ledger of what was checked and where.
  *
  *  Primary sources:
  *    dainuskapis.lv          — the Barons cabinet, searchable, authoritative
@@ -29,11 +26,13 @@
 import { type Loc } from '../core/i18n';
 
 export interface Daina {
-  /** Latvian text, line-broken as printed. */
+  /** Latvian text, line-broken as printed in the source. */
   lv: string;
   /** Working English rendering — plain sense, not a verse translation. */
   en: string;
-  /** Where to check it. */
+  /** The Barons number, shown under the verse. */
+  ld: string;
+  /** Where the text was checked. */
   source: string;
   /** Flip to true only after you have compared it to the source. */
   verified: boolean;
@@ -41,23 +40,30 @@ export interface Daina {
 
 export const dainas: Record<'jumis' | 'velns', Daina> = {
   jumis: {
-    // Checked Sept 2026 against tautasdziesmas.lv. The field and the grey stone
-    // are the encounter's own: the boundary stone stands in the rye.
-    // Still to add: its Barons (LD) number, from dainuskapis.lv.
-    lv: 'Kur, Jumīti, tu gulēji\nŠo garaju vasariņu? –\nTīrumiņa vidiņā,\nZem pelēka akmentiņa.',
-    en: 'Where, little Jumis, did you sleep\nall this long summer? –\nIn the middle of the field,\nunder a grey stone.',
-    source: 'https://tautasdziesmas.lv/vasara/kur-jumiti-tu-guleji',
+    // Checked Sept 2026, word for word, against P. Šmits, «Latviešu tautas
+    // ticējumi» no. 12002, which prints it with its Barons number (the web
+    // edition's hyphen before the answer is set here as a dash).
+    // tautasdziesmas.lv has a variant («Šo garaju vasariņu», «Zem pelēka
+    // akmentiņa»); Šmits' text is used because it carries the LD citation.
+    // dainuskapis.lv (behind a bot check from here) is the place to confirm
+    // LD 28543 itself.
+    lv: 'Kur, Jumīti, tu gulēji\nŠo garo vasariņu?\n– Tīrumiņa vidiņā\nZem pelēku akmentiņu.',
+    en: 'Where, little Jumis, did you sleep\nall this long summer?\n– In the middle of the field,\nunder a grey stone.',
+    ld: 'LD 28543',
+    source: 'https://valoda.ailab.lv/folklora/ticejumi/jumis.htm',
     verified: true,
   },
-  // NOT A REAL DAINA. Written from memory for the prototype and not found in
-  // any collection (searched Sept 2026). Replace it with an attested verse
-  // before release — a devil, a bog or the cocks — or drop the card for this
-  // encounter. dainuskapis.lv (search «velniņ*», «purv*») or ask LFK.
+  // The earlier Devil verse was written from memory and is in no collection;
+  // it has been dropped. This one is real: a herding song about the bog,
+  // printed by Šmits under «Purvs» (no. 24910) with its Barons number, checked
+  // character by character in Sept 2026. The spelling (ŗ, the elided
+  // «piebradāj'ši») is kept as printed.
   velns: {
-    lv: 'Velniņš tiltu darināja\nPurva vidū, naktiņā;\nGaiļi dzied, tilts nogrima,\nVelniņš sēž un noskatās.',
-    en: 'The little devil built a bridge\nin the middle of the bog, by night;\nthe cocks crowed, the bridge sank,\nand the devil sat and watched.',
-    source: 'https://tautasdziesmas.lv/',
-    verified: false,
+    lv: "Ēdat, govis, purva zāli,\nNedzeŗt purva ūdentiņu:\nVelna bērni piebradāj'ši\nSpalvainām kājiņām.",
+    en: 'Eat, cows, the grass of the bog,\ndo not drink the bog water:\nthe Devil’s children have waded in it\nwith their hairy little feet.',
+    ld: 'LD 28994',
+    source: 'https://valoda.ailab.lv/folklora/ticejumi/purvs.htm',
+    verified: true,
   },
 };
 

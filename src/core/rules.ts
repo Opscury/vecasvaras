@@ -24,8 +24,8 @@ import type { Outcome } from './state';
  * What became of the double ear, and of the field around it.
  *
  *   leave  cut around it, bent it to the ground and tied it. The tithe.
- *   take   pulled it up and carried it home to the granary — Jumja ķeršana,
- *          a real custom, and a different good rather than a lesser one.
+ *   take   pulled it up and carried it home to the granary — a real custom
+ *          (Šmits 11992, 11998), and a different good rather than a lesser one.
  *   all    put the blade through it. Everything taken.
  *   spare  stopped with a third of the field or more still standing. The
  *          field is content; the village goes short. The opposite mistake.

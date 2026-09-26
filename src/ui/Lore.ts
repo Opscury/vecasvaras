@@ -333,7 +333,7 @@ export class LorePage {
 
     if (found && b.verified && b.ref) {
       const src = this.scene.add
-        .text(cx, y + 14, t(fillLoc(loreUi.source, num(Number(b.ref)))), {
+        .text(cx, y + 14, t(fillLoc(b.book === 'teikas' ? loreUi.sourceTale : loreUi.source, L(b.ref, b.ref))), {
           fontFamily: Fonts.body,
           fontSize: px(19),
           color: INK_FAINT,
@@ -341,6 +341,9 @@ export class LorePage {
         })
         .setOrigin(0.5, 0);
       out.push(src);
+      // Counted in the page's height, or a long quote pushes its own
+      // citation down onto the folio.
+      y += 14 + src.height;
     }
 
     const folio = this.scene.add
@@ -349,7 +352,7 @@ export class LorePage {
     out.push(folio);
 
     // A page too full for the leaf at large type is scaled down, not clipped.
-    const bottom = y + 40;
+    const bottom = y + 16;
     const room = BOOK.h / 2 - 70;
     if (bottom > room) {
       const k = (room - top) / (bottom - top);

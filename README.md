@@ -39,14 +39,14 @@ as it was left:
 
 | What was done | Called | The year |
 |---|---|---|
-| cut around the double ear, then **bent it down and tied it** (drag down) | *leave* — the tithe | Jumis left in peace, full granary, honest loaf |
-| cut around it, then **pulled it up and carried it home** (drag up) | *take* — Jumja ķeršana | Jumis carried home, a granary one loaf lighter, **a loaf with Jumis in it** |
+| cut around the double ear, then **tied its ears in a knot** (drag down) | *leave* — the tithe | Jumis left in peace, full granary, honest loaf |
+| cut around it, then **pulled it up and carried it home** (drag up) | *take* — Jumis in the granary | Jumis carried home, a granary one loaf lighter, **a loaf with Jumis in it** |
 | **put the blade through it** (drag across, after one warning) | *all* | poor: the biggest cart, the least bread, a thin loaf |
 | stopped with **a third of the field or more** still standing (asked once) | *spare* | poor the other way: good bread, too little of it |
 
 The last choice is a gesture on the ear, not a menu; the list only appears after
-a pause or two taps. Taking Jumis home is a real custom, so it is scored as a
-different good rather than a lesser one. The cart is counted again in Anna's
+a pause or two taps. Taking Jumis home is a real custom (Šmits 11992, 11998), so
+it is scored as a different good rather than a lesser one. The cart is counted again in Anna's
 yard and threshed into bread in front of the player (3 / 2 / 1 loaves), so the
 tithed cart — a sheaf short — is the one that fills the row.
 
@@ -57,9 +57,10 @@ invite the wrong one, and a frog croaks from the plank that will hold. If the ca
 came along it walks out ahead, on the right planks, and hops back into the bag
 when it sees who is sitting there. He notices it.
 
-Then the riddle, and the bog answers it first — a gust across the reeds. Get it
-right and you may ask him one back, which rattles him into working faster; get
-it wrong and he wants another go. Once the terms are spoken he starts building,
+Then the riddle — traditional, like the other two — and the bog answers it
+first, a gust across the reeds. Get it right and you may ask him one back (the
+cock, which he will not name), which rattles him into working faster; get it
+wrong and he asks the one he asks in Šmits' tale, sweeter than honey. Once the terms are spoken he starts building,
 a plank at a time, while the bag is open and the bargain unsettled. The list of
 options comes up after twenty seconds, the east greys after forty, and the cocks
 crow at seventy-two whether or not anything was paid.
@@ -156,7 +157,8 @@ more.
 
 **Beliefs.** Each custom the game is built on is recorded as the player meets it,
 in a book of engravings — *Ticējumi 4 / 7* — with a hint where each missing one
-is found. Verified entries cite their Šmits record.
+is found. Every entry quotes its Šmits record and cites it on the page; the
+verse cards show their Barons (LD) numbers.
 
 **The ending.** A tally headed *Vecās varas*: both marks, a line for each power —
 who was met and how you parted — the bread and the cat. It ends on one button, a
@@ -186,8 +188,9 @@ src/
   content/
     script.ts          every player-facing line, both languages
     elder.ts           everything Vecā Anna says
-    ticejumi.ts        the beliefs page — SEE THE WARNING BELOW
-    dainas.ts          the epigraphs — SEE THE WARNING BELOW
+    ticejumi.ts        the beliefs page, each entry quoted from Šmits — see FOLKLORE.md
+    dainas.ts          the epigraphs, with their LD numbers — see FOLKLORE.md
+    sources.ts         the source passages verbatim, for the tests (never bundled)
   scenes/              Boot, Title, Intro, Village, Jumis, Velns, Outro
     StreamScene.ts     streams the art per scene (village → sound → field → bog → book);
                        a scene waits only for its own group, under the ink
@@ -238,31 +241,31 @@ Two conventions worth keeping as this grows:
   is unit-tested in milliseconds; the scenes only decide how that *looks*.
   Adding an encounter means adding a rule function and a test, then a scene.
 
-## ⚠ Before any public release: the folklore gate
+## The folklore gate
 
-Checked in September 2026 against [tautasdziesmas.lv](https://tautasdziesmas.lv)
-and Šmits' *Latviešu tautas ticējumi* ([valoda.ailab.lv](http://valoda.ailab.lv/folklora/ticejumi/)).
-Each open item says why in a comment beside it.
+Everything the game presents as tradition — both verses, all seven beliefs,
+all three riddles — is quoted from a printed source and cited on screen.
+**[FOLKLORE.md](FOLKLORE.md)** is the ledger: every claim, its source, and
+what it replaced (September 2026: the Devil's verse, two beliefs and two
+riddles were invented or misattributed, and are gone).
 
-| Item | Status |
-|---|---|
-| Jumis daina — «Kur, Jumīti, tu gulēji» | ✅ real, verified; LD number still to add |
-| Velns daina | ❌ **not a real daina** — written from memory; replace or drop |
-| Riddles (wind, thought, the cock) | ⚠ not found in a mīklu collection — present as the game's own |
-| Ticējumi: jumis 11992, jumjaKersana 11998, maize 18623, vadātājs 31472, gailis 32406 | ✅ matched, cited on the page |
-| Ticējums: pirmais kumoss | ❌ not in Šmits' bread section; nearest are 18166 and 18168 |
-| Ticējums: velna tilts («the first living thing») | ❌ a tale motif, not a belief — ask LFK for a Latvian teika |
-| Native proofread of every `// NEW` line | open |
+It is enforced rather than remembered:
 
-`assertDainasVerified()` and `assertBeliefsVerified()` warn in the dev console
-while anything is open. A local lead worth following for the Devil's bridge: the
-teika *Velna grava un tiltiņš* near Vilce manor (LTT 1991 : 134).
+- `src/content/sources.ts` holds the source passages verbatim, and
+  `npm test` fails if any verse, belief or riddle in the game is not found in
+  the record it cites.
+- Anything marked `verified: false` is left out of a production build; open
+  the page with `?folklore=draft` to review it.
+
+Two story mechanics are flagged there as the game's own rather than Latvian
+tradition and are waiting on a decision: the cost of taking Jumis home, and the
+Devil's price «the first living thing to cross».
 
 Primary sources:
 
+- [valoda.ailab.lv/folklora](https://valoda.ailab.lv/folklora/) — Šmits' *Latviešu tautas ticējumi* and *Latviešu pasakas un teikas*, full text
 - [dainuskapis.lv](https://dainuskapis.lv) — the Barons cabinet, authoritative
 - [tautasdziesmas.lv](https://tautasdziesmas.lv) — readable browsing by theme
-- [valoda.ailab.lv/folklora/ticejumi](http://valoda.ailab.lv/folklora/ticejumi) — Šmits' folk beliefs, the source of the puzzle logic
 - [garamantas.lv](https://garamantas.lv) — the Latvian Folklore Archive (LFK)
 
 ## Rights
@@ -342,7 +345,7 @@ Two implementation notes worth keeping:
 
 ## Still open
 
-- The folklore gate above, and a Latvian proofread.
+- A Latvian proofread, and the two open folklore decisions in FOLKLORE.md.
 - The sung verses: each verse card has a slot for one sung line over the kokle
   (`voiceJumis` / `voiceVelns` in `core/audio.ts`). It needs a singer.
 - A playtest with strangers on their own phones.
