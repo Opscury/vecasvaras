@@ -8,6 +8,7 @@ import { keysOf, setModal } from './keys';
 import { audio } from '../core/audio';
 import { walkSign } from './Sign';
 import { makeParchment } from '../fx/textures';
+import { allEntries, AVOTI_PATH, AVOTI_TEXT, AVOTI_URL_LABEL, GARAMANTAS_URL, STATUS_EXPLAIN, STATUS_LABEL, WORKS, type SourceStatus } from '../content/avoti';
 
 const num = (n: number): { lv: string; en: string } => L(String(n), String(n));
 
@@ -25,12 +26,34 @@ const num = (n: number): { lv: string; en: string } => L(String(n), String(n));
  *
  * Turn with the arrows, the arrow keys, or a swipe. Tapping a line on the
  * contents page opens that belief.
+ *
+ * The last spread is «Avoti»: how much of what the game offers as folklore is
+ * quoted, what is its own, the works it draws on, and two links out — the
+ * full list at /avoti/ and the folklore archive itself at garamantas.lv.
  */
 const BOOK = { w: 1640, h: 900 };
 const LEAF = BOOK.w / 2;
 const INK_HEX = '#3a2a18';
 const INK_FAINT = '#7a6446';
 const INK = 0x3a2a18;
+const RED_HEX = '#8a3b30';
+
+/** First page of the «Avoti» spread: always a left leaf, after the last belief. */
+const AVOTI_PAGE = (() => {
+  const p = 1 + LORE_SHOWN.length;
+  return p % 2 === 0 ? p : p + 1;
+})();
+
+const STATUS_ORDER = Object.keys(STATUS_LABEL) as SourceStatus[];
+
+/** Opens a page in a new tab. Called from a pointerup, so browsers let it through. */
+function openOut(url: string): void {
+  try {
+    window.open(url, '_blank', 'noopener');
+  } catch {
+    /* nothing to do */
+  }
+}
 
 export class LorePage {
   private scene: Phaser.Scene;
@@ -95,9 +118,9 @@ export class LorePage {
     setModal(this.scene, this, false);
   }
 
-  /** Pages: the contents, then one per belief. Two to a spread. */
+  /** Pages: the contents, one per belief, then the two «Avoti» leaves. Two to a spread. */
   private get spreads(): number {
-    return Math.ceil((LORE_SHOWN.length + 1) / 2);
+    return Math.ceil((AVOTI_PAGE + 2) / 2);
   }
 
   private build(): void {
@@ -210,6 +233,8 @@ export class LorePage {
     pages.forEach((page, side) => {
       const cx = side === 0 ? -LEAF / 2 : LEAF / 2;
       if (page === 0) spread.add(this.contents(cx));
+      else if (page === AVOTI_PAGE) spread.add(this.avotiLeft(cx, page));
+      else if (page === AVOTI_PAGE + 1) spread.add(this.avotiRight(cx, page));
       else if (page - 1 < LORE_SHOWN.length) spread.add(this.beliefPage(cx, LORE_SHOWN[page - 1], page));
     });
     book.add(spread);
@@ -256,7 +281,7 @@ export class LorePage {
     out.push(heading, count, epi);
 
     let y = epi.y + epi.height + 40;
-    const rowH = Math.min(64, (BOOK.h / 2 - 100 - y) / LORE_SHOWN.length);
+    const rowH = Math.min(64, (BOOK.h / 2 - 100 - y) / (LORE_SHOWN.length + 1));
     LORE_SHOWN.forEach((id, i) => {
       const found = lore.has(id);
       const x0 = cx - LEAF / 2 + 110;
@@ -287,6 +312,25 @@ export class LorePage {
       out.push(mark, line, dots, pageNo);
       y += rowH;
     });
+    // The sources, as the last line of the contents.
+    {
+      const x0 = cx - LEAF / 2 + 110;
+      const line = this.scene.add
+        .text(x0 + 34, y + rowH / 2, t(AVOTI_TEXT.heading), { fontFamily: Fonts.body, fontSize: px(29), color: RED_HEX })
+        .setOrigin(0, 0.5)
+        .setInteractive({ useHandCursor: true });
+      const pageNo = this.scene.add
+        .text(cx + LEAF / 2 - 110, y + rowH / 2, String(AVOTI_PAGE), { fontFamily: Fonts.display, fontSize: px(26), color: INK_FAINT })
+        .setOrigin(1, 0.5);
+      const dots = this.scene.add.graphics();
+      dots.fillStyle(INK, 0.35);
+      for (let dx = line.x + line.width + 16; dx < pageNo.x - pageNo.width - 12; dx += 12) dots.fillCircle(dx, y + rowH / 2 + 8, 1.6);
+      line.on('pointerdown', (_p: unknown, _x: unknown, _y: unknown, ev: Phaser.Types.Input.EventData) => {
+        ev?.stopPropagation?.();
+        this.goTo(Math.floor(AVOTI_PAGE / 2), 1);
+      });
+      out.push(line, dots, pageNo);
+    }
     return out;
   }
 
@@ -372,6 +416,139 @@ export class LorePage {
         g.setPosition(cx + (g.x - cx) * k, top + (g.y - top) * k);
       });
     }
+    return out;
+  }
+
+  /** Adds the folio and, if the leaf is too full at large type, scales it down rather than clipping. */
+  private fitLeaf(out: Phaser.GameObjects.GameObject[], cx: number, top: number, y: number, page: number): void {
+    const bottom = y + 16;
+    const room = BOOK.h / 2 - 70;
+    if (bottom > room) {
+      const k = (room - top) / (bottom - top);
+      out.forEach((o) => {
+        const g = o as unknown as Phaser.GameObjects.Components.Transform;
+        g.setScale((g.scaleX ?? 1) * k, (g.scaleY ?? 1) * k);
+        g.setPosition(cx + (g.x - cx) * k, top + (g.y - top) * k);
+      });
+    }
+    out.push(
+      this.scene.add
+        .text(cx, BOOK.h / 2 - 36, String(page), { fontFamily: Fonts.display, fontSize: px(22), color: INK_FAINT })
+        .setOrigin(0.5, 1),
+    );
+  }
+
+  private heading(cx: number, y: number, text: string, size = 46): Phaser.GameObjects.Text {
+    const h = this.scene.add.text(cx, y, text, { fontFamily: Fonts.display, fontSize: px(size), color: INK_HEX }).setOrigin(0.5, 0);
+    h.setLetterSpacing?.(3);
+    return h;
+  }
+
+  private para(cx: number, y: number, text: string, opts: { size?: number; color?: string; italic?: boolean } = {}): Phaser.GameObjects.Text {
+    return this.scene.add
+      .text(cx, y, text, {
+        fontFamily: Fonts.body,
+        fontSize: px(opts.size ?? 24),
+        color: opts.color ?? INK_HEX,
+        fontStyle: opts.italic ? 'italic' : 'normal',
+        align: 'center',
+        wordWrap: { width: LEAF - 150 },
+        lineSpacing: 5,
+      })
+      .setOrigin(0.5, 0);
+  }
+
+  /** A line of text that opens a page in a new tab, underlined so it reads as a link. */
+  private link(cx: number, y: number, label: string, url: string): Phaser.GameObjects.GameObject[] {
+    const txt = this.scene.add
+      .text(cx, y, label, { fontFamily: Fonts.body, fontSize: px(26), color: RED_HEX })
+      .setOrigin(0.5, 0)
+      .setInteractive({ useHandCursor: true });
+    const under = this.scene.add.graphics();
+    under.lineStyle(1.5, 0x8a3b30, 0.7).lineBetween(-txt.width / 2, 0, txt.width / 2, 0);
+    under.setPosition(cx, y + txt.height + 2);
+    txt.on('pointerdown', (_p: unknown, _x: unknown, _y: unknown, ev: Phaser.Types.Input.EventData) => ev?.stopPropagation?.());
+    txt.on('pointerup', (_p: unknown, _x: unknown, _y: unknown, ev: Phaser.Types.Input.EventData) => {
+      ev?.stopPropagation?.();
+      openOut(url);
+    });
+    return [txt, under];
+  }
+
+  /** «Avoti», left leaf: how much is quoted, how much is the game's own. */
+  private avotiLeft(cx: number, page: number): Phaser.GameObjects.GameObject[] {
+    const out: Phaser.GameObjects.GameObject[] = [];
+    const top = -BOOK.h / 2 + 70;
+    const h = this.heading(cx, top, t(AVOTI_TEXT.heading));
+    out.push(h);
+    let y = h.y + h.height + 18;
+    const rule = this.scene.add.graphics();
+    rule.lineStyle(1.5, 0x8a3b30, 0.6).lineBetween(cx - 60, y, cx + 60, y);
+    out.push(rule);
+    y += 26;
+
+    const entries = allEntries();
+    const quoted = entries.filter((e) => e.status === 'attested').length;
+    const count = this.para(cx, y, t(fillLoc(AVOTI_TEXT.bookCount, num(quoted))), { size: 24, color: RED_HEX });
+    out.push(count);
+    y += count.height + 26;
+
+    const lead = this.para(cx, y, t(AVOTI_TEXT.bookLeft), { size: 24, color: INK_FAINT, italic: true });
+    out.push(lead);
+    y += lead.height + 18;
+
+    STATUS_ORDER.forEach((st) => {
+      const n = entries.filter((e) => e.status === st).length;
+      const label = this.para(cx, y, `${t(STATUS_LABEL[st])} · ${n}`, { size: 27 });
+      out.push(label);
+      y += label.height + 2;
+      const ex = this.para(cx, y, t(STATUS_EXPLAIN[st]), { size: 21, color: INK_FAINT, italic: true });
+      out.push(ex);
+      y += ex.height + 18;
+    });
+
+    y += 8;
+    const fiction = this.para(cx, y, t(AVOTI_TEXT.fiction), { size: 21, color: INK_FAINT, italic: true });
+    out.push(fiction);
+    y += fiction.height;
+
+    this.fitLeaf(out, cx, top, y, page);
+    return out;
+  }
+
+  /** «Avoti», right leaf: the works drawn on, and the two links out. */
+  private avotiRight(cx: number, page: number): Phaser.GameObjects.GameObject[] {
+    const out: Phaser.GameObjects.GameObject[] = [];
+    const top = -BOOK.h / 2 + 70;
+    const h = this.heading(cx, top, t(AVOTI_TEXT.works), 34);
+    out.push(h);
+    let y = h.y + h.height + 16;
+
+    WORKS.forEach((w) => {
+      const line = this.para(cx, y, t(w.short), { size: 22 });
+      out.push(line);
+      y += line.height + 8;
+    });
+
+    y += 22;
+    const full = this.para(cx, y, t(AVOTI_TEXT.bookFull), { size: 22, color: INK_FAINT, italic: true });
+    out.push(full);
+    y += full.height + 8;
+    const l1 = this.link(cx, y, AVOTI_URL_LABEL, AVOTI_PATH);
+    out.push(...l1);
+    y += (l1[0] as Phaser.GameObjects.Text).height + 34;
+
+    const more = this.heading(cx, y, t(AVOTI_TEXT.more), 30);
+    out.push(more);
+    y += more.height + 10;
+    const moreText = this.para(cx, y, t(AVOTI_TEXT.moreText), { size: 21, color: INK_FAINT, italic: true });
+    out.push(moreText);
+    y += moreText.height + 10;
+    const l2 = this.link(cx, y, 'garamantas.lv', GARAMANTAS_URL);
+    out.push(...l2);
+    y += (l2[0] as Phaser.GameObjects.Text).height;
+
+    this.fitLeaf(out, cx, top, y, page);
     return out;
   }
 }

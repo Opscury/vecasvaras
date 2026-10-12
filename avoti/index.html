@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="lv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Avoti — Vecās Varas</title>
+    <meta name="description" content="Katrs ticējums, tautasdziesma, teika un mīkla spēlē «Vecās Varas» — ar avotu un atzīmi, cik precīzi spēle to izmanto. Every piece of folklore in the game, with its source." />
+    <link rel="canonical" href="https://vecasvaras.protu.lv/avoti/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://vecasvaras.protu.lv/avoti/" />
+    <meta property="og:title" content="Avoti — Vecās Varas" />
+    <meta property="og:description" content="Every piece of Latvian folklore in the game, with its source." />
+    <meta property="og:image" content="https://vecasvaras.protu.lv/og.jpg" />
+    <meta name="theme-color" content="#efe6d2" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2314161a'/%3E%3Cg stroke='%23c9a24a' stroke-width='5' stroke-linecap='round' fill='none'%3E%3Cpath d='M10 27 L35 7 M54 27 L29 7 M10 37 L35 57 M54 37 L29 57'/%3E%3C/g%3E%3C/svg%3E" />
+    <style>
+      :root {
+        --paper: #efe6d2;
+        --card: #f6efe0;
+        --ink: #2e2416;
+        --faint: #6f5d43;
+        --rule: #d6c7a8;
+        --red: #8a3b30;
+        --attested: #4f6a3a;
+        --adapted: #8a6418;
+        --own: #6f5d43;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #14161a;
+          --card: #1c1f24;
+          --ink: #e8dfcd;
+          --faint: #bfb49c;
+          --rule: #3a3f47;
+          --red: #e0a096;
+          --attested: #a9c08a;
+          --adapted: #e0bd68;
+          --own: #bfb49c;
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0; background: var(--paper); color: var(--ink);
+        font: 18px/1.6 Georgia, 'Times New Roman', 'Liberation Serif', serif;
+      }
+      .lang { max-width: 46rem; margin: 0 auto; padding: 1rem 16px 3rem; }
+      .lang[hidden] { display: none; }
+      a { color: var(--red); }
+      .top { display: flex; justify-content: space-between; align-items: center; font-size: .9rem; }
+      .switch {
+        font: inherit; color: var(--red); background: none; cursor: pointer;
+        border: 1px solid var(--rule); border-radius: 999px; padding: .2rem .8rem;
+      }
+      header { margin: 2rem 0 1.5rem; }
+      .game { margin: 0; letter-spacing: .25em; text-transform: uppercase; font-size: .8rem; color: var(--faint); }
+      h1 { margin: .2rem 0 1rem; font-size: 2.6rem; font-weight: normal; letter-spacing: .05em; }
+      h2 { font-weight: normal; font-size: 1.4rem; border-top: 1px solid var(--rule); padding-top: 1.5rem; margin-top: 2.5rem; }
+      h3 { margin: .2rem 0 .4rem; font-size: 1.15rem; }
+      .lead { font-size: 1.1rem; }
+      .muted { color: var(--faint); }
+      .legend { list-style: none; padding: 0; display: grid; gap: .8rem; }
+      .count { color: var(--faint); }
+      .tag {
+        display: inline-block; font-size: .78rem; letter-spacing: .04em; padding: .05rem .55rem;
+        border-radius: 999px; border: 1px solid currentColor;
+      }
+      .tag-attested { color: var(--attested); }
+      .tag-adapted { color: var(--adapted); }
+      .tag-own { color: var(--own); }
+      .entries { list-style: none; padding: 0; display: grid; gap: 1rem; }
+      .entry { background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 1rem 1.1rem; }
+      .meta { display: flex; justify-content: space-between; gap: 1rem; font-size: .8rem; color: var(--faint); letter-spacing: .04em; text-transform: uppercase; }
+      .cite { margin: .6rem 0 0; }
+      .note { margin: .4rem 0 0; color: var(--faint); font-style: italic; font-size: .95rem; }
+      .open { margin: .5rem 0 0; font-size: .9rem; }
+      .works { padding-left: 1.2rem; }
+      .works li { margin-bottom: .6rem; overflow-wrap: anywhere; }
+      .button {
+        display: inline-block; text-decoration: none; border: 1px solid var(--red);
+        border-radius: 999px; padding: .4rem 1.1rem;
+      }
+      footer { margin-top: 3rem; font-size: .9rem; }
+      @media (max-width: 480px) {
+        body { font-size: 17px; }
+        h1 { font-size: 2.1rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <!--AVOTI-->
+    <script>
+      (function () {
+        var KEY = 'vecasvaras.lang';
+        function show(lang) {
+          document.querySelectorAll('.lang').forEach(function (el) {
+            el.hidden = el.getAttribute('lang') !== lang;
+          });
+          document.documentElement.lang = lang;
+        }
+        // Latvian first: ?lang=en for a link to the English, then the reader's
+        // own last choice (shared with the game), then Latvian.
+        var asked = (location.search.match(/[?&]lang=(lv|en)/) || [])[1];
+        var stored = null;
+        try { stored = localStorage.getItem(KEY); } catch (e) {}
+        var lang = asked || (stored === 'lv' || stored === 'en' ? stored : 'lv');
+        show(lang);
+        document.addEventListener('click', function (ev) {
+          var b = ev.target.closest && ev.target.closest('.switch');
+          if (!b) return;
+          var to = b.getAttribute('data-to');
+          show(to);
+          try { localStorage.setItem(KEY, to); } catch (e) {}
+        });
+      })();
+    </script>
+  </body>
+</html>

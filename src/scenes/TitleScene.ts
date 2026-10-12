@@ -11,6 +11,7 @@ import { padHit } from '../ui/hit';
 import { ignoreKey, isAdvanceKey, markHandled } from '../ui/keys';
 import { goTo, isLeaving } from './transition';
 import { audio } from '../core/audio';
+import { AVOTI_PATH } from '../content/avoti';
 
 /**
  * The menu sits above every atmospheric layer. Without this the fog sheets
@@ -163,7 +164,31 @@ export class TitleScene extends Phaser.Scene {
       }
     });
 
-    const targets = [title, rule, sub, start, ...(restart ? [restart] : [])];
+    // «Avoti»: small, in the corner, for the reader who wants to check the
+    // folklore without playing to the back of the beliefs book. Opens the
+    // standalone sources page in a new tab; not part of the keyboard menu.
+    const sources = this.add
+      .text(width - scaled(36), height - scaled(30), t(ui.sources), {
+        fontFamily: Fonts.body,
+        fontSize: px(20),
+        color: Hex.parchmentDim,
+      })
+      .setOrigin(1, 1)
+      .setAlpha(0)
+      .setDepth(MENU_DEPTH + 1);
+    const placeSources = padHit(sources, 160, 56);
+    sources.on('pointerover', () => sources.setColor(Hex.parchment));
+    sources.on('pointerout', () => sources.setColor(Hex.parchmentDim));
+    // On pointerup, so the browser counts it as the player's own click.
+    sources.on('pointerup', () => {
+      try {
+        window.open(AVOTI_PATH, '_blank', 'noopener');
+      } catch {
+        /* nothing to do */
+      }
+    });
+
+    const targets = [title, rule, sub, start, sources, ...(restart ? [restart] : [])];
     this.tweens.add({ targets, alpha: 1, duration: 900, delay: 250, ease: 'Sine.easeOut' });
 
     new Chrome(this);
@@ -174,6 +199,8 @@ export class TitleScene extends Phaser.Scene {
       placeStart();
       restart?.setText(t(ui.restart));
       placeRestart?.();
+      sources.setText(t(ui.sources));
+      placeSources();
     });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, off);
   }

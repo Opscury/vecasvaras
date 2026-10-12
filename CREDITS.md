@@ -125,16 +125,17 @@ before release even though works of that period are usually public domain.
 
 ## Text
 
-**Dainas** (`src/content/dainas.ts`) — traditional Latvian folk verse, public domain. Both
-entries are currently marked `verified: false` and were written from memory. They must be checked
-character-by-character against a primary source (dainuskapis.lv) before any public release, as
-the file's own header says.
+**Folklore** — every verse, belief and riddle is quoted from a printed source (Šmits, Barons,
+published riddle collections; all public domain or quoted briefly with credit). The ledger is
+`FOLKLORE.md`; what players see is the «Avoti» page (`src/content/avoti.ts`, shown in the beliefs
+book and at `/avoti/`). The LD numbers 28543 and 28994 still want a human check at dainuskapis.lv.
 
-**The wind riddle** (`velns.riddle`) — traditional formula, public domain, also unverified against
-a printed mīklu krājums.
+**AI note shown to players** (on the «Avoti» page): the paintings and some of the sounds were made
+with AI tools under the author's direction and then edited; the folklore texts are taken from the
+sources listed.
 
 All other text is original to this project.
 
 ---
 
-*Last updated: 13 September 2026*
+*Last updated: 12 October 2026*

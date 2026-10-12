@@ -15,6 +15,12 @@ source, or it is not presented as folklore.** Story (Anna, the village, what
 the Devil says) is fiction and says so by being story; anything the game
 offers as *what the old people knew* is a quotation.
 
+**Shown to players** as «Avoti»: the last spread of the beliefs book, a small
+link on the title screen, and the static page at `/avoti/` (rendered at build
+time from `src/content/avoti.ts`, Latvian first, `?lang=en` for English). It
+lists every item below with its citation, and names the story's own
+inventions — the open questions further down — as the game's own.
+
 This is enforced, not remembered:
 
 - `src/content/sources.ts` holds the source passages verbatim;

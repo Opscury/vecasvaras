@@ -35,6 +35,8 @@ export const ui = {
   loading: L('Ielādē', 'Loading'),
   loadFailed: L('Neizdevās ielādēt zīmējumus.', 'Some of the pictures did not load.'),
   retry: L('Mēģināt vēlreiz', 'Try again'),
+  /** The small link in the corner of the title screen. */
+  sources: L('Avoti', 'Sources'),
 };
 
 /** NEW — the beliefs page and the note that a new one was found. */
