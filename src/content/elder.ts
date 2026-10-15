@@ -26,8 +26,8 @@ export const elder = {
       'Old Anna is standing at her door, as though she had been waiting for you all morning.',
     ),
     L(
-      '«Rudzi laukā stāv nopļaujami, un ciemā neviena jaunāka par mani nav palicis.»',
-      '“The rye is standing out there waiting to be cut, and there is nobody in this village younger than me left to do it.”',
+      '«Rudzi laukā stāv nopļaujami, un ciemā nav neviena cita, kam rokas brīvas.»',
+      '“The rye is standing out there waiting to be cut, and there is nobody else in this village with free hands to do it.”',
     ),
   ],
   ask: L('«Aiziesi, {nameV}?»', '“Will you go, {name}?”'),

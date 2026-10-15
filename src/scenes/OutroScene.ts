@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { beloved } from '../content/beloved';
 import { fillLoc, i18n, L, t, type Loc } from '../core/i18n';
 import { outro, tally, ui } from '../content/script';
 import { state } from '../core/state';
@@ -73,7 +74,11 @@ export class OutroScene extends Phaser.Scene {
       this.playAgain();
     });
 
-    this.narration.say(outro[ending(run.jumis, run.velns)], () => {
+    // Who is standing at the stone with the player, if anyone.
+    const close = run.talks.includes('meet')
+      ? [run.bond >= 4 ? beloved.ending.close : run.bond >= 2 ? beloved.ending.warm : beloved.ending.cold]
+      : [];
+    this.narration.say([...outro[ending(run.jumis, run.velns)], ...close], () => {
       this.narration.hide();
       this.time.delayedCall(500, () => this.showTally());
     });

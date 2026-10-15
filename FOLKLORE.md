@@ -109,3 +109,17 @@ put in the book — and nothing in the book claims them.
 
 - Confirm LD 28543 and LD 28994 at dainuskapis.lv (bot-checked from here).
 - A native proofread of the lines marked `NEW` in `src/content/`.
+
+---
+
+## Spoken in the story (October 2026)
+
+- **The double ear and marriage** — Ilze or Krišs, after the harvest: *«Vecie
+  saka: kas tādas atrod, tas drīz apprecēsies.»* Retold in dialogue from
+  **Šmits 11991** (B. Eriņa, Latgale): «Jauni ļaudis centušies atrast tādas
+  saaugušas vārpas, tā esot zīme, ka tādas vārpas atradējs ātri
+  apprecēsies.» Listed in «Avoti» with the record quoted in the note.
+- **Ilze's woven crown** is part of her costume only. The game says nothing
+  about what it means, so it makes no claim to source.
+- **Ilze, Krišs, the dancing after Michaelmas** — the game's own story; listed
+  as such.

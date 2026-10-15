@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 import { type Loc } from '../core/i18n';
 import { arrival, items, jumis as jumisText, village } from '../content/script';
 import { elder } from '../content/elder';
-import { state, type Shown } from '../core/state';
+import { BOND_MAX, state, type Shown } from '../core/state';
 import { currentStep } from '../core/quest';
 import { breadFrom, loafFrom } from '../core/rules';
 import { holdings, snapshot, type HoldingsSource } from '../core/holdings';
@@ -28,6 +28,8 @@ import { makeBlob } from '../fx/textures';
 import { Walker } from '../ui/Walker';
 import { PATHS, START, clampToYard, route, type Pt } from './villageGround';
 import { defineAnims } from './assets';
+import { beloved } from '../content/beloved';
+import { BondRibbon } from '../ui/BondRibbon';
 
 /**
  * The hub. Nothing happens here mechanically — its whole job is to be the
@@ -60,6 +62,9 @@ const CAT_H = 52;
 
 /** Vecā Anna, in the yard outside her own door. */
 const ELDER = { x: 706, y: 582, h: 104 };
+
+/** Ilze or Krišs, by the woodpile at the Kalēji cottage, nearer the stream. */
+const BELOVED = { x: 1392, y: 566, h: 106 };
 
 /**
  * The foot of the stone, where the first crumb is left: on the grass ring,
@@ -111,6 +116,9 @@ export class VillageScene extends Phaser.Scene {
   private threshing = false;
   /** The player, on foot. */
   private walker: Walker | null = null;
+  /** Ilze's or Krišs's face, beside the panel while they are talking. */
+  private belovedFace!: Portrait;
+  private ribbon!: BondRibbon;
 
   constructor() {
     super('Village');
@@ -163,6 +171,7 @@ export class VillageScene extends Phaser.Scene {
     // in front of them, below.
     this.setSheaves(holdings(this.lastSeen).bread, false);
     this.addElder();
+    this.addBeloved(evening);
     this.addCat();
     defineAnims(this);
     this.addWalker(cameFrom, seamless, evening);
@@ -184,8 +193,17 @@ export class VillageScene extends Phaser.Scene {
     // --- the furniture
     this.narration = new Narration(this);
     this.portrait = new Portrait(this, this.narration, { key: 'portrait-anna', name: elder.label });
+    this.belovedFace = new Portrait(this, this.narration, {
+      key: state.get().gender === 'm' ? 'portrait-ilze' : 'portrait-kriss',
+      name: beloved.name,
+    });
     new Chrome(this, { log: () => this.narration.history });
     this.objective = new Objective(this);
+    this.ribbon = new BondRibbon(
+      this,
+      () => this.objective.bottom,
+      () => this.portrait.isShown || this.belovedFace.isShown,
+    );
     // The map walks you somewhere exactly as the path there would.
     this.holdings = new Holdings(this, this.lastSeen, {
       travel: (id) => {
@@ -529,6 +547,18 @@ export class VillageScene extends Phaser.Scene {
       onClick: () => this.talkTo(),
     });
 
+    // --- Ilze or Krišs
+    this.spot({
+      id: 'beloved',
+      x: BELOVED.x,
+      y: BELOVED.y - BELOVED.h / 2,
+      w: 120,
+      h: Math.max(BELOVED.h + 30, 170),
+      label: beloved.name,
+      markAt: { x: BELOVED.x, y: BELOVED.y + 6 },
+      onClick: () => this.talkToBeloved(),
+    });
+
     // --- the lean-to where the sickle hangs
     this.spot({
       id: 'shed',
@@ -597,8 +627,7 @@ export class VillageScene extends Phaser.Scene {
     const click = o.onClick;
     const id = o.id;
     const act = () => {
-      if (id === 'anna') this.portrait.show();
-      else this.portrait.hide();
+      this.faces(id);
       click();
     };
     o = {
@@ -629,13 +658,19 @@ export class VillageScene extends Phaser.Scene {
    */
   private useItem(id: ItemId, x: number, y: number): boolean {
     const target = hotspotAt(this, x, y)?.id ?? null;
-    if (target !== 'anna') this.portrait.hide();
+    this.faces(target);
     const r = village.replies;
     const run = state.get();
     let line: Loc = items.cutWrongTool;
     switch (target) {
+      case 'beloved':
+        if (id === 'bread') {
+          this.giveBread();
+          return false;
+        }
+        line = id === 'sickle' ? beloved.replies.sickle : id === 'cat' ? beloved.replies.cat : beloved.replies.hat;
+        break;
       case 'anna':
-        this.portrait.show();
         line =
           id === 'sickle' ? r.sickleOnAnna : id === 'cat' ? r.catOnAnna : id === 'hat' ? r.hatOnAnna : r.breadOnAnna;
         break;
@@ -861,6 +896,155 @@ export class VillageScene extends Phaser.Scene {
       return;
     }
     goTo(this, key, data);
+  }
+
+  // --- Ilze or Krišs ---------------------------------------------------------
+
+  /** Whose face is beside the panel: the one spoken to, or nobody. */
+  private faces(id: string | null | undefined): void {
+    if (id === 'anna') this.portrait.show();
+    else this.portrait.hide();
+    if (id === 'beloved') this.belovedFace.show();
+    else this.belovedFace.hide();
+  }
+
+  /** The figure, by the woodpile. In the evening, sitting it out in the dusk. */
+  private addBeloved(evening: boolean): void {
+    const key = state.get().gender === 'm' ? 'ilze' : 'kriss';
+    if (!this.textures.exists(key)) return;
+    const shade = this.add.graphics();
+    shade.fillStyle(Palette.ink, 0.28);
+    shade.fillEllipse(BELOVED.x, BELOVED.y - 2, BELOVED.h * 0.36, BELOVED.h * 0.1);
+    this.painting.add(shade);
+    const fig = this.painting.add(this.add.image(BELOVED.x, BELOVED.y, key).setOrigin(0.5, 1));
+    fig.setScale(BELOVED.h / fig.height);
+    fig.setTint(evening ? 0xb4b6bc : 0xdad9d2);
+    this.tweens.add({ targets: fig, scaleY: fig.scaleY * 1.008, duration: 3100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    this.tweens.add({ targets: fig, angle: { from: -0.6, to: 0.6 }, duration: 6900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+  }
+
+  /** Moves the bond by `d`, within its five knots, and shows it. */
+  private bond(d: number): void {
+    if (!d) return;
+    const now = Math.max(0, Math.min(BOND_MAX, state.get().bond + d));
+    state.set('bond', now);
+    this.ribbon.refresh(true);
+    if (d > 0) audio.play('chime', { volume: 0.18, rate: 1.25 });
+  }
+
+  private had(talk: string): boolean {
+    return state.get().talks.includes(talk);
+  }
+
+  private mark(talk: string): void {
+    if (!this.had(talk)) state.set('talks', [...state.get().talks, talk]);
+  }
+
+  /** What they say, which depends on how far the year has got. */
+  private talkToBeloved(): void {
+    const run = state.get();
+    if (!this.had('meet')) return this.meetBeloved();
+    if (run.jumis !== 'none' && run.velns === 'none' && !this.had('harvest')) return this.harvestTalk();
+    if (run.velns !== 'none' && !this.had('evening')) return this.eveningTalk();
+    const idle = beloved.idle;
+    this.narration.flash(
+      run.jumis === 'none' ? (run.bond > 0 ? idle.beforeField : idle.beforeFieldCold) : run.velns === 'none' ? idle.beforeBog : idle.after,
+    );
+  }
+
+  private meetBeloved(): void {
+    const m = beloved.meet;
+    const pick = (line: Loc, d: number) => () =>
+      this.narration.say([line], () => {
+        this.mark('meet');
+        this.ribbon.refresh(false);
+        this.bond(d);
+      });
+    this.narration.say([beloved.look, ...m.lines], () => {
+      this.narration.ask(m.ask, [
+        { label: m.choices.help, onPick: pick(m.help, 2) },
+        { label: m.choices.bold, onPick: pick(m.bold, 1) },
+        { label: m.choices.curt, onPick: pick(m.curt, 0) },
+      ]);
+    });
+  }
+
+  /**
+   * After the field. How it was reaped matters to them; and whoever finds a
+   * double ear, the old people say, will soon be married (Šmits 11991).
+   */
+  private harvestTalk(): void {
+    const h = beloved.harvest;
+    const pick = state.get().jumisPick === 'none' ? 'leave' : state.get().jumisPick;
+    const said = pick === 'leave' ? h.leave : pick === 'take' ? h.take : pick === 'all' ? h.all : h.spare;
+    const d = pick === 'leave' ? 1 : pick === 'all' ? -1 : 0;
+    this.mark('harvest');
+    this.narration.say([said], () => {
+      this.bond(d);
+      this.narration.say([h.omen], () => {
+        this.narration.ask(h.ask, [
+          { label: h.choices.warm, onPick: () => this.narration.say([h.warm], () => this.bond(1)) },
+          { label: h.choices.shy, onPick: () => this.narration.say([h.shy], () => this.bond(1)) },
+          { label: h.choices.flat, onPick: () => this.narration.say([h.flat]) },
+        ]);
+      });
+    });
+  }
+
+  /** Home from the bog. What happened out there has reached them already. */
+  private eveningTalk(): void {
+    const e = beloved.evening;
+    const run = state.get();
+    const lines: Loc[] = [e.open];
+    let d = 0;
+    if (run.devilGone) {
+      lines.push(e.devilGone);
+      d += 1;
+    }
+    if (run.catLost) {
+      lines.push(e.catLost);
+      d -= 1;
+    }
+    if (bag.has('hat')) lines.push(e.hat);
+    if (run.velnsPick === 'dawn') lines.push(e.dawn);
+    if (lines.length === 1) lines.push(e.plain);
+    this.mark('evening');
+    this.narration.say(lines, () => {
+      this.bond(d);
+      if (state.get().bond < 3) {
+        this.narration.say([e.goodnight]);
+        return;
+      }
+      {
+        this.narration.ask(e.invite, [
+          {
+            label: e.inviteChoices.yes,
+            onPick: () =>
+              this.narration.say([e.yes], () => {
+                this.mark('invited');
+                this.bond(1);
+              }),
+          },
+          { label: e.inviteChoices.maybe, onPick: () => this.narration.say([e.maybe]) },
+        ]);
+      }
+    });
+  }
+
+  /** The loaf, offered. A piece is kept and the loaf comes back: it is wanted on the bog. */
+  private giveBread(): void {
+    if (!this.had('meet')) {
+      this.bagUi.putBack();
+      this.meetBeloved();
+      return;
+    }
+    if (this.had('gift')) {
+      this.narration.flash(beloved.gift.again);
+      return;
+    }
+    const loaf = loafFrom(state.get().jumisPick === 'none' ? 'leave' : state.get().jumisPick);
+    this.mark('gift');
+    this.narration.say([beloved.gift[loaf]], () => this.bond(1));
   }
 
   // --- on foot ---------------------------------------------------------------

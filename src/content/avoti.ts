@@ -177,6 +177,19 @@ export function allEntries(): SourceEntry[] {
 
   out.push(dainaEntry('jumis', L('«Kur, Jumīti, tu gulēji…»', '“Where, little Jumis, did you sleep…”'), L('Lauka sākumā', 'Opening the field'), '12002'));
   (['jumis', 'jumjaKersana', 'maize', 'pirmaisKumoss'] as LoreId[]).forEach((id) => out.push(beliefEntry(id)));
+  out.push({
+    key: 'ticejums:divvarpaPrecibas',
+    kind: 'ticejums',
+    title: L('Kas atrod divvārpu, tas drīz apprecēsies', 'Whoever finds a double ear will soon be married'),
+    where: L('Ciemā, pēc pļaujas', 'The village, after the harvest'),
+    status: 'attested',
+    cite: fillLoc(TIC, same('11991')),
+    url: beliefs.jumis.source,
+    note: L(
+      'Pārstāstīts sarunā. Pierakstā: «Jauni ļaudis centušies atrast tādas saaugušas vārpas, tā esot zīme, ka tādas vārpas atradējs ātri apprecēsies.»',
+      'Retold in conversation. The record: young people tried to find such grown-together ears, as a sign that the finder would soon marry.',
+    ),
+  });
   out.push(dainaEntry('velns', L('«Ēdat, govis, purva zāli…»', '“Eat, cows, the grass of the bog…”'), L('Purva sākumā', 'Opening the bog'), '24910'));
   out.push(beliefEntry('maldugunis'));
 
@@ -244,6 +257,19 @@ export function allEntries(): SourceEntry[] {
     note: L(
       'Spēles noteikums. Pierakstos ir otrādi: klētī glabāts Jumis nes svētību un bagātību (Šmits, Nr. 11992, 11998).',
       'A rule of the game. The records say the opposite: Jumis kept in the granary brings blessing and wealth (Šmits, nos. 11992, 11998).',
+    ),
+  });
+  out.push({
+    key: 'stasts:courting',
+    kind: 'stasts',
+    title: L('Ilze, Krišs un danči pēc Miķeļiem', 'Ilze, Krišs and the dancing after Michaelmas'),
+    where: L('Ciemā', 'The village'),
+    status: 'own',
+    cite: null,
+    url: null,
+    note: L(
+      'Spēles stāsts. Ilzes vainags apģērbā ir meitas galvas rota, bet par to spēle neko neapgalvo.',
+      'The game’s story. Ilze’s woven crown is a maiden’s headdress in her costume; the game makes no claim about it.',
     ),
   });
   out.push({

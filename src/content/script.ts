@@ -72,8 +72,8 @@ export const settingsUi = {
   volume: L('Skaļums', 'Volume'),
   /** Shown in the chosen size and at the chosen speed, so the choice can be judged. */
   sample: L(
-    '«Rudzi laukā stāv nopļaujami, un ciemā neviena jaunāka par mani nav palicis.»',
-    '“The rye is standing out there waiting to be cut, and there is nobody younger than me left to do it.”',
+    '«Rudzi laukā stāv nopļaujami, un ciemā nav neviena cita, kam rokas brīvas.»',
+    '“The rye is standing out there waiting to be cut, and there is nobody else with free hands to do it.”',
   ),
   sizeNote: L('Jaunais izmērs — no nākamās vietas, kur ieej.', 'The new size applies from the next place you go.'),
   close: L('Pieskaries ārpusē, lai aizvērtu', 'Touch outside to close'),
