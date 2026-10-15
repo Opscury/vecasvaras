@@ -12,6 +12,7 @@ import { ignoreKey, isAdvanceKey, markHandled } from '../ui/keys';
 import { fadeIn, goTo, isLeaving } from './transition';
 import { audio } from '../core/audio';
 import { AVOTI_PATH } from '../content/avoti';
+import { HeroPick } from '../ui/HeroPick';
 
 /**
  * The menu sits above every atmospheric layer. Without this the fog sheets
@@ -23,12 +24,15 @@ import { AVOTI_PATH } from '../content/avoti';
 const MENU_DEPTH = 300;
 
 export class TitleScene extends Phaser.Scene {
+  /** The who-are-you card is up. */
+  private picking = false;
 
   constructor() {
     super('Title');
   }
 
   create(data?: { again?: boolean }): void {
+    this.picking = false;
     if (data?.again) fadeIn(this);
     // One ambient channel for the whole game; this cross-fades from whatever
     // the last scene was playing.
@@ -216,6 +220,17 @@ export class TitleScene extends Phaser.Scene {
     // was the bug.
     // After the ending, the way on is a fresh run, not a walk back into the old one.
     if (state.get().outroSeen) state.reset();
+    // A new run starts with who the player is.
+    if (!state.get().heroChosen) {
+      if (this.picking) return;
+      this.picking = true;
+      new HeroPick(
+        this,
+        () => goTo(this, this.resumeTarget()),
+        () => (this.picking = false),
+      );
+      return;
+    }
     goTo(this, this.resumeTarget());
   }
 

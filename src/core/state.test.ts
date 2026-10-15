@@ -167,4 +167,35 @@ describe('saves', () => {
     state.reset();
     expect(lore.count).toBe(0);
   });
+
+  it('asks a fresh run who the player is, and keeps the answer', async () => {
+    const { state } = await boot({});
+    expect(state.get()).toMatchObject({ heroChosen: false, gender: 'm', name: '', bond: 0, talks: [] });
+    state.patch({ gender: 'f', name: 'Līze', heroChosen: true });
+    const again = await boot({ 'vecasvaras.save.v3': localStorage.getItem('vecasvaras.save.v3')! });
+    expect(again.state.get()).toMatchObject({ gender: 'f', name: 'Līze', heroChosen: true });
+  });
+
+  it('treats a run saved before the choice existed as already begun', async () => {
+    const { state } = await boot({
+      'vecasvaras.save.v3': JSON.stringify({ introSeen: true, metElder: true, jumis: 'none', velns: 'none', scene: 'Village' }),
+    });
+    expect(state.get()).toMatchObject({ heroChosen: true, gender: 'm', bond: 0 });
+  });
+
+  it('keeps the bond inside its five knots, whatever a save says', async () => {
+    const { state } = await boot({ 'vecasvaras.save.v3': JSON.stringify({ bond: 99, talks: ['meet', 3] }) });
+    expect(state.get().bond).toBe(5);
+    expect(state.get().talks).toEqual(['meet']);
+  });
+
+  it('speaks to the player in their own grammar', async () => {
+    const { state } = await boot({});
+    const { t, L } = await import('./i18n');
+    const line = L('Tu esi {gājis|gājusi}, {nameV}.', 'You went, {name}.');
+    state.patch({ gender: 'f', name: 'Grieta', heroChosen: true });
+    expect(t(line)).toMatch(/gājusi, Grieta|You went, Grieta/);
+    state.patch({ gender: 'm', name: 'Jānis' });
+    expect(t(line)).toMatch(/gājis, Jāni|You went, Jānis/);
+  });
 });

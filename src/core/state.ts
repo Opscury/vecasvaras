@@ -15,13 +15,32 @@ import { bag } from './inventory';
 import { lore } from './lore';
 import { once } from './once';
 import type { JumisPick, VelnsPick } from './rules';
+import { setPersona } from './i18n';
 
 export type Outcome = 'none' | 'poor' | 'good';
+
+export type Gender = 'm' | 'f';
+
+/** The highest the bond with Ilze or Krišs can go: five knots on the ribbon. */
+export const BOND_MAX = 5;
 
 /** The places a run can be resumed into. */
 export type Place = 'Village' | 'Jumis' | 'Velns';
 
 export interface RunState {
+  /** Chosen at the start of a run. Drives the Latvian grammar of "you". */
+  gender: Gender;
+  /** The player's name, as typed. Empty until chosen. */
+  name: string;
+  /** Set once the player has picked who they are for this run. */
+  heroChosen: boolean;
+  /**
+   * The bond with the one the player is courting — Ilze for a young man,
+   * Krišs for a young woman — 0 to BOND_MAX.
+   */
+  bond: number;
+  /** Which conversations with them have happened, by id, so each is had once. */
+  talks: string[];
   /** How the Jumis encounter resolved. Drives the granary sprite. */
   jumis: Outcome;
   /** What exactly was done in the field — four endings share two outcomes. */
@@ -82,6 +101,11 @@ const STORAGE_KEY_V2 = 'vecasvaras.save.v2';
 const STORAGE_KEY_V1 = 'vecasvaras.save.v1';
 
 const blank = (): RunState => ({
+  gender: 'm',
+  name: '',
+  heroChosen: false,
+  bond: 0,
+  talks: [],
   jumis: 'none',
   jumisPick: 'none',
   sheaves: 0,
@@ -129,6 +153,9 @@ const asShown = (v: unknown): Shown | null => {
   };
 };
 
+/** What the game calls a player who never typed a name (an older save). */
+export const DEFAULT_NAME: Record<Gender, string> = { m: 'Jānis', f: 'Grieta' };
+
 type Listener = () => void;
 
 class GameState {
@@ -138,6 +165,7 @@ class GameState {
   constructor() {
     this.load();
     this.repair();
+    setPersona(() => ({ female: this.data.gender === 'f', name: this.data.name || DEFAULT_NAME[this.data.gender] }));
   }
 
   get(): Readonly<RunState> {
@@ -233,6 +261,12 @@ class GameState {
     const jumis = asOutcome(o.jumis);
     const velns = asOutcome(o.velns);
     return {
+      gender: o.gender === 'f' ? 'f' : 'm',
+      name: typeof o.name === 'string' ? o.name.slice(0, 24) : '',
+      // A run saved before anyone could choose has, by definition, begun.
+      heroChosen: o.heroChosen === true || o.introSeen === true,
+      bond: Math.min(BOND_MAX, asCount(o.bond, 0)),
+      talks: Array.isArray(o.talks) ? o.talks.filter((x): x is string => typeof x === 'string') : [],
       jumis,
       jumisPick: asJumisPick(o.jumisPick),
       sheaves: asCount(o.sheaves, 0),

@@ -148,7 +148,7 @@ export const intro = {
       'The old people never called it a tax. The field has its own coming to it, and the bog has its own — and you leave it. Not because anyone makes you.',
     ),
     L(
-      'Vectēvs atstāja. Tēvs — pusi no tā. Tu ne reizi neesi par to domājis.',
+      'Vectēvs atstāja. Tēvs — pusi no tā. Tu ne reizi neesi par to {domājis|domājusi}.',
       'Your grandfather left it. Your father left half of it. You have never once thought about it.',
     ),
     L(
@@ -276,7 +276,7 @@ export const village = {
    * lives on these.
    */
   replies: {
-    sickleOnAnna: L('«Ar to uz mani nevicini, puis.»', '“Do not wave that at me, lad.”'),
+    sickleOnAnna: L('«Ar to uz mani nevicini, {puis|meit}.»', '“Do not wave that at me, {lad|girl}.”'),
     catOnAnna: L(
       'Anna pakasa kaķim aiz auss. «Tas nav mans. Tas ir neviena.»',
       'Anna scratches the cat behind the ear. “It is not mine. It is nobody’s.”',
@@ -523,7 +523,7 @@ export const velns = {
   greet: [
     L(
       '„Labvakar, labvakar! Cilvēks uz maniem dēļiem. Tu gribi pāri — visi grib pāri. Es uzbūvēšu, akmenī un kokā, pirms gaiļi dzied. Un lēti.“',
-      '“Good evening, good evening! A man on my planks. You want across — everybody wants across. I will build it, in stone and timber, before the cocks crow. And cheap.”',
+      '“Good evening, good evening! A {man|woman} on my planks. You want across — everybody wants across. I will build it, in stone and timber, before the cocks crow. And cheap.”',
     ),
     L(
       '„Bet vispirms — mīkla. Man garlaicīgi.“',
@@ -571,7 +571,7 @@ export const velns = {
     bear: L('Lācis.', 'A bear.'),
   },
   riddleRight: L(
-    '„Vējš,“ viņš saka un saviebjas. „Vējš, protams. Tu esi klausījies vecos ļaudīs.“',
+    '„Vējš,“ viņš saka un saviebjas. „Vējš, protams. Tu esi {klausījies|klausījusies} vecos ļaudīs.“',
     '“The wind,” he says, and pulls a face. “The wind, of course. You have been listening to old people.”',
   ),
   /** NEW — after a right answer, the player may give one back. */
@@ -586,13 +586,13 @@ export const velns = {
       '“A man all airs and graces, a coat all stitch on stitch, a nose of bone and a beard of flesh. What is it?”',
     ),
     stumped: L(
-      '„Tas ir… tas…“ Viņš saviebjas un nesaka. „To vārdu es nesaukšu. Labi, tu esi viltīgs. Strādāšu ātri, lai tev neatliek laika vēl ko izdomāt.“',
+      '„Tas ir… tas…“ Viņš saviebjas un nesaka. „To vārdu es nesaukšu. Labi, tu esi {viltīgs|viltīga}. Strādāšu ātri, lai tev neatliek laika vēl ko izdomāt.“',
       '“That is… that…” He grimaces and does not say it. “That word I will not say. All right, you are sly. I will work fast, so you have no time to think up anything else.”',
     ),
   },
   /** NEW — a wrong first answer is not the end of it: he wants to keep playing. */
   riddleWrong: L(
-    'Viņš smejas tā, ka no ciņa nokrīt sūnas. „Nē! Vējš, muļķi, vējš! Labi, vēl vienu — man vienalga garlaicīgi.“',
+    'Viņš smejas tā, ka no ciņa nokrīt sūnas. „Nē! Vējš, {muļķi|muļķe}, vējš! Labi, vēl vienu — man vienalga garlaicīgi.“',
     'He laughs so hard the moss falls off the hummock. “No! The wind, fool, the wind! All right, one more — I am bored anyway.”',
   ),
   // Quoted: the Devil's own riddle, and its answer, in Šmits LPT X, «Velna
@@ -604,7 +604,7 @@ export const velns = {
     berries: L('Ogas.', 'Berries.'),
   },
   riddle2Right: L(
-    '„Miegs,“ viņš nopūšas. „Tātad tomēr esi dzirdējis vecos ļaudis. Labi. Tad par tiltu.“',
+    '„Miegs,“ viņš nopūšas. „Tātad tomēr esi {dzirdējis|dzirdējusi} vecos ļaudis. Labi. Tad par tiltu.“',
     '“Sleep,” he sighs. “So you have listened to the old people after all. Very well. The bridge, then.”',
   ),
   riddle2Wrong: L(
@@ -657,7 +657,7 @@ export const velns = {
         'You put a foot on the new planks, and he stands up so fast that you step back.',
       ),
       L(
-        'Viņš smejas visu nakti. Rītā pār purvu ir divi baļķi un pāris dēļu — tik daudz, cik viņš uzbūvēja, pirms tu apjēdzi, ko esi solījis.',
+        'Viņš smejas visu nakti. Rītā pār purvu ir divi baļķi un pāris dēļu — tik daudz, cik viņš uzbūvēja, pirms tu apjēdzi, ko esi {solījis|solījusi}.',
         'He laughs all night. In the morning there are two logs and a few planks over the bog — as much as he built before you understood what you had promised.',
       ),
     ],
@@ -710,7 +710,7 @@ export const velns = {
       ),
       L(
         'Viņš to paceļ, pasver rokā un iesmejas. „Tas ir plāns gads, cilvēk. Tur iekšā nav nekā. Tā ir viltota nauda.“',
-        'He picks it up, weighs it in his hand and laughs. “That is a thin year, man. There is nothing inside it. That is counterfeit coin.”',
+        'He picks it up, weighs it in his hand and laughs. “That is a thin year, {man|woman}. There is nothing inside it. That is counterfeit coin.”',
       ),
       L(
         'Viņš tomēr uzbūvē — divus baļķus un dēļus. Tik daudz, cik tava maize bija vērta.',
@@ -762,7 +762,7 @@ export const outro = {
   ],
   half: [
     L(
-      'Vienu tu izdarīji pareizi. Otru — kā pratis.',
+      'Vienu tu izdarīji pareizi. Otru — kā {pratis|pratusi}.',
       'One of them you got right. The other you got through.',
     ),
     L(

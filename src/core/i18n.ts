@@ -32,6 +32,45 @@ export const joinLoc = (...parts: Loc[]): Loc => ({
   en: parts.map((p) => p.en).join(' '),
 });
 
+/**
+ * Who the player is. Latvian marks the gender of whoever "you" are in every
+ * past participle (tu esi gājis / gājusi), so a line can carry both forms as
+ * `{gājis|gājusi}` — masculine first — and `{name}` / `{nameV}` for the name
+ * and the name as it is called out (Jānis → Jāni). English uses the same
+ * marks where it needs them ("lad|girl"). The run state registers who the
+ * player is through `setPersona`, so this module never imports it.
+ */
+export interface Persona {
+  female: boolean;
+  name: string;
+}
+let persona: () => Persona = () => ({ female: false, name: '' });
+export const setPersona = (fn: () => Persona): void => {
+  persona = fn;
+};
+
+/** The name as it is called out. Covers the common Latvian endings. */
+export function vocative(name: string): string {
+  const n = name.trim();
+  if (!n) return n;
+  // Jānis → Jāni, Pēteris → Pēteri, Mārtiņš → Mārtiņ, Ansis → Ansi
+  if (/is$/.test(n)) return n.slice(0, -1);
+  if (/[sš]$/.test(n) && n.length > 3) return n.slice(0, -1);
+  // Mikus → Miku
+  if (/us$/.test(n)) return n.slice(0, -1);
+  // Feminine -a / -e names, and anything else, are called as they are.
+  return n;
+}
+
+/** Fills the persona marks in an already-chosen language string. */
+export function personalise(text: string, who: Persona = persona()): string {
+  if (text.indexOf('{') < 0) return text;
+  return text
+    .replace(/\{nameV\}/g, vocative(who.name))
+    .replace(/\{name\}/g, who.name.trim())
+    .replace(/\{([^{}|]*)\|([^{}|]*)\}/g, (_, m: string, f: string) => (who.female ? f : m));
+}
+
 const STORAGE_KEY = 'vecasvaras.lang';
 
 type Listener = (lang: Lang) => void;
@@ -78,7 +117,7 @@ class I18n {
 
   /** Resolve a Loc in the current language. */
   t(loc: Loc): string {
-    return loc[this._lang];
+    return personalise(loc[this._lang]);
   }
 
   /**

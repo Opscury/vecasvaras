@@ -30,7 +30,7 @@ export const elder = {
       '“The rye is standing out there waiting to be cut, and there is nobody in this village younger than me left to do it.”',
     ),
   ],
-  ask: L('«Aiziesi?»', '“Will you go?”'),
+  ask: L('«Aiziesi, {nameV}?»', '“Will you go, {name}?”'),
   choices: {
     accept: L('Aiziešu.', 'I will go.'),
     why: L('Kāpēc es?', 'Why me?'),
@@ -52,7 +52,7 @@ export const elder = {
 
   /** Said when she is spoken to and there is nothing new to say. */
   remind: {
-    takeSickle: L('«Vispirms sirpi, puis. Ar rokām nerauj.»', '“The sickle first. You do not pull it up by hand.”'),
+    takeSickle: L('«Vispirms sirpi, {puis|meit}. Ar rokām nerauj.»', '“The sickle first. You do not pull it up by hand.”'),
     harvest: L('«Lauks pats sevi nenopļaus.»', '“The field will not cut itself.”'),
     crossBog: L('«Pāreja pār purvu. Un neej tukšām rokām.»', '“The crossing over the bog. And do not go empty-handed.”'),
     done: L('«Tagad ej pie akmens. Tas atceras labāk par mani.»', '“Go to the stone now. It remembers better than I do.”'),
