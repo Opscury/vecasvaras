@@ -180,6 +180,6 @@ export const missingFrom = (
 /** Says which file failed in the console; the scene says so on screen. */
 export function reportLoadErrors(scene: Phaser.Scene): void {
   scene.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, (file: Phaser.Loader.File) => {
-    console.warn(`[Vecās Varas] could not load ${file.key} (${file.url})`);
+    console.warn(`[Senciems] could not load ${file.key} (${file.url})`);
   });
 }

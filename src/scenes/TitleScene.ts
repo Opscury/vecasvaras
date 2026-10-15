@@ -57,7 +57,7 @@ export class TitleScene extends Phaser.Scene {
     const titleX = width * 0.72;
 
     const title = this.add
-      .text(titleX, height * 0.36, 'VECĀS VARAS', {
+      .text(titleX, height * 0.36, 'SENCIEMS', {
         fontFamily: Fonts.display,
         fontSize: Compact ? '112px' : '96px',
         color: Hex.parchment,

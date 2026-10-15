@@ -157,7 +157,7 @@ export class StreamScene extends Phaser.Scene {
       if (n <= AUTO_RETRIES) {
         this.queue.unshift(next);
       } else {
-        console.warn('[Vecās Varas] art group did not load:', next);
+        console.warn('[Senciems] art group did not load:', next);
         this.failed.add(next);
         if (this.waiters.some((w) => w.groups.includes(next))) this.showFailed();
       }

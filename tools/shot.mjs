@@ -1,5 +1,5 @@
 /**
- * Headless screenshot harness for Vecās Varas.
+ * Headless screenshot harness for Senciems.
  *
  * The browser pane on the dev machine throttles a backgrounded tab hard enough
  * that the asset loader takes a minute and the game clock barely ticks, which

@@ -1,4 +1,4 @@
-# Vecās Varas
+# Senciems
 
 A short point-and-click game about what you leave for the old powers of
 Latvian folklore. You are a villager. You go out past the fence, you meet

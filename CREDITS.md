@@ -1,4 +1,4 @@
-# Credits and asset provenance — Vecās Varas
+# Credits and asset provenance — Senciems
 
 Every non-original asset in the build, with its source and what the licence requires.
 Keep this current as assets are added; it is the document you will be asked for if a

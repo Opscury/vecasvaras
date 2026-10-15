@@ -21,7 +21,7 @@ export class BootScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(Palette.ink);
 
     const bar = this.add.graphics();
-    // Below the HTML "VECĀS VARAS" placeholder, not on top of it.
+    // Below the HTML "SENCIEMS" placeholder, not on top of it.
     const label = this.add
       .text(width / 2, height / 2 + 96, '', {
         fontFamily: Fonts.body,

@@ -75,7 +75,7 @@ function body(lang: Lang, updated: string): string {
         <button type="button" class="switch" data-to="${lang === 'lv' ? 'en' : 'lv'}">${esc(UI.switchTo[lang])}</button>
       </nav>
       <header>
-        <p class="game">Vecās Varas</p>
+        <p class="game">Senciems</p>
         <h1>${esc(AVOTI_TEXT.heading[lang])}</h1>
         <p class="lead">${esc(AVOTI_TEXT.intro[lang])}</p>
         <p class="muted">${esc(AVOTI_TEXT.fiction[lang])}</p>

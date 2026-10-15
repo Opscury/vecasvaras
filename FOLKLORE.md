@@ -1,6 +1,6 @@
 # Folklore ledger
 
-Everything Vecās Varas presents as tradition, and what it rests on. Checked in
+Everything Senciems presents as tradition, and what it rests on. Checked in
 September 2026 against the full digital text of:
 
 - **P. Šmits, «Latviešu tautas ticējumi»** I–IV (1940–41) —

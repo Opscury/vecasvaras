@@ -100,7 +100,7 @@ export function goTo(scene: Phaser.Scene, key: string, data?: object): void {
     try {
       ink = inkOn(scene);
     } catch (err) {
-      console.warn('[Vecās Varas] ink transition unavailable, using a fade:', err);
+      console.warn('[Senciems] ink transition unavailable, using a fade:', err);
       ink = null;
     }
   }

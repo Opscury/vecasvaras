@@ -81,7 +81,7 @@ export function assertDainasVerified(): void {
     .map(([k, d]) => `  • ${k} — verify against ${d.source}`);
   if (pending.length) {
     console.warn(
-      '[Vecās Varas] Unverified daina text still in the build:\n' +
+      '[Senciems] Unverified daina text still in the build:\n' +
         pending.join('\n') +
         '\nSee src/content/dainas.ts before any public release.',
     );

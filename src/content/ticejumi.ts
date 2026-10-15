@@ -157,7 +157,7 @@ export function assertBeliefsVerified(): void {
     .map(([k]) => `  • ${k}`);
   if (pending.length) {
     console.warn(
-      '[Vecās Varas] Beliefs not yet matched to a Šmits record:\n' +
+      '[Senciems] Beliefs not yet matched to a Šmits record:\n' +
         pending.join('\n') +
         '\nSee src/content/ticejumi.ts before any public release.',
     );
