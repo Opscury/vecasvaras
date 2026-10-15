@@ -6,11 +6,9 @@ export default [
   { wait: 700 },
   () => __h.next('Velns'),
   { wait: 2000 },
-  () => __h.spot('Velns', 'plank0').activate(),
+  () => __h.spot('Velns', 'causeway').activate(),
   { wait: 800 },
-  () => __h.spot('Velns', 'plank1').activate(),
   { wait: 800 },
-  () => __h.spot('Velns', 'plank2').activate(),
   // The devil fades in, the cat goes back into the bag, then he speaks.
   { wait: 4200 },
   { shot: 'greet' },

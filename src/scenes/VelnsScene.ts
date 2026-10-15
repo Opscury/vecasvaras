@@ -41,10 +41,9 @@ import { MODAL, keysOf } from '../ui/keys';
  * The mood is the inverse of the field: dusk, cold, and a negotiation instead
  * of a harvest. Four beats:
  *
- *   WADE     out along a half-rotten causeway. A wrong step sends you back to
- *            the bank. A light hovers over a hummock that will not hold; a
- *            frog calls from the plank that will. The cat, if you brought it,
- *            goes first and only treads where it is safe.
+ *   WADE     one tap and you walk out along the causeway. A light over the
+ *            moss offers a quicker way, and follows the belief: it is a lie.
+ *            The cat, if you brought it, goes first.
  *   RIDDLE   a fair question. Get it wrong and he offers a second, harder one
  *            — he is bored and wants to keep playing. Get it right and you may
  *            ask him one back, which rattles him into working faster.
@@ -62,19 +61,17 @@ import { MODAL, keysOf } from '../ui/keys';
 const VELNS_POS = { x: 1330, y: 700 } as const;
 
 /**
- * The causeway out, read off bog.jpg. The three with an `order` sit on the
- * painted boards and run from the near bank towards him; the other two are
- * moss hummocks, which look like somewhere to put a foot and are not.
+ * The causeway out, read off bog.jpg: the painted boards from the near bank
+ * towards him. It used to be three planks to be stepped on in the right order,
+ * with two moss hummocks that dropped you back on the bank. Playtesting found
+ * that a chore rather than a puzzle, so the walk is one tap now.
  */
-const PLANKS: readonly { x: number; y: number; order?: number }[] = [
-  { x: 880, y: 960, order: 0 },
+const CAUSEWAY = { x: 1010, y: 800, w: 380, h: 330 } as const;
+/** The two moss hummocks, where the bog lights hang. */
+const HUMMOCKS: readonly { x: number; y: number }[] = [
   { x: 470, y: 620 },
-  { x: 1080, y: 790, order: 1 },
   { x: 1500, y: 800 },
-  { x: 1160, y: 630, order: 2 },
 ];
-const STEPS = PLANKS.filter((p) => p.order !== undefined).length;
-const HUMMOCKS = PLANKS.filter((p) => p.order === undefined);
 
 /** Same cooling as the Devil, so everything set into the bog is in its light. */
 const BOG_TINT = 0xa8b0b8;
@@ -174,8 +171,8 @@ export class VelnsScene extends Phaser.Scene {
   private devil!: Phaser.GameObjects.Image;
   private spots: Hotspot[] = [];
   private bridgeSpot: Hotspot | null = null;
-  /** How many planks that hold have been stepped on. */
-  private stepsTaken = 0;
+  /** Out on the causeway: the walk has been started. */
+  private walking = false;
   /** Which hummock the false light is over. */
   private lureAt = 0;
   private lure: Phaser.GameObjects.Container | null = null;
@@ -183,7 +180,6 @@ export class VelnsScene extends Phaser.Scene {
   private lure2: Phaser.GameObjects.Container | null = null;
   private beckonTimer: Phaser.Time.TimerEvent | null = null;
   private sparkTimer: Phaser.Time.TimerEvent | null = null;
-  private hintTimer: Phaser.Time.TimerEvent | null = null;
 
   /** The cat walking the causeway ahead of the player, if it came. */
   private scout: Phaser.GameObjects.Sprite | null = null;
@@ -214,13 +210,12 @@ export class VelnsScene extends Phaser.Scene {
     this.phase = 'arrive';
     this.listedBargain = false;
     this.greyed = false;
-    this.stepsTaken = 0;
+    this.walking = false;
     this.lureAt = 0;
     this.lure = null;
     this.lure2 = null;
     this.beckonTimer = null;
     this.sparkTimer = null;
-    this.hintTimer = null;
     this.scout = null;
     this.scoutWalk = null;
     this.scoutBusy = false;
@@ -350,32 +345,39 @@ export class VelnsScene extends Phaser.Scene {
   // --- the causeway ----------------------------------------------------------
 
   /**
-   * Getting out to him. Three planks hold and two hummocks do not; a wrong
-   * step puts you back on the bank. Nothing drowns you — but the order is now
-   * something worth remembering, and the bog has two ways of telling you it:
-   * a light that lies, and a frog that does not.
+   * Getting out to him: one tap on the causeway. The lights over the moss are
+   * the only other thing that asks to be clicked, and they lie.
    */
   private beginWade(): void {
     this.narration.hide();
     this.phase = 'wade';
     this.prompt.show(velns.wade.prompt);
 
-    PLANKS.forEach((p) => {
+    this.spots.push(
+      new Hotspot(this, {
+        id: 'causeway',
+        x: CAUSEWAY.x,
+        y: CAUSEWAY.y,
+        w: CAUSEWAY.w,
+        h: CAUSEWAY.h,
+        label: velns.wade.causeway,
+        onClick: () => this.walkOut(),
+      }),
+    );
+    HUMMOCKS.forEach((h, i) =>
       this.spots.push(
         new Hotspot(this, {
-          id: p.order === undefined ? 'hummock' : `plank${p.order}`,
-          x: p.x,
-          y: p.y,
-          r: 96,
-          label: p.order === undefined ? velns.wade.hummock : velns.wade.plank,
-          onClick: () => (p.order === undefined ? this.sink(p) : this.stepOut(p.order)),
+          id: `wisp${i}`,
+          x: h.x,
+          y: h.y - 60,
+          r: 90,
+          label: velns.wade.light,
+          onClick: () => this.followLight(i),
         }),
-      );
-    });
+      ),
+    );
 
     this.placeLure(0);
-    this.hintTimer = this.time.addEvent({ delay: 4600, startAt: 3000, loop: true, callback: () => this.frogHint() });
-
     if (bag.has('cat')) this.releaseScout();
   }
 
@@ -461,10 +463,9 @@ export class VelnsScene extends Phaser.Scene {
   /** Out over the water towards the player, a held breath, and slowly back. */
   private beckon(): void {
     const w = this.lure;
-    if (!w || this.phase !== 'wade' || this.narration.busy) return;
+    if (!w || this.phase !== 'wade' || this.walking || this.narration.busy) return;
     const home = HUMMOCKS[this.lureAt];
-    const standing =
-      this.stepsTaken === 0 ? { x: CAT_BANK.x + 60, y: 960 } : PLANKS.find((q) => q.order === this.stepsTaken - 1)!;
+    const standing = { x: CAT_BANK.x + 60, y: 960 };
     const toward = {
       x: Phaser.Math.Linear(home.x, standing.x, 0.55),
       y: Phaser.Math.Linear(home.y - 70, standing.y - 90, 0.55),
@@ -505,63 +506,44 @@ export class VelnsScene extends Phaser.Scene {
     });
   }
 
-  /** A ring on the water and a croak, from the plank that will hold next. */
-  private frogHint(): void {
-    if (this.phase !== 'wade' || this.stepsTaken >= STEPS) return;
-    const p = PLANKS.find((q) => q.order === this.stepsTaken)!;
-    const x = p.x + 70;
-    const y = p.y + 24;
-    const ring = this.painting.add(this.add.graphics().setPosition(x, y));
-    const k = { r: 0 };
-    this.tweens.add({
-      targets: k,
-      r: 1,
-      duration: 1400,
-      ease: 'Sine.easeOut',
-      onUpdate: () => {
-        ring.clear();
-        ring.lineStyle(2, 0xc9d3da, 0.55 * (1 - k.r));
-        ring.strokeEllipse(0, 0, 20 + 90 * k.r, 6 + 26 * k.r);
-      },
-      onComplete: () => ring.destroy(),
+  /**
+   * After the light, a step off the boards: knee-deep, and back. Nothing is
+   * lost but a moment — and the belief is found, which is the point of it.
+   */
+  private followLight(which: number): void {
+    if (this.walking) return;
+    if (which !== this.lureAt) this.placeLure(which);
+    audio.play('splash');
+    this.cameras.main.shake(220, 0.004);
+    this.prompt.flash(velns.wade.lured, 3600);
+    lore.unlock('maldugunis');
+    if (this.lure) this.tweens.add({ targets: this.lure, scale: 1.9, duration: 260, yoyo: true, ease: 'Quad.easeOut' });
+    // The light moves on, as they do.
+    this.time.delayedCall(700, () => {
+      if (!this.walking) this.placeLure(1 - this.lureAt);
     });
-    audio.play('frog', { volume: 0.34 });
   }
 
-  /** A foot on a hummock. */
-  private sink(h: { x: number; y: number }): void {
-    const lured = HUMMOCKS.indexOf(h) === this.lureAt;
-    this.fallBack(lured ? velns.wade.lured : velns.wade.rotten);
-    if (lured) {
-      lore.unlock('maldugunis');
-      // The light moves on, as they do.
-      this.placeLure(1 - this.lureAt);
-      // It flares — pleased with itself — as it moves on.
-      if (this.lure) this.tweens.add({ targets: this.lure, scale: 1.9, duration: 260, yoyo: true, ease: 'Quad.easeOut' });
-    }
-  }
-
-  /** One plank further out. They have to be taken in order; a leap is a fall. */
-  private stepOut(order: number): void {
-    if (order !== this.stepsTaken) {
-      this.fallBack(velns.wade.tooFar);
-      return;
-    }
-    this.stepsTaken++;
-    audio.play('click', { volume: 0.5 });
-    this.cameras.main.shake(90, 0.0015);
-    // The plank you are standing on is no longer somewhere to go.
-    this.spotFor(order)?.setEnabled(false);
-    this.moveScout(this.stepsTaken);
-
-    if (this.stepsTaken < STEPS) {
-      this.prompt.flash(velns.wade.step[this.stepsTaken - 1], 2600);
-      return;
-    }
-    this.prompt.hide(300);
-    this.hintTimer?.remove(false);
-    this.hintTimer = null;
+  /** Along the boards to the end, the cat ahead if it came. */
+  private walkOut(): void {
+    if (this.walking) return;
+    this.walking = true;
     this.spots.forEach((s) => s.setEnabled(false));
+    this.prompt.flash(velns.wade.walk, 2600);
+    // Three footfalls on the boards, the cat a plank ahead.
+    [0, 1, 2].forEach((n) =>
+      this.time.delayedCall(n * 700, () => {
+        audio.play('click', { volume: 0.45 });
+        this.cameras.main.shake(70, 0.0012);
+        this.moveScout(n + 1);
+      }),
+    );
+    this.time.delayedCall(2300, () => this.arrive());
+  }
+
+  /** The end of the causeway: the lights go out and he is simply there. */
+  private arrive(): void {
+    this.prompt.hide(300);
     this.beckonTimer?.remove(false);
     this.sparkTimer?.remove(false);
     [this.lure, this.lure2].forEach((w) => {
@@ -569,7 +551,6 @@ export class VelnsScene extends Phaser.Scene {
       this.tweens.killTweensOf(w);
       this.tweens.add({ targets: w, alpha: 0, duration: 900, onComplete: () => w.destroy() });
     });
-    // He does not walk on. He is simply there, the way he always was.
     this.tweens.add({
       targets: this.devil,
       alpha: 1,
@@ -577,22 +558,6 @@ export class VelnsScene extends Phaser.Scene {
       ease: 'Sine.easeOut',
       onComplete: () => this.recallScout(() => this.greet()),
     });
-  }
-
-  private spotFor(order: number): Hotspot | undefined {
-    return this.spots.find((s) => s.id === `plank${order}`);
-  }
-
-  /** Into the water to the knees, and back to the bank. */
-  private fallBack(line: Loc): void {
-    audio.play('splash');
-    this.cameras.main.shake(220, 0.004);
-    // Up top, and briefly: the causeway is in the bottom half of the picture,
-    // and a panel of text over it hides the very planks being read.
-    this.prompt.flash(line, 3600);
-    this.stepsTaken = 0;
-    this.spots.forEach((s) => s.setEnabled(true));
-    this.moveScout(0, true);
   }
 
   // --- the cat, going first ---------------------------------------------------
@@ -620,7 +585,7 @@ export class VelnsScene extends Phaser.Scene {
         );
         cat.setScale(CAT_BANK.h / CAT_FRAME_H);
         this.scout = cat;
-        this.moveScout(this.stepsTaken);
+        this.moveScout(0);
       },
     });
   }

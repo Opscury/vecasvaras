@@ -16,22 +16,20 @@ export default [
   { shot: 'cat-ahead' },
   { wait: 2600 },
   { shot: 'cat-at-first-plank' },
-  // The lured hummock: back to the bank.
+  // The light over the moss: knee-deep, back, and the belief found.
   () => {
     const v = __h.scene('Velns');
-    const lured = v.spots.filter((s) => s.id === 'hummock')[v.lureAt];
-    lured.activate();
+    v.spots.find((s) => s.id === `wisp${v.lureAt}`).activate();
   },
+  { wait: 400 },
+  () => __h.assert(JSON.parse(localStorage.getItem('vecasvaras.lore.v1') || '[]').includes('maldugunis'), 'the bog lights are in the book'),
   { wait: 1200 },
   { shot: 'lured-back' },
-  () => __h.spot('Velns', 'plank0').activate(),
+  () => __h.spot('Velns', 'causeway').activate(),
   { wait: 2200 },
-  () => __h.spot('Velns', 'plank1').activate(),
   { wait: 2600 },
   { shot: 'cat-ahead-2' },
   { wait: 2000 },
-  { shot: 'frog-ripple' },
-  () => __h.spot('Velns', 'plank2').activate(),
   { wait: 4200 },
   { shot: 'devil-cat-back' },
   { wait: 1500 },

@@ -535,35 +535,21 @@ export const velns = {
     '„Un kas tev tur kulē ņaud?“ Viņš pavelk nāsis. „Nu, labi. Vēlāk.“',
     '“And what is that mewing in your bag?” He sniffs. “Never mind. Later.”',
   ),
-  /**
-   * Getting out to him. The causeway is half rotten; three planks hold and
-   * two hummocks do not.
-   */
+  /** Getting out to him: the causeway, and the lights that offer a better way. */
   wade: {
-    // NEW wording — the lights are part of the puzzle now.
     prompt: L(
-      'Ej pa laipu. Ne katrs dēlis tur, un ne katra uguns rāda ceļu.',
-      'Walk out along the planks. Not every one will hold, and not every light shows the way.',
+      'Laipa ved purvā. Ej pa to.',
+      'The causeway runs out into the bog. Walk out along it.',
     ),
-    plank: L('Dēlis', 'A plank'),
-    hummock: L('Cinis', 'A hummock'),
-    step: [
-      L('Dēlis notur. Zem tā kaut kas mierīgi aizslīd.', 'The plank holds. Something slides away underneath it, unhurried.'),
-      L('Ūdens ir melns un nekustīgs kā darva.', 'The water is black and as still as tar.'),
-      L('Vēl viens. Tālāk laipa beidzas.', 'One more. After that the causeway stops.'),
-    ],
-    // NEW — a wrong step sends you back to the bank.
-    rotten: L(
-      'Tas neturēs. Tu iegrimsti līdz ceļiem un izrāpies atpakaļ krastā.',
-      'That will not hold. You sink to the knees and crawl back to the bank.',
+    causeway: L('Laipa', 'The causeway'),
+    light: L('Uguntiņa', 'A little light'),
+    walk: L(
+      'Dēļi zem kājām šūpojas, bet tur. Ūdens ir melns un nekustīgs kā darva.',
+      'The boards rock underfoot, but they hold. The water is black and as still as tar.',
     ),
     lured: L(
       'Uguntiņa aizveda tevi sūnās. Tu iegrimsti līdz ceļiem un izrāpies atpakaļ krastā.',
       'The little light led you into the moss. You sink to the knees and crawl back to the bank.',
-    ),
-    tooFar: L(
-      'Tik tālu nepārlēksi. Tu paslīdi un izrāpies atpakaļ krastā.',
-      'You cannot jump that far. You slip and crawl back to the bank.',
     ),
     catAhead: L(
       'Kaķis izlec no kules un aiziet pa laipu tev pa priekšu.',

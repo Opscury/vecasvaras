@@ -54,11 +54,11 @@ yard and threshed into bread in front of the player (3 / 2 / 1 loaves), so the
 tithed cart — a sheaf short — is the one that fills the row.
 
 **Encounter two — Velns, at the bog.** Dusk, cold, and a negotiation. The
-causeway first: three planks hold and two hummocks do not, a wrong step or a leap
-puts you back on the bank, a bog light (*maldugunis*) settles over a hummock to
-invite the wrong one, and a frog croaks from the plank that will hold. If the cat
-came along it walks out ahead, on the right planks, and hops back into the bag
-when it sees who is sitting there. He notices it.
+causeway first, one tap out along the boards. A bog light (*maldugunis*) hangs
+over the moss beside it and offers a quicker way; follow it and you are
+knee-deep and back on the bank, with the belief in the book. If the cat came
+along it walks out ahead and hops back into the bag when it sees who is sitting
+there. He notices it.
 
 Then the riddle — traditional, like the other two — and the bog answers it
 first, a gust across the reeds. Get it right and you may ask him one back (the
