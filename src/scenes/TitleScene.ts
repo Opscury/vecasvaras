@@ -9,7 +9,7 @@ import { Chrome } from '../ui/Chrome';
 import { Atmosphere } from '../fx/Atmosphere';
 import { padHit } from '../ui/hit';
 import { ignoreKey, isAdvanceKey, markHandled } from '../ui/keys';
-import { goTo, isLeaving } from './transition';
+import { fadeIn, goTo, isLeaving } from './transition';
 import { audio } from '../core/audio';
 import { AVOTI_PATH } from '../content/avoti';
 
@@ -28,7 +28,8 @@ export class TitleScene extends Phaser.Scene {
     super('Title');
   }
 
-  create(): void {
+  create(data?: { again?: boolean }): void {
+    if (data?.again) fadeIn(this);
     // One ambient channel for the whole game; this cross-fades from whatever
     // the last scene was playing.
     audio.ambient('village');
@@ -133,7 +134,9 @@ export class TitleScene extends Phaser.Scene {
           // Not while Continue is already fading the menu out.
           if (isLeaving(this)) return;
           state.reset();
-          this.scene.restart();
+          // Through the ink like every other change of place, not a hard cut
+          // to a rebuilt menu.
+          goTo(this, 'Title', { again: true });
         },
       });
     }

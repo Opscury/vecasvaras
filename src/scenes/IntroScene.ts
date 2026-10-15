@@ -7,13 +7,17 @@ import { Narration } from '../ui/Narration';
 import { Chrome } from '../ui/Chrome';
 import { Atmosphere } from '../fx/Atmosphere';
 import { ignoreKey, markHandled } from '../ui/keys';
-import { fadeIn, goTo } from './transition';
+import { fadeIn, goTo, isLeaving } from './transition';
+import { SCENE_NEEDS } from './assets';
+import { StreamScene } from './StreamScene';
 import { CHIMNEYS } from './villageArt';
 import { audio } from '../core/audio';
 
 /** Opening narration over a slow push into the village. */
 export class IntroScene extends Phaser.Scene {
   private narration!: Narration;
+  private bg!: Phaser.GameObjects.Image;
+  private handingOver = false;
 
   constructor() {
     super('Intro');
@@ -28,7 +32,9 @@ export class IntroScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(Palette.ink);
     fadeIn(this, Timing.fade * 2);
 
+    this.handingOver = false;
     const bg = this.add.image(width / 2, height / 2, 'bg-village').setDisplaySize(width, height);
+    this.bg = bg;
     applyGrade(bg);
     bg.setScale(bg.scaleX * 1.06, bg.scaleY * 1.06).setAlpha(0.82);
 
@@ -78,6 +84,30 @@ export class IntroScene extends Phaser.Scene {
   private leave(): void {
     state.set('introSeen', true);
     this.narration.dismiss();
-    goTo(this, 'Village');
+    if (this.handingOver || isLeaving(this)) return;
+    // The intro is already standing in the village. Inking the frame black
+    // and opening it again on the very same painting was a fade to nowhere,
+    // so the picture settles where the village draws it and the village takes
+    // over without a cut — unless its people are not loaded yet, when the
+    // ink (and its loading line) is still the honest way across.
+    const needs = SCENE_NEEDS.Village ?? [];
+    if (!StreamScene.get(this).has(needs)) {
+      goTo(this, 'Village');
+      return;
+    }
+    this.handingOver = true;
+    const { width, height } = Layout;
+    const sx = width / this.bg.width;
+    const sy = height / this.bg.height;
+    this.tweens.killTweensOf(this.bg);
+    this.tweens.add({
+      targets: this.bg,
+      scaleX: sx,
+      scaleY: sy,
+      alpha: 1,
+      duration: 650,
+      ease: 'Sine.easeInOut',
+      onComplete: () => this.scene.start('Village', { seamless: true }),
+    });
   }
 }

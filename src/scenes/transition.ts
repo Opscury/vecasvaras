@@ -37,8 +37,20 @@ export function fadeIn(scene: Phaser.Scene, duration: number = Timing.fade): voi
   }
   ink.reseed();
   ink.progress = 1;
-  const k = { v: 1 };
   running.get(scene)?.stop();
+  // The first frame of a scene is its heaviest: everything built in create()
+  // is drawn and uploaded at once, which measured 70-150 ms on a desktop GPU.
+  // Started in create(), the reveal took that whole frame as its first step
+  // and the ink visibly jumped a fifth of the way open — the hitch on arriving
+  // anywhere. So it waits, fully inked, until that frame is on screen.
+  scene.game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+    if (!scene.sys.isActive() || leaving.has(scene)) return;
+    reveal(scene, ink, duration);
+  });
+}
+
+function reveal(scene: Phaser.Scene, ink: NonNullable<ReturnType<typeof inkOn>>, duration: number): void {
+  const k = { v: 1 };
   const tw = scene.tweens.add({
     targets: k,
     v: 0,

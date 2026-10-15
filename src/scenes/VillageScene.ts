@@ -1,3 +1,4 @@
+import { applyGrade } from '../fx/GradePipeline';
 import Phaser from 'phaser';
 import { type Loc } from '../core/i18n';
 import { arrival, items, jumis as jumisText, village } from '../content/script';
@@ -17,7 +18,7 @@ import { Atmosphere } from '../fx/Atmosphere';
 import { Bag } from '../ui/Bag';
 import { Painting } from '../ui/Painting';
 import { Portrait } from '../ui/Portrait';
-import { Palette } from '../core/theme';
+import { Layout, Palette } from '../core/theme';
 import { bag, type ItemId } from '../core/inventory';
 import { textureFor } from '../core/itemArt';
 import { fadeIn, goTo } from './transition';
@@ -96,8 +97,9 @@ export class VillageScene extends Phaser.Scene {
     super('Village');
   }
 
-  create(): void {
+  create(data?: { seamless?: boolean }): void {
     audio.ambient('village');
+    const seamless = data?.seamless === true;
 
     // Phaser reuses this instance on every visit, so every field starts over.
     this.spots = [];
@@ -108,7 +110,7 @@ export class VillageScene extends Phaser.Scene {
     this.chimneys = [];
     state.set('scene', 'Village');
 
-    fadeIn(this);
+    if (!seamless) fadeIn(this);
     makeBlob(this);
     this.painting = new Painting(this, 'bg-village');
     const painting = this.painting;
@@ -144,6 +146,17 @@ export class VillageScene extends Phaser.Scene {
     if (s.crumb) this.drawCrumb(false);
     if (evening) addEvening(this, painting, { lit: 1 + holdings().bread, arriving: news.bridge !== null });
     else addDaylight(this, painting, morning ? 'morning' : 'afternoon', { arriving: news.granary !== null });
+
+    // Straight on from the intro, which was standing on this very painting:
+    // the bare picture lies over everything set into it for a moment and
+    // lifts, so Anna, the cat and the smoke come up out of it instead of
+    // popping in.
+    if (seamless) {
+      const veil = this.add.image(Layout.width / 2, Layout.height / 2, 'bg-village').setDisplaySize(Layout.width, Layout.height);
+      applyGrade(veil);
+      veil.setDepth(850);
+      this.tweens.add({ targets: veil, alpha: 0, delay: 120, duration: 700, ease: 'Sine.easeInOut', onComplete: () => veil.destroy() });
+    }
 
     // --- the furniture
     this.narration = new Narration(this);

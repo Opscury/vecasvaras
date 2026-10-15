@@ -50,8 +50,14 @@ const SANDBOX_CHROMIUM = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const executablePath =
   process.env.CHROMIUM_PATH ?? (fs.existsSync(SANDBOX_CHROMIUM) ? SANDBOX_CHROMIUM : undefined);
 
+// PERF=1: a real clock in real Chrome on the real GPU, for hunting hitches and
+// stray fades. Waits are wall time; the frame log is printed at the end.
+const PERF = process.env.PERF === '1';
 const browser = await chromium.launch({
-  executablePath,
+  ...(PERF ? { channel: 'chrome', args: ['--autoplay-policy=no-user-gesture-required', '--enable-gpu', '--ignore-gpu-blocklist'] } : {}),
+  // On the dev PC there is no Playwright browser download: use the installed Chrome.
+  ...(!PERF && !executablePath && process.platform === 'win32' ? { channel: 'chrome' } : {}),
+  executablePath: PERF ? undefined : executablePath,
   args: [
     '--autoplay-policy=no-user-gesture-required',
     // Without these the renderer is treated as backgrounded and rAF all but
@@ -65,7 +71,7 @@ const browser = await chromium.launch({
 });
 
 // A phone held sideways, which is the case that mattered in the playtest.
-const ctx = await browser.newContext({
+const ctx = await browser.newContext(PERF ? { viewport: { width: 1280, height: 720 } } : {
   viewport: { width: 812, height: 375 },
   deviceScaleFactor: 2,
   hasTouch: true,
@@ -98,11 +104,61 @@ page.on('console', (m) => {
   if (m.type() === 'error' || t.startsWith('DBG')) console.log(t);
 });
 
+// PERF=1 also records a CPU profile of the whole run, for finding what a long
+// frame was busy with (shots/perf.cpuprofile).
+let cdp = null;
+if (PERF) {
+  cdp = await ctx.newCDPSession(page);
+  await cdp.send('Profiler.enable');
+  await cdp.send('Profiler.setSamplingInterval', { interval: 500 });
+  await cdp.send('Profiler.start');
+  if (process.env.PERF_TRACE) await browser.startTracing(page, { path: path.join(out, 'perf-trace.json'), categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'v8.execute', 'blink', 'gpu', 'toplevel'] });
+}
 await page.goto(`http://localhost:${PORT}/`);
 await page.waitForFunction(() => !!window.__game, { timeout: 30000 });
+if (PERF) {
+  await page.evaluate(() => {
+    const g = window.__game;
+    const t0 = performance.now();
+    const log = (window.__perf = []);
+    const at = () => Math.round(performance.now() - t0);
+    const active = () => g.scene.getScenes(true).map((s) => s.scene.key).filter((k) => k !== 'Stream').join('+');
+    g.scene.scenes.forEach((s) => {
+      for (const ev of ['start', 'create', 'shutdown']) s.events.on(ev, () => log.push(`${at()} ${s.scene.key} ${ev}`));
+    });
+    let last = performance.now();
+    const tick = (now) => {
+      const d = now - last;
+      if (d > 30) log.push(`${at()} LONG ${Math.round(d)}ms in ${active()}`);
+      last = now;
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    // Markers for what the game did, to line a long frame up with its cause.
+    const wrap = (obj, fn, tag) => {
+      const f = obj[fn].bind(obj);
+      obj[fn] = (...a) => {
+        log.push(`${at()} ${tag} ${a[0]}`);
+        return f(...a);
+      };
+    };
+    const vv = window.__vv;
+    if (vv) {
+      wrap(vv.lore, 'unlock', 'lore');
+      if (vv.audio) {
+        wrap(vv.audio, 'play', 'sfx');
+        wrap(vv.audio, 'ambient', 'amb');
+        wrap(vv.audio, 'music', 'music');
+      }
+    }
+    window.__advance = () => {};
+    window.__paint = () => {};
+  });
+}
+
 // Every texture the game will use has to be in before any scene is entered by
 // hand; the title scene fetches them while it is on screen.
-await page.waitForFunction(
+if (!PERF) await page.waitForFunction(
   () => {
     const g = window.__game;
     if (!g) return false;
@@ -114,7 +170,7 @@ await page.waitForFunction(
 );
 
 // Only once the loader has finished: until then the game needs its own clock.
-await page.evaluate(() => {
+if (!PERF) await page.evaluate(() => {
   const g = window.__game;
   // Take the clock off requestAnimationFrame.
   //
@@ -271,6 +327,48 @@ await page.evaluate(() => {
   };
 });
 
+// At real speed the panel needs real time between lines: the same helpers,
+// awaited in wall time (page.evaluate waits on a returned promise).
+if (PERF) {
+  await page.evaluate(() => {
+    const g = window.__game;
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    window.__h.drain = async (k, max = 30) => {
+      for (let i = 0; i < max; i++) {
+        const x = g.scene.getScene(k).narration;
+        if (!g.scene.isActive(k) || !x || x.choices.length || (!x.current && !x.queue.length && !x.typing)) return i;
+        x.finishTyping();
+        x.advance();
+        await sleep(350);
+      }
+      return max;
+    };
+    // A sweep at the pace of a hand, not three hundred strokes in one frame.
+    window.__h.sweep = async (k, ys, x0 = 60, x1 = 1900) => {
+      const j = g.scene.getScene(k);
+      for (const y of ys) {
+        j.strokeFrom = { x: x0, y };
+        for (let x = x0; x <= x1; x += 40) {
+          j.strike(x, y);
+          await sleep(16);
+        }
+        j.protectTuft();
+        j.strokeFrom = null;
+      }
+    };
+    const log = window.__h.log;
+    window.__h.log = async (...a) => log(...(await Promise.all(a)));
+    window.__h.waitSay = async (k, max = 8000) => {
+      for (let t = 0; t < max; t += 250) {
+        const x = g.scene.getScene(k).narration;
+        if (x && (x.current || x.queue.length || x.typing || x.choices.length)) return t;
+        await sleep(250);
+      }
+      return -1;
+    };
+  });
+}
+
 const name = process.argv[2] ?? 'field';
 const steps = (await import(`./shots/${name}.mjs`)).default;
 
@@ -286,7 +384,8 @@ for (const step of steps) {
       break;
     }
   } else if (step.wait) {
-    await page.evaluate((ms) => window.__advance(ms), step.wait);
+    if (PERF) await page.waitForTimeout(step.wait);
+    else await page.evaluate((ms) => window.__advance(ms), step.wait);
   } else if (step.grab) {
     const handle = await page.waitForFunction(() => window.__grab, null, { timeout: 15000 });
     const url = await handle.jsonValue();
@@ -294,12 +393,24 @@ for (const step of steps) {
     fs.writeFileSync(file, Buffer.from(url.split(',')[1], 'base64'));
     await page.evaluate(() => (window.__grab = null));
     console.log('wrote', file);
+  } else if (step.shot && PERF) {
+    continue;
   } else if (step.shot) {
     await page.evaluate(() => window.__paint());
     const file = path.join(out, `${name}-${String(++n).padStart(2, '0')}-${step.shot}.png`);
     await page.screenshot({ path: file });
     console.log('wrote', file);
   }
+}
+
+if (PERF) {
+  await page.waitForTimeout(1500);
+  console.log((await page.evaluate(() => window.__perf)).join('\n'));
+  const { profile } = await cdp.send('Profiler.stop');
+  fs.writeFileSync(path.join(out, 'perf.cpuprofile'), JSON.stringify(profile));
+  if (process.env.PERF_TRACE) await browser.stopTracing();
+  // performance.now() at the moment the frame log started, to line the two up.
+  console.log('T0', await page.evaluate(() => performance.timeOrigin));
 }
 
 await browser.close();
