@@ -49,6 +49,11 @@ export const ART_GROUPS: Record<ArtGroup, readonly Asset[]> = {
     ['item-bag', 'item_bag.webp'],
     // The Devil's hat, left for someone who answered him as an equal.
     ['item-hat', 'item_hat.webp'],
+    // The one the player courts: Ilze for a young man, Krišs for a young woman.
+    ['ilze', 'ilze.webp'],
+    ['portrait-ilze', 'portrait_ilze.webp'],
+    ['kriss', 'kriss.webp'],
+    ['portrait-kriss', 'portrait_kriss.webp'],
   ],
   field: [
     ['bg-field', 'field.jpg'],
@@ -100,7 +105,11 @@ export const GAME_ASSETS: readonly Asset[] = ART_ORDER.flatMap((g) => ART_GROUPS
  * the cat backwards each time it wraps. `cat_walk.png` stays in art-src/.
  */
 export const ART_SHEETS: Record<ArtGroup, readonly Sheet[]> = {
-  village: [],
+  // The player, walking: one step in ten frames, 4x3 (tools/build_walksheet.py).
+  village: [
+    ['walk-m', 'walk_man.webp', { frameWidth: 131, frameHeight: 240 }],
+    ['walk-f', 'walk_woman.webp', { frameWidth: 132, frameHeight: 240 }],
+  ],
   field: [],
   bog: [['cat-walk', 'cat_walk_sheet.webp', { frameWidth: 300, frameHeight: 150 }]],
   book: [],
@@ -134,8 +143,24 @@ export const CAT_WALK_FPS = 16;
 /** Slide of a planted paw, in frame pixels, per frame of the cycle. */
 export const CAT_PAW_SLIDE = 13.5;
 
+/** The player's walk: one step per cycle, ten frames, and the frame they stand on. */
+export const WALK_ANIM = { m: 'walk-m-cycle', f: 'walk-f-cycle' } as const;
+export const WALK_FRAMES = 10;
+export const WALK_FPS = 16;
+export const WALK_STAND = { m: 5, f: 4 } as const;
+
 /** Registers every animation in the game. Safe to call more than once. */
 export function defineAnims(scene: Phaser.Scene): void {
+  for (const g of ['m', 'f'] as const) {
+    if (!scene.anims.exists(WALK_ANIM[g]) && scene.textures.exists(`walk-${g}`)) {
+      scene.anims.create({
+        key: WALK_ANIM[g],
+        frames: scene.anims.generateFrameNumbers(`walk-${g}`, { start: 0, end: WALK_FRAMES - 1 }),
+        frameRate: WALK_FPS,
+        repeat: -1,
+      });
+    }
+  }
   if (!scene.anims.exists(CAT_WALK_ANIM)) {
     scene.anims.create({
       key: CAT_WALK_ANIM,

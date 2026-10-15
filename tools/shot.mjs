@@ -82,6 +82,9 @@ const ctx = await browser.newContext(PERF ? { viewport: { width: 1280, height: 7
 // Seed any saved state a shot script wants BEFORE the bundle runs: the run
 // state and the bag are singletons built at import time, so anything written
 // into localStorage from a step has already been missed.
+// Scripted clicks wait fixed times, so the player arrives at once unless a
+// script is about the walking itself (WALK=1).
+if (!process.env.WALK) await ctx.addInitScript(() => (window.__vvInstantWalk = true));
 const seedPath = path.join(root, 'tools', 'shots', `${process.argv[2] ?? 'field'}.seed.json`);
 if (fs.existsSync(seedPath)) {
   const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));

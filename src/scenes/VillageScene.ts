@@ -25,6 +25,9 @@ import { fadeIn, goTo } from './transition';
 import { CHIMNEYS, SHEAF_SLOTS, addDaylight, addEvening, addSheaf, addUpgrades } from './villageArt';
 import { audio } from '../core/audio';
 import { makeBlob } from '../fx/textures';
+import { Walker } from '../ui/Walker';
+import { PATHS, START, clampToYard, route, type Pt } from './villageGround';
+import { defineAnims } from './assets';
 
 /**
  * The hub. Nothing happens here mechanically — its whole job is to be the
@@ -70,6 +73,20 @@ const ARRIVAL_LINE_MS = 2600;
 /** Before the village has shown anything. */
 const NOTHING_SHOWN: Shown = { jumis: 'none', jumisPick: 'none', jumisPaid: false, sheaves: 0, velns: 'none' };
 
+/**
+ * Where the player stands to deal with each thing, and which way they face.
+ * The two paths are walked to their mouths, past the edge of the yard.
+ */
+const APPROACH: Record<string, Pt & { face?: 'left' | 'right' }> = {
+  stone: { x: 890, y: 652, face: 'right' },
+  granary: { x: 610, y: 640, face: 'left' },
+  bridge: { x: 1420, y: 642, face: 'right' },
+  anna: { x: 790, y: 612, face: 'left' },
+  shed: { x: 800, y: 702 },
+  cat: { x: 1180, y: 588, face: 'right' },
+  beloved: { x: 1312, y: 600, face: 'right' },
+};
+
 export class VillageScene extends Phaser.Scene {
   private narration!: Narration;
   private bagUi!: Bag;
@@ -92,6 +109,8 @@ export class VillageScene extends Phaser.Scene {
    * and a second tap on her used to start the whole cart over on top of itself.
    */
   private threshing = false;
+  /** The player, on foot. */
+  private walker: Walker | null = null;
 
   constructor() {
     super('Village');
@@ -108,6 +127,8 @@ export class VillageScene extends Phaser.Scene {
     this.catSprite = null;
     this.catSpot = null;
     this.chimneys = [];
+    // Where the player is coming from decides where they walk in.
+    const cameFrom = state.get().scene;
     state.set('scene', 'Village');
 
     if (!seamless) fadeIn(this);
@@ -143,6 +164,8 @@ export class VillageScene extends Phaser.Scene {
     this.setSheaves(holdings(this.lastSeen).bread, false);
     this.addElder();
     this.addCat();
+    defineAnims(this);
+    this.addWalker(cameFrom, seamless, evening);
     if (s.crumb) this.drawCrumb(false);
     if (evening) addEvening(this, painting, { lit: 1 + holdings().bread, arriving: news.bridge !== null });
     else addDaylight(this, painting, morning ? 'morning' : 'afternoon', { arriving: news.granary !== null });
@@ -180,7 +203,14 @@ export class VillageScene extends Phaser.Scene {
       if (p.button !== 0) return;
       const holding = this.bagUi?.holding ?? null;
       if (this.narration.advance()) return;
-      if (!holding && !over.length) this.narration.mutter(village.nothing);
+      if (holding || over.length) return;
+      // Empty ground: walk there. The sky and the roofs are not ground.
+      if (p.worldY > 470 && this.walker) {
+        this.portrait.hide();
+        this.walker.walkTo(route(this.walker.at, { x: p.worldX, y: p.worldY }));
+      } else {
+        this.narration.mutter(village.nothing);
+      }
     });
 
     this.addSpots();
@@ -565,12 +595,24 @@ export class VillageScene extends Phaser.Scene {
   private spot(o: ConstructorParameters<typeof Hotspot>[1]): Hotspot {
     // Anna's face comes up when she is spoken to, and goes when anything else is.
     const click = o.onClick;
+    const id = o.id;
+    const act = () => {
+      if (id === 'anna') this.portrait.show();
+      else this.portrait.hide();
+      click();
+    };
     o = {
       ...o,
+      // The player walks over first, and the thing happens on arrival. Nothing
+      // waits on them: a click elsewhere on the way simply changes their mind.
       onClick: () => {
-        if (o.id === 'anna') this.portrait.show();
-        else this.portrait.hide();
-        click();
+        const way = id ? this.wayTo(id) : null;
+        if (!way || !this.walker) {
+          act();
+          return;
+        }
+        this.portrait.hide();
+        this.walker.walkTo(way.route, { face: way.face, onArrive: act });
       },
     };
     const h = new Hotspot(this, o);
@@ -811,6 +853,55 @@ export class VillageScene extends Phaser.Scene {
   private leaveTo(key: string, data?: object): void {
     this.spots.forEach((s) => s.setEnabled(false));
     this.narration.hide();
+    // Out of the yard and on down the path, while the ink comes in.
+    const away = key === 'Jumis' ? PATHS.field.away : key === 'Velns' ? PATHS.bog.away : null;
+    if (away && this.walker) {
+      this.walker.walkTo([...away]);
+      this.time.delayedCall(500, () => goTo(this, key, data));
+      return;
+    }
     goTo(this, key, data);
+  }
+
+  // --- on foot ---------------------------------------------------------------
+
+  update(_time: number, delta: number): void {
+    this.walker?.update(Math.min(delta, 50));
+  }
+
+  /**
+   * The player, in from wherever they came: up the field path, up the bog
+   * path, or standing in the yard at the start of the year.
+   */
+  private addWalker(cameFrom: string, seamless: boolean, evening: boolean): void {
+    if (!this.textures.exists(`walk-${state.get().gender}`)) return;
+    const g = state.get().gender;
+    const from = cameFrom === 'Jumis' ? PATHS.field : cameFrom === 'Velns' ? PATHS.bog : null;
+    if (!from || seamless) {
+      this.walker = new Walker(this, this.painting, g, START, { evening, facing: 'right' });
+      return;
+    }
+    const w = new Walker(this, this.painting, g, from.away[0], { evening });
+    this.walker = w;
+    const inside = clampToYard({ x: from.mouth.x + (from === PATHS.field ? 140 : -140), y: 618 });
+    w.walkTo([from.mouth, inside]);
+  }
+
+  /** The way to a hotspot, or null if it is dealt with from where you stand. */
+  private wayTo(id: string): { route: Pt[]; face?: 'left' | 'right' } | null {
+    if (!this.walker) return null;
+    const here = this.walker.at;
+    if (id === 'pathField' || id === 'pathBog') {
+      const mouth = id === 'pathField' ? PATHS.field.mouth : PATHS.bog.mouth;
+      if (Math.hypot(mouth.x - here.x, mouth.y - here.y) < 24) return null;
+      return { route: [...route(here, mouth), { ...mouth }] };
+    }
+    const a = APPROACH[id];
+    if (!a) return null;
+    if (Math.hypot(a.x - here.x, a.y - here.y) < 24) {
+      if (a.face) this.walker.faceTowards(a.face === 'left' ? here.x - 1 : here.x + 1);
+      return null;
+    }
+    return { route: route(here, a), face: a.face };
   }
 }
