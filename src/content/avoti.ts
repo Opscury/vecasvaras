@@ -136,6 +136,7 @@ const TIC = L('P. Šmits, «Latviešu tautas ticējumi», Nr. {}', 'P. Šmits, L
 const LPT = L('P. Šmits, «Latviešu pasakas un teikas», {}', 'P. Šmits, Latviešu pasakas un teikas, {}');
 const same = (s: string): Loc => L(s, s);
 const RIDDLE_URL = 'https://valoda.ailab.lv/folklora/pasakas/gr10/1001602.htm';
+const TEIKAS_URL = 'https://valoda.ailab.lv/folklora/pasakas/gr15/15H0514.htm';
 
 /** A belief's citation, as the book and the page both print it. */
 export function beliefCite(id: LoreId): Loc | null {
@@ -176,6 +177,19 @@ export function allEntries(): SourceEntry[] {
   const out: SourceEntry[] = [];
 
   out.push(dainaEntry('jumis', L('«Kur, Jumīti, tu gulēji…»', '“Where, little Jumis, did you sleep…”'), L('Lauka sākumā', 'Opening the field'), '12002'));
+  out.push({
+    key: 'karte:jumis',
+    kind: 'ticejums',
+    title: L('«Pirms ceļa»: Jumis', '“Before you go”: Jumis'),
+    where: L('Kartīte pirms lauka', 'The card before the field'),
+    status: 'attested',
+    cite: fillLoc(TIC, same('11991, 11992, 11998')),
+    url: beliefs.jumis.source,
+    note: L(
+      'Pārstāstīts, ne citēts: saliņa un mezgls (11992), divvārpa ir Jumis (11991), Jumis klētī (11998). «Labības svētība» ir spēles kopsavilkums.',
+      'Retold, not quoted: the patch and the knot (11992), the double ear is Jumis (11991), Jumis in the granary (11998). “The blessing of the grain” is the game’s summary.',
+    ),
+  });
   (['jumis', 'jumjaKersana', 'maize', 'pirmaisKumoss'] as LoreId[]).forEach((id) => out.push(beliefEntry(id)));
   out.push({
     key: 'ticejums:divvarpaPrecibas',
@@ -191,6 +205,22 @@ export function allEntries(): SourceEntry[] {
     ),
   });
   out.push(dainaEntry('velns', L('«Ēdat, govis, purva zāli…»', '“Eat, cows, the grass of the bog…”'), L('Purva sākumā', 'Opening the bog'), '24910'));
+  out.push({
+    key: 'karte:velns',
+    kind: 'teika',
+    title: L('«Pirms ceļa»: velns', '“Before you go”: the Devil'),
+    where: L('Kartīte pirms purva', 'The card before the bog'),
+    status: 'attested',
+    cite: L(
+      'P. Šmits, «Latviešu pasakas un teikas», X («Velna uzdotās mīklas»), XV («Kalni» 14); «Latviešu tautas ticējumi», Nr. 32406',
+      'P. Šmits, Latviešu pasakas un teikas, X («Velna uzdotās mīklas»), XV («Kalni» 14); Latviešu tautas ticējumi, no. 32406',
+    ),
+    url: TEIKAS_URL,
+    note: L(
+      'Pārstāstīts, ne citēts: velns uzdod mīklas un slēdz darījumus, ceļ tiltu vienā naktī līdz gaiļiem, gaiļa dziesma viņu padzen. «Purva viltnieks, nevis ļaunuma valdnieks» ir spēles kopsavilkums.',
+      'Retold, not quoted: the Devil asks riddles and strikes bargains, builds a bridge in one night until the cock crows, and cockcrow drives him off. “A trickster of the bog, not a lord of evil” is the game’s summary.',
+    ),
+  });
   out.push(beliefEntry('maldugunis'));
 
   out.push({

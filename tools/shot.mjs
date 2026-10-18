@@ -286,7 +286,11 @@ await page.evaluate(() => {
     /** Presses a text button by (part of) its label, in whichever language is up. */
     press: (k, ...labels) => {
       const s = g.scene.getScene(k);
-      const btn = s.children.list
+      // Into containers too: a Notice keeps its button inside one.
+      const all = [];
+      const walk = (list) => list.forEach((o) => (o.type === 'Container' ? walk(o.list) : all.push(o)));
+      walk(s.children.list);
+      const btn = all
         .filter((o) => o.type === 'Text' && labels.some((l) => o.text.includes(l)))
         .pop();
       if (!btn) throw new Error(`no button "${labels.join('" / "')}" in ${k}`);

@@ -1,0 +1,24 @@
+{
+ "vecasvaras.save.v3": {
+  "year": 1,
+  "jumis": "none",
+  "jumisPick": "none",
+  "sheaves": 0,
+  "fieldMask": "",
+  "velns": "none",
+  "velnsPick": "none",
+  "catLost": false,
+  "devilGone": false,
+  "crumb": false,
+  "heroChosen": true,
+  "introSeen": false,
+  "outroSeen": false,
+  "metElder": true,
+  "jumisPaid": false,
+  "velnsPaid": false,
+  "scene": "Village"
+ },
+ "vecasvaras.bag.v1": ["sickle", "bread"],
+ "vecasvaras.seen.v1": ["bagIntro", "daina:jumis", "daina:velns"],
+ "vecasvaras.lang": "lv"
+}

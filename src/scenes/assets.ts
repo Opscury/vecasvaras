@@ -54,6 +54,8 @@ export const ART_GROUPS: Record<ArtGroup, readonly Asset[]> = {
     ['portrait-ilze', 'portrait_ilze.webp'],
     ['kriss', 'kriss.webp'],
     ['portrait-kriss', 'portrait_kriss.webp'],
+    // The engraving on the «how it works» card before the opening.
+    ['primer-stone', 'primer_stone.png'],
   ],
   field: [
     ['bg-field', 'field.jpg'],

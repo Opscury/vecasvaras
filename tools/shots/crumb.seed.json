@@ -7,7 +7,7 @@
   "shown": { "jumis": "good", "jumisPick": "leave", "jumisPaid": true, "sheaves": 8, "velns": "none" }
  },
  "vecasvaras.bag.v1": ["sickle", "bread", "cat"],
- "vecasvaras.seen.v1": ["bagIntro", "daina:jumis"],
+ "vecasvaras.seen.v1": ["bagIntro", "daina:jumis", "being:jumis"],
  "vecasvaras.lore.v1": ["jumis", "maize"],
  "vecasvaras.lang": "lv"
 }

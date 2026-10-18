@@ -24,8 +24,8 @@
  ],
  "vecasvaras.seen.v1": [
   "bagIntro",
-  "daina:jumis",
-  "daina:velns"
+  "daina:jumis", "being:jumis",
+  "daina:velns", "being:velns"
  ],
  "vecasvaras.lang": "lv"
 }

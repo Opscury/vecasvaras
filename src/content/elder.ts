@@ -85,8 +85,8 @@ export const elder = {
     all: [
       L('«Tu paņēmi visu.» Viņa neko nepārmet. Tas ir sliktāk.', '“You took all of it.” She does not scold you. That is worse.'),
       L(
-        'Kūļu ir daudz, bet tie ir viegli. Kuļot no tiem birst vairāk pelavu nekā graudu.',
-        'There are plenty of sheaves, but they are light. Threshed, they give more chaff than grain.',
+        'Kūļu ir daudz, bet tie ir viegli. Rijā kuļot, no tiem birst vairāk pelavu nekā graudu.',
+        'There are plenty of sheaves, but they are light. Threshed in the barn, they give more chaff than grain.',
       ),
     ],
     // NEW
@@ -115,9 +115,10 @@ export const elder = {
 
   /** The second errand, given once the first has been brought home. */
   bog: [
+    // «Nelabais» — the old way of not saying «velns» out loud.
     L(
-      '«Un vēl vienam jāatstāj savs. Strauts aiznesa tiltu, un aiz purva sēž tas, kas to var uzcelt.»',
-      '“And there is one more to leave something to. The stream took the bridge, and the one who can build it sits out past the bog.”',
+      '«Strauts aiznesa tiltu. Aiz purva sēž tas, kas to var uzcelt — nelabais. Vārdā es viņu nesaukšu.»',
+      '“The stream took the bridge. Out past the bog sits the one who can build it — the Evil One. I will not say his name.”',
     ),
     // Used to add "And do not go alone" — which was the answer to the bog,
     // given before the question had been asked.

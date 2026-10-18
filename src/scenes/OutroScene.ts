@@ -17,6 +17,7 @@ import { ignoreKey, isAdvanceKey, markHandled } from '../ui/keys';
 import { fadeIn, goTo, isLeaving } from './transition';
 import { CHIMNEYS, SHEAF_SLOTS, addEvening, addSheaf, addUpgrades } from './villageArt';
 import { audio } from '../core/audio';
+import { stoneNote } from '../content/primer';
 import { makeBlob } from '../fx/textures';
 
 /**
@@ -125,12 +126,16 @@ export class OutroScene extends Phaser.Scene {
       return obj;
     };
 
-    const heading = add(width / 2, height * 0.12, () => tally.heading, { size: px(30), colour: Hex.parchmentDim });
+    const heading = add(width / 2, height * 0.1, () => tally.heading, { size: px(30), colour: Hex.parchmentDim });
+    // What this screen is. The family playtest asked: "what is this thing at
+    // the end?" — so it says so, under its own heading.
+    const what = add(width / 2, height * 0.1 + scaled(56), () => stoneNote, { size: px(20), colour: Hex.parchmentDim, italic: true });
 
     // The two marks, left and right. Whole or stopped short, warm or cold.
     const leftX = width * 0.34;
     const rightX = width * 0.66;
-    const markY = height * 0.3;
+    // Lower than it was, to make room for the line saying what the marks are.
+    const markY = height * 0.345;
 
     const mJ = new SignMark(this, { x: leftX, y: markY, size: 80, key: 'jumis', complete: jGood, depth: 720 });
     const mV = new SignMark(this, { x: rightX, y: markY, size: 80, key: 'crossing', complete: vGood, depth: 720 });
@@ -199,6 +204,7 @@ export class OutroScene extends Phaser.Scene {
     const fadeUp = (target: Phaser.GameObjects.GameObject, delay: number, duration = 700, onComplete?: () => void) =>
       this.tweens.add({ targets: target, alpha: 1, duration, delay, ease: 'Quad.easeOut', onComplete });
     fadeUp(heading, 300, 600);
+    fadeUp(what, 500, 600);
     this.time.delayedCall(700, () => {
       mJ.carve(this, () => {
         audio.play('tally');

@@ -123,3 +123,21 @@ put in the book — and nothing in the book claims them.
   about what it means, so it makes no claim to source.
 - **Ilze, Krišs, the dancing after Michaelmas** — the game's own story; listed
   as such.
+
+---
+
+## Cards (October 2026, after the family playtest)
+
+Players finished the demo without knowing who Jumis or the Devil were. Each
+encounter now opens with a «Pirms ceļa» card (`src/content/primer.ts`) that
+**retells** the records in plain words — it is the game talking, not a
+quotation, and it says so in «Avoti» (`karte:jumis`, `karte:velns`).
+
+| Card | Rests on | The game's own wording |
+|---|---|---|
+| Jumis | Šmits 11991 (double ear is Jumis), 11992 (uncut patch, ears tied in a knot), 11998 (kept in the granary); LD 28543 (he sleeps in the field) | «labības svētība» / “the blessing of the grain” |
+| Velns | LPT X «Velna uzdotās mīklas» (riddles, bargains), LPT XV «Kalni» 14 (bridge in one night before cockcrow), Šmits 32406 (cockcrow drives him off) | «purva viltnieks, nevis ļaunuma valdnieks» / “a trickster of the bog” |
+
+After each encounter the matching **ticējums** is shown in full on a card
+(quoted from `ticejumi.ts`, unchanged): Jumis or Jumis klētī after the field,
+Gailis or Velna tilts after the bog.

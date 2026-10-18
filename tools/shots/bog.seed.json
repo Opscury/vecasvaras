@@ -6,6 +6,6 @@
   "scene": "Village"
  },
  "vecasvaras.bag.v1": ["sickle", "bread"],
- "vecasvaras.seen.v1": ["bagIntro", "daina:jumis"],
+ "vecasvaras.seen.v1": ["bagIntro", "daina:jumis", "being:jumis"],
  "vecasvaras.lang": "lv"
 }

@@ -210,6 +210,9 @@ class GameState {
     // The bag explains itself again. The verses stay skippable: they are the
     // game's content, not its instructions, and a second year should be quicker.
     once.forget('bagIntro');
+    // So do the cards before each encounter: who Jumis is, who the Devil is.
+    once.forget('being:jumis');
+    once.forget('being:velns');
     // And the new bridge is struck onto the map again when it is built.
     once.forget('map:bridge');
     this.listeners.forEach((fn) => fn());

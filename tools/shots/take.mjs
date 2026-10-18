@@ -24,6 +24,9 @@ export default [
     j.gestureFrom = null;
     j.commitGesture(-4, -140);
   },
+  // The ear asks before it is pulled (family playtest, Oct 2026).
+  { wait: 300 },
+  () => __h.pick('Jumis', 0),
   { wait: 1500 },
   () => __h.type('Jumis'),
   { shot: 'pulled' },

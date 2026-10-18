@@ -20,6 +20,7 @@ import { Chrome } from '../ui/Chrome';
 import { Holdings } from '../ui/Holdings';
 import { DainaCard } from '../ui/DainaCard';
 import { Reckoning } from '../ui/Reckoning';
+import { showBeing, showBelief } from '../ui/Primer';
 import { Atmosphere } from '../fx/Atmosphere';
 import { Bag } from '../ui/Bag';
 import { bag } from '../core/inventory';
@@ -323,7 +324,7 @@ export class VelnsScene extends Phaser.Scene {
     };
 
     DainaCard.open(this, 'velns', () => {
-      this.narration.say(velns.arrive, () => this.beginWade());
+      showBeing(this, 'velns', () => this.narration.say(velns.arrive, () => this.beginWade()));
     });
   }
 
@@ -991,7 +992,9 @@ export class VelnsScene extends Phaser.Scene {
         gain,
         missed: this.missedLine(misses),
         cost: good && pick === 'cat' ? reckoning.velns.catCost : null,
-        onDone: () => goTo(this, 'Village'),
+        // The bog's belief, as a card: the cock if it crowed, the one-night
+        // bridge otherwise.
+        onDone: () => showBelief(this, lore.has('gailis') ? 'gailis' : 'velnaTilts', () => goTo(this, 'Village')),
       });
     };
     const finish = () => (respect ? this.leaveHat(reckon) : reckon());

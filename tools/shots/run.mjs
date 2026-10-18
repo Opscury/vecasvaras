@@ -75,6 +75,8 @@ export default [
     j.gestureFrom = null;
     j.commitGesture(10, 160);
   },
+  { wait: 300 },
+  () => __h.pick('Jumis', 0),
   { wait: 1500 },
   () => __h.log('field lines', __h.drain('Jumis')),
   { wait: 5200 },

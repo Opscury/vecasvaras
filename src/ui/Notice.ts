@@ -26,7 +26,17 @@ export class Notice {
 
   constructor(
     scene: Phaser.Scene,
-    opts: { title: Loc; body: Loc; ok: Loc; icon?: string; onClose?: () => void },
+    opts: {
+      title: Loc;
+      body: Loc;
+      ok: Loc;
+      icon?: string;
+      /** A small capitalised label above the title: «Pirms ceļa», «Ticējums». */
+      kicker?: Loc;
+      /** A small italic line under the body — a citation. */
+      note?: Loc;
+      onClose?: () => void;
+    },
   ) {
     const { width, height } = Layout;
     const cardW = Math.min(width - scaled(160), scaled(1020));
@@ -42,7 +52,9 @@ export class Notice {
     veil.fillStyle(Palette.ink, 0.72).fillRect(0, 0, width, height);
 
     const plate = scene.add.graphics();
-    const parts: Phaser.GameObjects.GameObject[] = [veil, hit, plate];
+    // The card itself, apart from the veil: a long card is scaled down to fit
+    // the screen, and the veil must still cover all of it.
+    const parts: Phaser.GameObjects.GameObject[] = [plate];
 
     // The thing being explained, drawn beside its own explanation.
     const hasIcon = !!opts.icon && scene.textures.exists(opts.icon);
@@ -80,12 +92,45 @@ export class Notice {
       .setOrigin(0.5, 0)
       .setInteractive({ useHandCursor: true });
 
+    const kickerText = opts.kicker
+      ? scene.add
+          .text(textX, 0, t(opts.kicker).toUpperCase(), {
+            fontFamily: Fonts.body,
+            fontSize: px(16),
+            color: Hex.rye,
+            align: 'center',
+          })
+          .setOrigin(0.5, 0)
+      : null;
+    kickerText?.setLetterSpacing?.(scaled(3));
+    const noteText = opts.note
+      ? scene.add
+          .text(textX, 0, t(opts.note), {
+            fontFamily: Fonts.body,
+            fontSize: px(18),
+            color: Hex.parchmentDim,
+            fontStyle: 'italic',
+            align: 'center',
+            wordWrap: { width: wrap },
+          })
+          .setOrigin(0.5, 0)
+          .setAlpha(0.8)
+      : null;
+
     // Measured, not guessed: the card is as tall as what is in it. A fixed
     // height leaves a two-line explanation floating in a half-empty box.
+    const gapKicker = scaled(10);
     const gapTitle = scaled(20);
+    const gapNote = scaled(18);
     const gapOk = scaled(34);
     const stackH =
-      this.titleText.height + gapTitle + this.bodyText.height + gapOk + this.okText.height;
+      (kickerText ? kickerText.height + gapKicker : 0) +
+      this.titleText.height +
+      gapTitle +
+      this.bodyText.height +
+      (noteText ? gapNote + noteText.height : 0) +
+      gapOk +
+      this.okText.height;
     const cardH = Math.max(stackH + padY * 2, scaled(260));
     const top = cy - cardH / 2;
 
@@ -95,25 +140,59 @@ export class Notice {
     plate.strokeRoundedRect(cx - cardW / 2, top, cardW, cardH, scaled(12));
 
     let y = top + (cardH - stackH) / 2;
+    if (kickerText) {
+      kickerText.setY(y);
+      y += kickerText.height + gapKicker;
+    }
     this.titleText.setY(y);
     y += this.titleText.height + gapTitle;
     this.bodyText.setY(y);
-    y += this.bodyText.height + gapOk;
+    y += this.bodyText.height;
+    if (noteText) {
+      y += gapNote;
+      noteText.setY(y);
+      y += noteText.height;
+    }
+    y += gapOk;
     this.okText.setY(y);
 
     if (hasIcon) {
-      const img = scene.add.image(cx - cardW / 2 + scaled(140), cy, opts.icon!);
-      img.setScale(Math.min(scaled(170), cardH - padY * 2) / Math.max(img.width, img.height));
+      // The book's engravings are dark ink with no paper of their own; on the
+      // dark card they need a disc of paper under them, or they vanish.
+      const ink = /^(codex|primer)-/.test(opts.icon!);
+      const ix = cx - cardW / 2 + scaled(ink ? 128 : 140);
+      const size = Math.min(scaled(ink ? 190 : 170), cardH - padY * 2);
+      if (ink) {
+        const paper = scene.add.graphics();
+        paper.fillStyle(Palette.parchment, 0.92).fillCircle(ix, cy, size * 0.56);
+        paper.lineStyle(2, Palette.rye, 0.6).strokeCircle(ix, cy, size * 0.56);
+        parts.push(paper);
+      }
+      const img = scene.add.image(ix, cy, opts.icon!);
+      img.setScale(size / Math.max(img.width, img.height));
       parts.push(img);
     }
 
     parts.push(this.titleText, this.bodyText, this.okText);
+    if (kickerText) parts.push(kickerText);
+    if (noteText) parts.push(noteText);
 
-    this.root = scene.add.container(0, 0, parts).setDepth(880).setAlpha(0);
+    const card = scene.add.container(0, 0, parts);
+    const fit = Math.min(1, (height - scaled(40)) / cardH);
+    if (fit < 1) card.setScale(fit).setPosition(cx * (1 - fit), cy * (1 - fit));
+
+    this.root = scene.add.container(0, 0, [veil, hit, card]).setDepth(880).setAlpha(0);
+    // A click already on its way — the one that walked the player into the
+    // field — must not dismiss a card before it can be read. The playtest
+    // cards are longer than the bag's, so they hold a moment longer.
+    let ready = false;
     scene.tweens.add({ targets: this.root, alpha: 1, duration: 320, ease: 'Quad.easeOut' });
+    scene.time.delayedCall(opts.note || opts.kicker ? 700 : 320, () => {
+      ready = true;
+    });
 
     const close = () => {
-      if (this.done) return;
+      if (this.done || !ready) return;
       this.done = true;
       scene.input.keyboard?.off('keydown', onKey);
       this.offLang();
@@ -154,6 +233,8 @@ export class Notice {
       this.titleText.setText(t(opts.title));
       this.bodyText.setText(t(opts.body));
       this.okText.setText(t(opts.ok));
+      if (kickerText && opts.kicker) kickerText.setText(t(opts.kicker).toUpperCase());
+      if (noteText && opts.note) noteText.setText(t(opts.note));
     });
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.offLang());
   }

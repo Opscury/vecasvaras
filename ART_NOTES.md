@@ -247,3 +247,11 @@ python3 tools/build_catsheet.py     # cat_walk_sheet.png from tools/src/catwalk.
 The other files here were one-off generations and have no build step. If `cat_walk.png`
 is ever recoloured, re-run the script — it colour-matches the sheet to that file, so the
 two cannot drift apart.
+
+## The «how it works» engraving (18 Oct 2026)
+
+`primer_stone.png`: the village stone with two rye sheaves and the cottages behind, for the
+card before the opening. Seedream 5.0 Lite, prompted the same way as the codex vignettes;
+master in `art-src/primer_stone_raw.jpg`. Converted to one ink colour (`#48301a`) with alpha
+from darkness and an oval feather by `tools/ink_vignette.ps1` (the Windows twin of the codex
+step), so it can sit on the paper disc the cards draw under ink art.

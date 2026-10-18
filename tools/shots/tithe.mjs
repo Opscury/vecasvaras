@@ -38,6 +38,8 @@ export default [
     j.gestureFrom = null;
     j.commitGesture(12, 130);
   },
+  { wait: 300 },
+  () => __h.pick('Jumis', 0),
   { wait: 1600 },
   () => __h.type('Jumis'),
   { shot: 'tied' },

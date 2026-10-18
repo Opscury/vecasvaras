@@ -12,6 +12,7 @@ import { SCENE_NEEDS } from './assets';
 import { StreamScene } from './StreamScene';
 import { CHIMNEYS } from './villageArt';
 import { audio } from '../core/audio';
+import { showHowTo } from '../ui/Primer';
 
 /** Opening narration over a slow push into the village. */
 export class IntroScene extends Phaser.Scene {
@@ -78,7 +79,9 @@ export class IntroScene extends Phaser.Scene {
       this.leave();
     });
 
-    this.narration.say(intro.lines, () => this.leave());
+    // What the game is, said plainly, before the mood. The family playtest:
+    // every player finished the demo, and none could say what it was about.
+    showHowTo(this, () => this.narration.say(intro.lines, () => this.leave()));
   }
 
   private leave(): void {

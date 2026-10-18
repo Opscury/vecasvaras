@@ -19,6 +19,8 @@ import { Chrome } from '../ui/Chrome';
 import { Holdings } from '../ui/Holdings';
 import { DainaCard } from '../ui/DainaCard';
 import { Reckoning } from '../ui/Reckoning';
+import { showBeing, showBelief } from '../ui/Primer';
+import { earConfirm } from '../content/primer';
 import { SheafTally } from '../ui/SheafTally';
 import { Atmosphere } from '../fx/Atmosphere';
 import { Bag } from '../ui/Bag';
@@ -325,7 +327,7 @@ export class JumisScene extends Phaser.Scene {
 
     this.swayStalk();
     DainaCard.open(this, 'jumis', () => {
-      this.narration.say(jumis.arrive, () => this.beginCut());
+      showBeing(this, 'jumis', () => this.narration.say(jumis.arrive, () => this.beginCut()));
     });
   }
 
@@ -864,11 +866,11 @@ export class JumisScene extends Phaser.Scene {
       return;
     }
     if (dy > 0 && dy >= Math.abs(dx) * 0.8) {
-      this.resolve('leave');
+      this.confirmEar('leave');
       return;
     }
     if (dy < 0 && -dy >= Math.abs(dx) * 0.8) {
-      this.resolve('take');
+      this.confirmEar('take');
       return;
     }
     // Across. Only the blade does that, and only on purpose.
@@ -882,6 +884,31 @@ export class JumisScene extends Phaser.Scene {
       return;
     }
     this.cutEar();
+  }
+
+  /**
+   * The drag is held where it ended — the ear bent down or half out of the
+   * ground — and the game asks, saying what each choice means.
+   *
+   * The family playtest: a drag settled the year's biggest choice in one
+   * flick, and one player did not realise he had chosen at all. Nothing else
+   * in the field is permanent; this is, so it is the one thing that asks.
+   */
+  private confirmEar(pick: 'leave' | 'take'): void {
+    this.cancelList();
+    this.prompt.hide(150);
+    audio.play('chime', { volume: 0.4 });
+    this.narration.ask(earConfirm[pick], [
+      { label: earConfirm.yes, onPick: () => this.resolve(pick) },
+      {
+        label: earConfirm.back,
+        onPick: () => {
+          this.narration.hide();
+          this.springBack();
+          this.prompt.show(jumis.gesturePrompt);
+        },
+      },
+    ]);
   }
 
   // --- the reckoning --------------------------------------------------------
@@ -974,7 +1001,9 @@ export class JumisScene extends Phaser.Scene {
           gain: r.gain,
           missed: 'missed' in r ? r.missed : null,
           cost: 'cost' in r ? r.cost : null,
-          onDone: () => goTo(this, 'Village'),
+          // The belief behind what was just done, read in full before going
+          // home — not only a toast that slides past mid-sentence.
+          onDone: () => showBelief(this, pick === 'take' ? 'jumjaKersana' : 'jumis', () => goTo(this, 'Village')),
         });
       });
     });
