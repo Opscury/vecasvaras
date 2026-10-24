@@ -35,6 +35,15 @@ export type JumisPick = 'leave' | 'take' | 'all' | 'spare';
 /** What kind of loaf a year gives. The bog argument depends on it. */
 export type Loaf = 'jumis' | 'good' | 'thin';
 
+/**
+ * Whether a year's loaf goes on the shelf golden or flat.
+ *
+ * The save keeps one of these per chapter — the year remembers every loaf you
+ * baked — so the rule lives here, where the scene that draws the shelf and the
+ * migration that back-fills an older save read the same one.
+ */
+export const loafGood = (loaf: Loaf): boolean => loaf !== 'thin';
+
 /** Left standing at or above this, the field has been given too much. */
 export const SPARE_AT = 1 / 3;
 /** "That will do" is offered once this much of the field is down. */

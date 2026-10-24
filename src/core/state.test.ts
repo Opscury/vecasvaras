@@ -61,7 +61,124 @@ describe('saves', () => {
     expect(s.sheaves).toBe(10);
     expect(s.jumisPaid).toBe(true);
     expect(storage.getItem('vecasvaras.save.v2')).toBeNull();
-    expect(storage.getItem('vecasvaras.save.v3')).not.toBeNull();
+    expect(storage.getItem('vecasvaras.save.v4')).not.toBeNull();
+  });
+
+  it('carries a v3 save forward with the chapter, the jug and the loaf read off it', async () => {
+    const { state, storage } = await boot({
+      'vecasvaras.save.v3': JSON.stringify({
+        gender: 'f',
+        name: 'Marta',
+        heroChosen: true,
+        jumis: 'good',
+        jumisPick: 'leave',
+        sheaves: 7,
+        jumisPaid: true,
+        velns: 'poor',
+        velnsPick: 'self',
+        metElder: true,
+        introSeen: true,
+        scene: 'Village',
+      }),
+    });
+    const s = state.get();
+    // The slice is chapter one, and it is not over until the outro says so.
+    expect(s.chapter).toBe(1);
+    expect(s.chapterDone).toEqual([]);
+    // Whatever he settled for, he went away owed a jug.
+    expect(s.jugOwed).toBe(true);
+    // Anna threshed the cart, so the loaf is on the shelf, and a tithed field bakes a good one.
+    expect(s.loaves).toEqual([{ chapter: 1, good: true }]);
+    // Nothing was ever typed into the name form's new field.
+    expect(s.nameV).toBe('');
+    // The run itself is untouched.
+    expect(s).toMatchObject({ gender: 'f', name: 'Marta', jumisPick: 'leave', sheaves: 7, velnsPick: 'self' });
+    expect(storage.getItem('vecasvaras.save.v3')).toBeNull();
+    expect(storage.getItem('vecasvaras.save.v4')).not.toBeNull();
+  });
+
+  it('owes no jug and bakes no loaf for a v3 save that got nowhere', async () => {
+    const { state } = await boot({
+      'vecasvaras.save.v3': JSON.stringify({ heroChosen: true, metElder: true, jumis: 'none', velns: 'none' }),
+    });
+    expect(state.get()).toMatchObject({ chapter: 1, jugOwed: false, loaves: [], chapterDone: [] });
+  });
+
+  it('marks a finished v3 run as a chapter played out', async () => {
+    const { state } = await boot({
+      'vecasvaras.save.v3': JSON.stringify({
+        jumis: 'poor',
+        jumisPick: 'all',
+        jumisPaid: true,
+        velns: 'poor',
+        velnsPaid: true,
+        outroSeen: true,
+      }),
+    });
+    expect(state.get().chapterDone).toEqual([1]);
+    // A stripped field bakes a flat loaf, and the shelf says so.
+    expect(state.get().loaves).toEqual([{ chapter: 1, good: false }]);
+  });
+
+  it('resumes a v4 run where the player left it', async () => {
+    const first = await boot({});
+    first.state.patch({ heroChosen: true, name: 'Oskars', metElder: true, jumisPaid: true, scene: 'Velns' });
+    first.state.recordLoaf(1, true);
+    const saved = first.storage.getItem('vecasvaras.save.v4')!;
+
+    const again = await boot({ 'vecasvaras.save.v4': saved });
+    expect(again.state.get()).toMatchObject({ scene: 'Velns', name: 'Oskars', jumisPaid: true });
+    expect(again.state.get().loaves).toEqual([{ chapter: 1, good: true }]);
+  });
+
+  it('keeps one loaf per chapter, however often a chapter is played', async () => {
+    const { state } = await boot({});
+    state.recordLoaf(1, false);
+    state.recordLoaf(1, true);
+    expect(state.get().loaves).toEqual([{ chapter: 1, good: true }]);
+    state.finishChapter(1);
+    state.finishChapter(1);
+    expect(state.get().chapterDone).toEqual([1]);
+  });
+
+  it('throws the shelf and the debt away with the rest of the run', async () => {
+    const { state } = await boot({});
+    state.patch({ jugOwed: true, nameV: 'Oskar' });
+    state.recordLoaf(1, true);
+    state.finishChapter(1);
+    state.reset();
+    expect(state.get()).toMatchObject({ jugOwed: false, nameV: '', loaves: [], chapterDone: [], chapter: 1 });
+  });
+
+  it('reads a hand-edited shelf as the loaves it can make sense of', async () => {
+    const { state } = await boot({
+      'vecasvaras.save.v4': JSON.stringify({
+        chapter: 0,
+        chapterDone: [2, 'x', 1, 1],
+        loaves: [{ chapter: 2, good: true }, 'bread', { chapter: 1, good: 'yes' }, { chapter: 2, good: false }],
+      }),
+    });
+    const s = state.get();
+    // A chapter below the first is not a chapter.
+    expect(s.chapter).toBe(1);
+    expect(s.chapterDone).toEqual([1, 2]);
+    // Sorted, deduplicated, and anything but `true` is a flat loaf.
+    expect(s.loaves).toEqual([
+      { chapter: 1, good: false },
+      { chapter: 2, good: false },
+    ]);
+  });
+
+  it('calls the player by the form they corrected, when they corrected one', async () => {
+    const { state } = await boot({});
+    const { personalise } = await import('./i18n');
+    state.patch({ gender: 'm', name: 'Oskars', heroChosen: true });
+    expect(personalise('{nameV}')).toBe('Oskar');
+    state.set('nameV', 'Oskariņ');
+    expect(personalise('{nameV}')).toBe('Oskariņ');
+    // An override of nothing but spaces is no override.
+    state.set('nameV', '   ');
+    expect(personalise('{nameV}')).toBe('Oskar');
   });
 
   it('carries a v1 save forward, with Anna’s errands inferred', async () => {
@@ -77,7 +194,7 @@ describe('saves', () => {
 
   it('ignores values no scene knows how to draw', async () => {
     const { state } = await boot({
-      'vecasvaras.save.v3': JSON.stringify({ jumis: 'golden', jumisPick: 'eat', sheaves: -4, scene: 'Moon' }),
+      'vecasvaras.save.v4': JSON.stringify({ jumis: 'golden', jumisPick: 'eat', sheaves: -4, scene: 'Moon' }),
     });
     const s = state.get();
     expect(s.jumis).toBe('none');
@@ -88,7 +205,7 @@ describe('saves', () => {
 
   it('puts the loaf back for a player caught between Anna and the bog', async () => {
     const { bag } = await boot({
-      'vecasvaras.save.v3': JSON.stringify({ jumis: 'good', jumisPick: 'leave', jumisPaid: true, velns: 'none' }),
+      'vecasvaras.save.v4': JSON.stringify({ jumis: 'good', jumisPick: 'leave', jumisPaid: true, velns: 'none' }),
       'vecasvaras.bag.v1': JSON.stringify(['sickle']),
     });
     expect(bag.has('bread')).toBe(true);
@@ -99,9 +216,9 @@ describe('saves', () => {
     const first = await boot({});
     first.state.patch({ jumis: 'good', jumisPick: 'leave', sheaves: 8, jumisPaid: true });
     first.state.markShown(shown);
-    const saved = first.storage.getItem('vecasvaras.save.v3')!;
+    const saved = first.storage.getItem('vecasvaras.save.v4')!;
 
-    const again = await boot({ 'vecasvaras.save.v3': saved });
+    const again = await boot({ 'vecasvaras.save.v4': saved });
     expect(again.state.get().shown).toEqual(shown);
     again.state.reset();
     expect(again.state.get().shown).toBeNull();
@@ -109,7 +226,7 @@ describe('saves', () => {
 
   it('reads a garbled record of what was shown as nothing shown yet', async () => {
     const { state } = await boot({
-      'vecasvaras.save.v3': JSON.stringify({ jumis: 'good', shown: 'yes' }),
+      'vecasvaras.save.v4': JSON.stringify({ jumis: 'good', shown: 'yes' }),
     });
     expect(state.get().shown).toBeNull();
   });
@@ -172,7 +289,7 @@ describe('saves', () => {
     const { state } = await boot({});
     expect(state.get()).toMatchObject({ heroChosen: false, gender: 'm', name: '', bond: 0, talks: [] });
     state.patch({ gender: 'f', name: 'Līze', heroChosen: true });
-    const again = await boot({ 'vecasvaras.save.v3': localStorage.getItem('vecasvaras.save.v3')! });
+    const again = await boot({ 'vecasvaras.save.v4': localStorage.getItem('vecasvaras.save.v4')! });
     expect(again.state.get()).toMatchObject({ gender: 'f', name: 'Līze', heroChosen: true });
   });
 
@@ -184,7 +301,7 @@ describe('saves', () => {
   });
 
   it('keeps the bond inside its five knots, whatever a save says', async () => {
-    const { state } = await boot({ 'vecasvaras.save.v3': JSON.stringify({ bond: 99, talks: ['meet', 3] }) });
+    const { state } = await boot({ 'vecasvaras.save.v4': JSON.stringify({ bond: 99, talks: ['meet', 3] }) });
     expect(state.get().bond).toBe(5);
     expect(state.get().talks).toEqual(['meet']);
   });

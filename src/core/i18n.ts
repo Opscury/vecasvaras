@@ -39,10 +39,16 @@ export const joinLoc = (...parts: Loc[]): Loc => ({
  * and the name as it is called out (Jānis → Jāni). English uses the same
  * marks where it needs them ("lad|girl"). The run state registers who the
  * player is through `setPersona`, so this module never imports it.
+ *
+ * `nameV` is the called form when the player has corrected it on the name
+ * form. The generator below covers the common endings, but Latvian names it
+ * has never heard of exist, and being called the wrong thing all year is
+ * worse than one more field to fill in.
  */
 export interface Persona {
   female: boolean;
   name: string;
+  nameV?: string;
 }
 let persona: () => Persona = () => ({ female: false, name: '' });
 export const setPersona = (fn: () => Persona): void => {
@@ -66,7 +72,7 @@ export function vocative(name: string): string {
 export function personalise(text: string, who: Persona = persona()): string {
   if (text.indexOf('{') < 0) return text;
   return text
-    .replace(/\{nameV\}/g, vocative(who.name))
+    .replace(/\{nameV\}/g, who.nameV?.trim() || vocative(who.name))
     .replace(/\{name\}/g, who.name.trim())
     .replace(/\{([^{}|]*)\|([^{}|]*)\}/g, (_, m: string, f: string) => (who.female ? f : m));
 }

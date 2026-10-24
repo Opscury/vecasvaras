@@ -14,7 +14,7 @@
 import { bag } from './inventory';
 import { lore } from './lore';
 import { once } from './once';
-import type { JumisPick, VelnsPick } from './rules';
+import { loafFrom, loafGood, type JumisPick, type VelnsPick } from './rules';
 import { setPersona } from './i18n';
 
 export type Outcome = 'none' | 'poor' | 'good';
@@ -27,11 +27,35 @@ export const BOND_MAX = 5;
 /** The places a run can be resumed into. */
 export type Place = 'Village' | 'Jumis' | 'Velns';
 
+/** The chapter the slice ships: the rye harvest, Apjumības. */
+export const CHAPTER_ONE = 1;
+
+/**
+ * One of the year's named loaves. The year remembers every loaf baked in it,
+ * so each chapter leaves one on the shelf — golden or flat.
+ */
+export interface Loaf {
+  chapter: number;
+  good: boolean;
+}
+
 export interface RunState {
+  /**
+   * Which chapter of the year the player is in. One for the whole of this
+   * slice; chapter two reads it to know what came before it.
+   */
+  chapter: number;
+  /** The chapters played to their end, so a later one can look back on them. */
+  chapterDone: number[];
   /** Chosen at the start of a run. Drives the Latvian grammar of "you". */
   gender: Gender;
   /** The player's name, as typed. Empty until chosen. */
   name: string;
+  /**
+   * The name as it is called out, when the player has corrected it. Empty
+   * means `vocative(name)` is good enough — which for most names it is.
+   */
+  nameV: string;
   /** Set once the player has picked who they are for this run. */
   heroChosen: boolean;
   /**
@@ -58,10 +82,21 @@ export interface RunState {
   velnsPick: 'none' | VelnsPick;
   /** The cat went with the Devil and will not be on its doorstep again. */
   catLost: boolean;
-  /** The Devil was argued off the bog for good. */
+  /**
+   * The Devil was argued off the bog — for this year. He said so himself:
+   * he is back at Miķeļi, and the jug is still owed. Kept under the old name
+   * because old saves have it.
+   */
   devilGone: boolean;
+  /**
+   * The jug of beer he named at Jāņi. Every way the bargain ends leaves him
+   * owed one, which is how he comes back in a later chapter to collect it.
+   */
+  jugOwed: boolean;
   /** The first crumb of the loaf was left at the stone. */
   crumb: boolean;
+  /** The year's loaves, one per chapter, in the order they were baked. */
+  loaves: Loaf[];
   /** Set when the player has seen the opening narration. */
   introSeen: boolean;
   /** Set when the closing narration has played. */
@@ -95,14 +130,18 @@ export interface RunState {
 /** The part of the run the village announces when it changes. */
 export type Shown = Pick<RunState, 'jumis' | 'jumisPick' | 'jumisPaid' | 'sheaves' | 'velns'>;
 
-const STORAGE_KEY = 'vecasvaras.save.v3';
+const STORAGE_KEY = 'vecasvaras.save.v4';
 /** Older saves, read once and carried forward. */
+const STORAGE_KEY_V3 = 'vecasvaras.save.v3';
 const STORAGE_KEY_V2 = 'vecasvaras.save.v2';
 const STORAGE_KEY_V1 = 'vecasvaras.save.v1';
 
 const blank = (): RunState => ({
+  chapter: CHAPTER_ONE,
+  chapterDone: [],
   gender: 'm',
   name: '',
+  nameV: '',
   heroChosen: false,
   bond: 0,
   talks: [],
@@ -114,7 +153,9 @@ const blank = (): RunState => ({
   velnsPick: 'none',
   catLost: false,
   devilGone: false,
+  jugOwed: false,
   crumb: false,
+  loaves: [],
   introSeen: false,
   outroSeen: false,
   scene: 'Village',
@@ -141,6 +182,27 @@ const asVelnsPick = (v: unknown): RunState['velnsPick'] =>
 const asCount = (v: unknown, fallback: number): number =>
   typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : fallback;
 
+const asChapters = (v: unknown): number[] =>
+  Array.isArray(v)
+    ? [...new Set(v.filter((x): x is number => typeof x === 'number' && Number.isInteger(x) && x > 0))].sort((a, b) => a - b)
+    : [];
+
+/**
+ * The loaves on the shelf. One per chapter, newest last, and never two for
+ * the same chapter — a replayed chapter overwrites its own loaf.
+ */
+const asLoaves = (v: unknown): Loaf[] => {
+  if (!Array.isArray(v)) return [];
+  const byChapter = new Map<number, Loaf>();
+  for (const x of v) {
+    if (!x || typeof x !== 'object') continue;
+    const o = x as Record<string, unknown>;
+    if (typeof o.chapter !== 'number' || !Number.isInteger(o.chapter) || o.chapter <= 0) continue;
+    byChapter.set(o.chapter, { chapter: o.chapter, good: o.good === true });
+  }
+  return [...byChapter.values()].sort((a, b) => a.chapter - b.chapter);
+};
+
 const asShown = (v: unknown): Shown | null => {
   if (!v || typeof v !== 'object') return null;
   const o = v as Record<string, unknown>;
@@ -165,7 +227,11 @@ class GameState {
   constructor() {
     this.load();
     this.repair();
-    setPersona(() => ({ female: this.data.gender === 'f', name: this.data.name || DEFAULT_NAME[this.data.gender] }));
+    setPersona(() => ({
+      female: this.data.gender === 'f',
+      name: this.data.name || DEFAULT_NAME[this.data.gender],
+      nameV: this.data.nameV,
+    }));
   }
 
   get(): Readonly<RunState> {
@@ -218,6 +284,23 @@ class GameState {
     this.listeners.forEach((fn) => fn());
   }
 
+  /**
+   * The loaf this chapter baked, put on the shelf. Replaying a chapter writes
+   * over its own loaf rather than adding a second one.
+   */
+  recordLoaf(chapter: number, good: boolean): void {
+    const loaves = this.data.loaves.filter((l) => l.chapter !== chapter);
+    loaves.push({ chapter, good });
+    loaves.sort((a, b) => a.chapter - b.chapter);
+    this.patch({ loaves });
+  }
+
+  /** The chapter is over and can be looked back on. */
+  finishChapter(chapter: number): void {
+    if (this.data.chapterDone.includes(chapter)) return;
+    this.patch({ chapterDone: [...this.data.chapterDone, chapter].sort((a, b) => a - b) });
+  }
+
   /** True once both encounters have been resolved, either way. */
   get bothResolved(): boolean {
     return this.data.jumis !== 'none' && this.data.velns !== 'none';
@@ -246,7 +329,7 @@ class GameState {
         this.data = this.read(JSON.parse(raw));
         return;
       }
-      if (this.migrate(STORAGE_KEY_V2) || this.migrate(STORAGE_KEY_V1)) return;
+      if (this.migrate(STORAGE_KEY_V3) || this.migrate(STORAGE_KEY_V2) || this.migrate(STORAGE_KEY_V1)) return;
     } catch {
       this.data = blank();
     }
@@ -264,8 +347,11 @@ class GameState {
     const jumis = asOutcome(o.jumis);
     const velns = asOutcome(o.velns);
     return {
+      chapter: Math.max(CHAPTER_ONE, asCount(o.chapter, CHAPTER_ONE)),
+      chapterDone: asChapters(o.chapterDone),
       gender: o.gender === 'f' ? 'f' : 'm',
       name: typeof o.name === 'string' ? o.name.slice(0, 24) : '',
+      nameV: typeof o.nameV === 'string' ? o.nameV.slice(0, 24) : '',
       // A run saved before anyone could choose has, by definition, begun.
       heroChosen: o.heroChosen === true || o.introSeen === true,
       bond: Math.min(BOND_MAX, asCount(o.bond, 0)),
@@ -278,7 +364,9 @@ class GameState {
       velnsPick: asVelnsPick(o.velnsPick),
       catLost: o.catLost === true,
       devilGone: o.devilGone === true,
+      jugOwed: o.jugOwed === true,
       crumb: o.crumb === true,
+      loaves: asLoaves(o.loaves),
       introSeen: o.introSeen === true,
       outroSeen: o.outroSeen === true,
       metElder: o.metElder === true,
@@ -294,6 +382,11 @@ class GameState {
    * good one was a tithe and a poor one was a cut ear; the cart is inferred to
    * match. A v1 save predates Anna, so everything she is supposed to have done
    * for that player has, by definition, already happened.
+   *
+   * Every save older than v4 predates the chapter — the jug the Devil now
+   * names, and the shelf of loaves — so both are read off what that run had
+   * already done. A player mid-run gets back exactly the year they left, with
+   * the debt they would have been told about if the line had existed yet.
    */
   private migrate(key: string): boolean {
     const raw = localStorage.getItem(key);
@@ -309,6 +402,13 @@ class GameState {
       d.jumisPaid = d.jumis !== 'none';
       d.velnsPaid = d.velns !== 'none';
     }
+    // However the bog went, he was owed his jug by the end of it.
+    if (d.velns !== 'none') d.jugOwed = true;
+    // The loaf was baked the moment Anna threshed the cart.
+    if (d.jumisPaid && !d.loaves.length) {
+      d.loaves = [{ chapter: CHAPTER_ONE, good: loafGood(loafFrom(d.jumisPick)) }];
+    }
+    if (d.outroSeen && !d.chapterDone.includes(CHAPTER_ONE)) d.chapterDone = [CHAPTER_ONE];
     this.data = d;
     this.save();
     try {
