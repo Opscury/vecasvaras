@@ -81,6 +81,8 @@ export class HeroPick {
           border: none; border-bottom: 1px dotted ${Hex.rye}; color: ${Hex.rye}; cursor: pointer; }
         .vv-hero .vrow { display: none; margin-bottom: 6px; }
         .vv-hero .vrow.on { display: block; }
+        /* The name row is a flex row, so its input grows; this one is not. */
+        .vv-hero .vrow input { width: 100%; box-sizing: border-box; }
         .vv-hero input { flex: 1; min-width: 0; font: inherit; font-size: clamp(17px, 3.2vh, 21px); padding: 10px 12px; color: ${Hex.parchment};
           background: rgba(0,0,0,0.35); border: 1px solid rgba(232,223,205,0.3); border-radius: 4px; }
         .vv-hero input:focus { outline: none; border-color: ${Hex.rye}; }

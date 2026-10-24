@@ -193,18 +193,31 @@ export class OutroScene extends Phaser.Scene {
     const { width, height } = Layout;
     const x = width * 0.5;
     const boardY = height * 0.56;
+    const half = scaled(190);
 
     const shelf = this.add.graphics().setDepth(610).setAlpha(0);
-    shelf.fillStyle(Palette.timber, 0.92).fillRect(x - scaled(160), boardY, scaled(320), scaled(14));
-    shelf.fillStyle(Palette.ink, 0.5).fillRect(x - scaled(160), boardY + scaled(14), scaled(320), scaled(10));
+    // A board with a front edge under it, rather than a rule across the frame.
+    shelf.fillStyle(Palette.timberLight, 0.6).fillRect(x - half, boardY, half * 2, scaled(8));
+    shelf.fillStyle(Palette.timber, 0.9).fillRect(x - half, boardY + scaled(8), half * 2, scaled(22));
+    shelf.fillStyle(Palette.ink, 0.6).fillRect(x - half, boardY + scaled(30), half * 2, scaled(12));
 
-    const loaf = this.add.image(x, boardY, good ? 'item-bread-good' : 'item-bread-poor').setDepth(611).setAlpha(0);
-    loaf.setScale(scaled(150) / loaf.width);
+    // The loaf stands ON the board: bottom origin, sunk far enough into it to
+    // swallow the transparent skirt the bag icons are drawn with, which left
+    // it hanging in the air above the plank.
+    const loaf = this.add
+      .image(x, boardY + scaled(26), good ? 'item-bread-good' : 'item-bread-poor')
+      .setOrigin(0.5, 1)
+      .setDepth(611)
+      .setAlpha(0);
+    loaf.setScale(scaled(170) / loaf.width);
     // A thin year's loaf sits lower and wider on the board; a good one stands.
     if (!good) loaf.setScale(loaf.scaleX * 1.12, loaf.scaleY * 0.72);
-    loaf.setY(boardY - loaf.displayHeight / 2 + scaled(4));
 
-    this.tweens.add({ targets: [shelf, loaf], alpha: 1, duration: 800, ease: 'Quad.easeOut' });
+    // What it casts on the board, so it is standing there and not pasted on.
+    const shade = this.add.graphics().setDepth(610).setAlpha(0);
+    shade.fillStyle(Palette.ink, 0.45).fillEllipse(x, boardY + scaled(4), loaf.displayWidth * 0.86, scaled(16));
+
+    this.tweens.add({ targets: [shelf, shade, loaf], alpha: 1, duration: 800, ease: 'Quad.easeOut' });
     audio.play('bag', { volume: 0.25 });
   }
 
