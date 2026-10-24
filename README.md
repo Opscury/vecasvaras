@@ -7,7 +7,8 @@ back — changes the place you came from.
 
 This repository is the **vertical slice**: one village hub and two complete
 encounters, roughly 5–10 minutes of play, in Latvian and English. Live at
-[vecasvaras.protu.lv](https://vecasvaras.protu.lv); `main` deploys to Netlify.
+[senciems.protu.lv](https://senciems.protu.lv) (the old address, vecasvaras.protu.lv,
+redirects there). Deploys go out through `server-setup/deploy-game.ps1`, not by pushing.
 
 ---
 

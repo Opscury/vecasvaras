@@ -394,7 +394,7 @@ export const AVOTI_TEXT = {
 
 /** Where the standalone page lives, relative to the game's own page. */
 export const AVOTI_PATH = './avoti/';
-export const AVOTI_URL_LABEL = 'vecasvaras.protu.lv/avoti';
+export const AVOTI_URL_LABEL = 'senciems.protu.lv/avoti';
 export const GARAMANTAS_URL = 'https://garamantas.lv/';
 /** Shown under «corrections» on the web page once set. Null hides the line. */
 export const CONTACT_EMAIL: string | null = null;
