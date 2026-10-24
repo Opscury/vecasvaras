@@ -15,7 +15,7 @@
 import { type Loc } from './i18n';
 import { bag } from './inventory';
 import { state } from './state';
-import { objectives } from '../content/elder';
+import { objectives, type Signpost } from '../content/elder';
 
 export type StepId =
   | 'meetElder'
@@ -37,9 +37,18 @@ export function currentStep(): StepId {
   return 'done';
 }
 
-/** The line for the corner of the screen. */
-export function objectiveFor(step: StepId): Loc {
+/**
+ * The line for the corner of the screen, and the reason under it. Indexed by
+ * the step, so a step added here without a signpost in `elder.ts` does not
+ * compile rather than showing an empty corner.
+ */
+export function signpostFor(step: StepId): Signpost {
   return objectives[step];
+}
+
+/** Just the line — what Anna says when she nudges a player who has stopped. */
+export function objectiveFor(step: StepId): Loc {
+  return objectives[step].line;
 }
 
 /** True while the field is the thing to be doing. */

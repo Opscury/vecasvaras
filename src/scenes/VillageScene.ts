@@ -4,7 +4,7 @@ import { type Loc } from '../core/i18n';
 import { arrival, items, jumis as jumisText, village } from '../content/script';
 import { elder } from '../content/elder';
 import { BOND_MAX, state, type Shown } from '../core/state';
-import { currentStep } from '../core/quest';
+import { currentStep, objectiveFor, type StepId } from '../core/quest';
 import { breadFrom, loafFrom } from '../core/rules';
 import { holdings, snapshot, type HoldingsSource } from '../core/holdings';
 import { lore } from '../core/lore';
@@ -27,6 +27,7 @@ import { audio } from '../core/audio';
 import { makeBlob } from '../fx/textures';
 import { Walker } from '../ui/Walker';
 import { PATHS, START, clampToYard, route, type Pt } from './villageGround';
+import { keysOf } from '../ui/keys';
 import { defineAnims } from './assets';
 import { beloved } from '../content/beloved';
 import { BondRibbon } from '../ui/BondRibbon';
@@ -59,6 +60,9 @@ const SHED = { x: 812, y: 912 };
 const CAT = { x: 1222, y: 522 };
 /** Drawn height of the sitting cat, in step with the cottages at that depth. */
 const CAT_H = 52;
+
+/** Half a minute of the player touching nothing, and Anna says the line again. */
+const NUDGE_MS = 30000;
 
 /** Annas māte, in the yard outside her own door. */
 const ELDER = { x: 706, y: 582, h: 104 };
@@ -119,6 +123,10 @@ export class VillageScene extends Phaser.Scene {
   /** Ilze's or Krišs's face, beside the panel while they are talking. */
   private belovedFace!: Portrait;
   private ribbon!: BondRibbon;
+  /** When the player last touched anything, for Anna's nudge. */
+  private lastTouch = 0;
+  /** The step she has already nudged about, so she says it once and stops. */
+  private nudged: StepId | null = null;
 
   constructor() {
     super('Village');
@@ -135,6 +143,7 @@ export class VillageScene extends Phaser.Scene {
     this.catSprite = null;
     this.catSpot = null;
     this.chimneys = [];
+    this.nudged = null;
     // Where the player is coming from decides where they walk in.
     const cameFrom = state.get().scene;
     state.set('scene', 'Village');
@@ -239,6 +248,17 @@ export class VillageScene extends Phaser.Scene {
     // Whatever changes while the player is here, changes in front of them.
     const offShown = state.onChange(() => this.rememberShown());
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, offShown);
+
+    // A player who has stopped gets the line said out loud, once.
+    this.lastTouch = this.time.now;
+    const touched = () => {
+      this.lastTouch = this.time.now;
+    };
+    this.input.on('pointerdown', touched);
+    this.input.on('pointermove', touched);
+    this.input.keyboard?.on('keydown', touched);
+    this.events.on(Phaser.Scenes.Events.UPDATE, this.nudge, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(Phaser.Scenes.Events.UPDATE, this.nudge, this));
 
     // Coming back from an encounter, the first thing said is what changed —
     // timed to land once the building has finished arriving.
@@ -756,6 +776,31 @@ export class VillageScene extends Phaser.Scene {
         });
       },
     });
+  }
+
+  /**
+   * Half a minute of nothing, and Anna says the line again herself.
+   *
+   * The corner has said what to do since the first playtest, and it is still
+   * easy to stop reading a corner. A face and a voice are not: she is the one
+   * who sent you, and being nagged by her is in character. Once per errand —
+   * she is bossy, not a klaxon — and never over a conversation, because
+   * `flash` would replace whatever that conversation was going to do next.
+   */
+  private nudge(): void {
+    if (this.time.now - this.lastTouch < NUDGE_MS) return;
+    const step = currentStep();
+    if (this.nudged === step) return;
+    // Reading a card or talking to someone is not standing still. The clock
+    // starts again from the end of it, so she never lands the moment it ends.
+    const keys = keysOf(this);
+    if (this.threshing || !this.narration.idle || keys.modal || keys.cards > 0) {
+      this.lastTouch = this.time.now;
+      return;
+    }
+    this.nudged = step;
+    this.faces('anna');
+    this.narration.flash(objectiveFor(step));
   }
 
   // --- Anna ------------------------------------------------------------------

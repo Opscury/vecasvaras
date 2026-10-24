@@ -27,7 +27,7 @@
  * fixed choice each. (English style guide, Production notes.)
  */
 
-import { L } from '../core/i18n';
+import { L, type Loc } from '../core/i18n';
 
 export const elder = {
   label: L('Annas māte', 'Mother Anna'),
@@ -185,16 +185,79 @@ export const elder = {
 
 /**
  * The one line that says what to do next, shown in the corner for the whole
- * game. Kept to a handful of words each: it is a signpost, not prose.
+ * game — and, under it when the player asks, why.
+ *
+ * The line is hers, not the game's: she is the one who sent you, so a
+ * signpost written as a menu item («Paņem sirpi no nojumes») was the one
+ * place in the village where somebody else was talking. A handful of words
+ * each, under eight; the sentence that explains itself is the `why`, which
+ * stays out of the corner until it is wanted.
  */
+export interface Signpost {
+  /** The signpost itself, in her words. */
+  line: Loc;
+  /** One sentence under it on a tap: why this, and why now. */
+  why: Loc;
+}
+
+const O = (line: Loc, why: Loc): Signpost => ({ line, why });
+
 export const objectives = {
-  meetElder: L('Parunā ar Annas māti', 'Speak to Mother Anna'),
-  takeSickle: L('Paņem sirpi no nojumes', 'Take the sickle from the lean-to'),
-  harvest: L('Nopļauj rudzu lauku', 'Cut the rye field'),
-  returnHarvest: L('Aizved vezumu pie Annas mātes', 'Take the cart to Old Anna'),
-  crossBog: L('Tiec pāri purvam', 'Get across the bog'),
-  returnBog: L('Atgriezies pie Annas mātes', 'Go back to Old Anna'),
-  done: L('Ej pie akmens ciema vidū', 'Go to the stone in the village'),
-  /** The word in front of whatever the line above says. */
+  meetElder: O(
+    L('Ej pie Annas mātes. Viņa gaida.', 'Go to Mother Anna. She is waiting.'),
+    L(
+      'Viņa pateiks, kas šodien darāms — un tad vēl daudz ko citu.',
+      'She will tell you what the day needs, and then a good deal more.',
+    ),
+  ),
+  takeSickle: O(
+    L('Sirpis zem nojumes. Kur tu to atstāji.', 'Sickle’s under the lean-to. Where you left it.'),
+    L(
+      'Rudzus ar rokām nerauj. Vectēva sirpis to zina.',
+      'Rye does not come up by hand. Your grandfather’s sickle knows that.',
+    ),
+  ),
+  harvest: O(
+    L('Nopļauj rudzus. Trešo dienu stāv gatavi.', 'Cut the rye. It has stood ready three days.'),
+    L(
+      'Un atstāj laukam savu daļu — tā, kā tev teica.',
+      'And leave the field its share, the way you were told.',
+    ),
+  ),
+  returnHarvest: O(
+    L('Vezumu pie Annas mātes. Viņa skaitīs.', 'The cart to Old Anna. She will count it.'),
+    L(
+      'Kūļi nav maize. Maize top viņas krāsnī, un to viņa iedos tev rokā.',
+      'Sheaves are not bread. Bread happens in her oven, and she hands it over herself.',
+    ),
+  ),
+  crossBog: O(
+    L('Pāri purvam. Un ne tukšām rokām.', 'Across the bog. And not empty-handed.'),
+    L(
+      'Strauts aiznesa tiltu. Uzcelt to var tikai tas, kas sēž aiz purva.',
+      'The stream took the bridge. The only one who can build it sits out past the bog.',
+    ),
+  ),
+  returnBog: O(
+    L('Atpakaļ pie Annas mātes. Pastāsti.', 'Back to Old Anna. Tell her.'),
+    L(
+      'Viņa tevi sūtīja, tāpēc viņa arī uzklausīs, kā gāja.',
+      'She sent you, so she is the one who hears how it went.',
+    ),
+  ),
+  done: O(
+    L('Akmens ciema vidū. Tas tevi gaida.', 'The stone in the village. It is waiting.'),
+    L(
+      'Akmens atceras, kā tu izturējies pret vecajām varām. Šovakar tas pateiks.',
+      'The stone remembers how you treated the old powers. Tonight it says so.',
+    ),
+  ),
+};
+
+/** The furniture around the line. */
+export const objectiveUi = {
+  /** The word in front of whatever the line says. */
   heading: L('Uzdevums', 'To do'),
+  /** Said under the line the first time, so the «why» is findable at all. */
+  tapForWhy: L('Pieskaries, lai uzzinātu, kāpēc', 'Touch to see why'),
 };
