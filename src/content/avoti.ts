@@ -335,8 +335,8 @@ export const AVOTI_TEXT = {
     'Everything the game offers as what the old people knew is quoted from recorded Latvian folklore. Here is every folk song, belief, legend and riddle you meet in the game, with its source and number — and also what the game has made up.',
   ),
   fiction: L(
-    'Ciems, Vecā Anna, akmens ciema vidū un spēles notikumi ir izdomāti. Folklora tajos ir īsta.',
-    'The village, Old Anna, the stone in the middle of the village and the events of the game are invented. The folklore in them is real.',
+    'Ciems, Annas māte, akmens ciema vidū un spēles notikumi ir izdomāti. Folklora tajos ir īsta.',
+    'The village, Mother Anna, the stone in the middle of the village and the events of the game are invented. The folklore in them is real.',
   ),
   works: L('Izmantotie darbi', 'Works drawn on'),
   entries: L('Spēlē sastopamā folklora', 'The folklore in the game'),

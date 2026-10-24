@@ -60,7 +60,7 @@ const CAT = { x: 1222, y: 522 };
 /** Drawn height of the sitting cat, in step with the cottages at that depth. */
 const CAT_H = 52;
 
-/** Vecā Anna, in the yard outside her own door. */
+/** Annas māte, in the yard outside her own door. */
 const ELDER = { x: 706, y: 582, h: 104 };
 
 /** Ilze or Krišs, by the woodpile at the Kalēji cottage, nearer the stream. */
@@ -305,7 +305,7 @@ export class VillageScene extends Phaser.Scene {
 
   // --- the painting --------------------------------------------------------------
 
-  /** Vecā Anna: the standing figure and everything she has to say. */
+  /** Annas māte: the standing figure and everything she has to say. */
   private addElder(): void {
     // A soft patch of shade where she meets the ground.
     const shade = this.add.graphics();

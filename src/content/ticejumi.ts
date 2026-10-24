@@ -77,7 +77,7 @@ export const beliefs: Record<LoreId, Belief> = {
       'Maizes kukuli nekad nedrīkst likt ar virsējo garozu uz leju, jo tad Dievs soda ar badu.',
       'A loaf must never be laid with its top crust down, for then God punishes with famine.',
     ),
-    hint: L('Pie Vecās Annas krāsns…', 'At Old Anna’s oven…'),
+    hint: L('Pie Annas mātes krāsns…', 'At Old Anna’s oven…'),
     source: SMITS + 'maize.htm',
     book: 'ticejumi',
     ref: '18623',

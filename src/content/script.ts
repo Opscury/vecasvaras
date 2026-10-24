@@ -72,8 +72,8 @@ export const settingsUi = {
   volume: L('Skaļums', 'Volume'),
   /** Shown in the chosen size and at the chosen speed, so the choice can be judged. */
   sample: L(
-    '«Rudzi laukā stāv nopļaujami, un ciemā nav neviena cita, kam rokas brīvas.»',
-    '“The rye is standing out there waiting to be cut, and there is nobody else with free hands to do it.”',
+    '«Rudzi stāv gatavi. Rudzi negaida. Es ietu pati, bet ceļi vairs neiet.»',
+    '“The rye is standing ready. Rye does not wait. I would go myself, but my knees have stopped going.”',
   ),
   sizeNote: L('Jaunais izmērs — no nākamās vietas, kur ieej.', 'The new size applies from the next place you go.'),
   close: L('Pieskaries ārpusē, lai aizvērtu', 'Touch outside to close'),
@@ -138,22 +138,28 @@ export const mapUi = {
 };
 
 /**
- * The opening. Three short lines: what is owed, who stopped leaving it, and
- * what that has cost. The rest is out in the field.
+ * The opening. Three short lines, and they are Annas māte's, shouted over the
+ * fence: the rye will not wait, her knees will not go, and the field gets its
+ * share because it always has.
+ *
+ * It used to be unattributed narration about what the old people knew and
+ * what your father stopped doing. Same share, but nobody was saying it — and
+ * the share is what the whole of the loaf logic rests on, so it is better off
+ * in the mouth of the woman who will be checking.
  */
 export const intro = {
   lines: [
     L(
-      'Vecie ļaudis zināja: laukam pienākas sava daļa, purvam — sava. To atstāj, pat ja neviens neliek.',
-      'The old people knew: the field is owed its share, and so is the bog. You leave it, even when nobody makes you.',
+      '«Nu beidzot!» Annas māte sauc pār sētu tādā balsī, it kā tu būtu kavējies trīs dienas. «Rudzi stāv gatavi. Rudzi negaida.»',
+      '“There you are!” Mother Anna shouts over the fence, in a voice that says you are three days late. “The rye is standing ready. Rye does not wait.”',
     ),
     L(
-      'Vectēvs atstāja. Tēvs — pusi no tā. Tu ne reizi neesi par to {domājis|domājusi}.',
-      'Your grandfather left it. Your father left half of it. You have never once thought about it.',
+      '«Es ietu pati, bet ceļi vairs neiet. Pār ceļiem es vairs neesmu saimniece.»',
+      '“I would go myself, but my knees have stopped going. I am not the boss of my knees any more.”',
     ),
     L(
-      'Šogad rudzi plāni, tilta nav, un ciems ir sācis uz tevi skatīties.',
-      'This year the rye is thin, the bridge is gone, and the village has begun to look at you.',
+      '«Un vēl viena lieta. Tavs vectēvs vienmēr atstāja laukam savu daļu. Tā arī tu darīsi. Es redzēšu.»',
+      '“And one more thing. Your grandfather always left the field its share. So will you. I will be watching.”',
     ),
   ],
 };
@@ -276,7 +282,7 @@ export const village = {
    * lives on these.
    */
   replies: {
-    sickleOnAnna: L('«Ar to uz mani nevicini, {puis|meit}.»', '“Do not wave that at me, {lad|girl}.”'),
+    sickleOnAnna: L('«Ar to uz mani nevicini, {puis|meit}.»', '“Do not wave that at me, {lad|lass}.”'),
     catOnAnna: L(
       'Anna pakasa kaķim aiz auss. «Tas nav mans. Tas ir neviena.»',
       'Anna scratches the cat behind the ear. “It is not mine. It is nobody’s.”',
@@ -747,27 +753,31 @@ export const velns = {
    * good — so he books the debt before he goes, in June, three festivals off.
    * The game's own; no record has him collecting beer (FOLKLORE.md, «Avoti»).
    * A line per ending of the bargain, picked by `jugLine` in `core/rules`.
+   *
+   * Only one of these is ever heard in a run, so each glosses Jāņi for an
+   * English player — once, in the sentence, not in brackets (English style
+   * guide: the Latvian name plus its equivalent once).
    */
   jug: {
     cat: L(
       'Jau sūnās, viņš pagriežas uz pusi atpakaļ. „Un vēl, cilvēciņ: krūzi alus Jāņos tu man paliec parādā. Tilts ir tilts, bet slāpes ir slāpes.“',
-      'Already in the moss, he turns half back. “And one more thing, little {man|woman}: you owe me a jug of beer at Jāņi. A bridge is a bridge, but thirst is thirst.”',
+      'Already in the moss, he turns half back. “And one more thing, little {man|woman}: at Jāņi, come midsummer, you owe me a jug of beer. A bridge is a bridge, but thirst is thirst.”',
     ),
     bread: L(
       'Viņš noslauka rokas pret svārkiem. „Par tiltu samaksāts. Bet krūzi alus Jāņos tu man paliec parādā — to maize nesedz.“',
-      'He wipes his hands on his coat. “The bridge is paid for. But you owe me a jug of beer at Jāņi — bread does not cover that.”',
+      'He wipes his hands on his coat. “The bridge is paid for. But at Jāņi, come midsummer, you owe me a jug of beer — bread does not cover that.”',
     ),
     jumis: L(
       'No sūnām, neatskatoties: „Līdz Jāņiem, {puis|meit}! Un krūzi alus tu man būsi parādā arī tad.“',
-      'From the moss, without looking back: “Till Jāņi, then! And you will owe me a jug of beer even then.”',
+      'From the moss, without looking back: “Till Jāņi, then — till midsummer! And you will owe me a jug of beer even then.”',
     ),
     self: L(
       'No purva vidus atskan: „Un krūzi alus Jāņos tu man joprojām paliec parādā! Par tādu tiltu — pusi krūzes.“',
-      'From out in the bog: “And you still owe me a jug of beer at Jāņi! For a bridge like that — half a jug.”',
+      'From out in the bog: “And at Jāņi, come midsummer, you still owe me a jug of beer! For a bridge like that — half a jug.”',
     ),
     dawn: L(
       'Tad, jau no sūnām: „Bet krūzi alus Jāņos tu man paliec parādā. Par gaidīšanu es rēķinu atsevišķi.“',
-      'Then, from the moss: “But you owe me a jug of beer at Jāņi. Waiting I charge for separately.”',
+      'Then, from the moss: “But at Jāņi, come midsummer, you owe me a jug of beer. Waiting I charge for separately.”',
     ),
   },
   /** NEW */

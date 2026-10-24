@@ -37,7 +37,7 @@ export const ART_GROUPS: Record<ArtGroup, readonly Asset[]> = {
     // picture three times.
     ['sheaf-a', 'sheaf_a.webp'],
     ['sheaf-b', 'sheaf_b.webp'],
-    // Vecā Anna, who stands in the hub and hands out the run's two errands.
+    // Annas māte, who stands in the hub and hands out the run's two errands.
     ['elder', 'elder.webp'],
     ['portrait-anna', 'portrait_anna.webp'],
     ['item-sickle', 'item_sickle.webp'],

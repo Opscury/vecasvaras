@@ -1,33 +1,50 @@
 /**
- * Vecā Anna — the woman who gives the village its errands.
+ * Annas māte — the old neighbour who gives the village its errands.
  *
  * She exists because the first playtester reached the village, was told once
  * in a line that vanished what she might do, and then had nothing to ask. A
  * hint that disappears is not a hint; a person standing by her door is one you
  * can go back to as many times as you like.
  *
- * She also holds the rewards. The field gives you a cart; Anna counts it and
+ * She also holds the rewards. The field gives you a cart; she counts it and
  * turns it into bread in front of you, which is how a share actually gets
  * settled: in front of somebody.
  *
  * She reminds you of errands, never of answers. She does not tell you what to
  * send over the bog first.
+ *
+ * WHO SHE IS, and it has to come through in every line: all opinions and bad
+ * knees. She bosses you into helping and starts teaching you the old ways
+ * whether you asked or not. Bossy, practical, funny — «shut the gate, the
+ * wind's not invited» — and never a calendar proverb.
+ *
+ * HER NAME is «Annas māte» in Latvian, in whatever case the sentence needs
+ * (ar Annas māti, pie Annas mātes). In English she is «Mother Anna» when she
+ * is first met and on her label, and «Old Anna» in later narration, once the
+ * player knows her. Never «Anna's mother», which is what a literal rendering
+ * gives and is a different woman. Her English is real, blunt English: not a
+ * translated grandmother. Her pet name for the player is lad or lass, one
+ * fixed choice each. (English style guide, Production notes.)
  */
 
 import { L } from '../core/i18n';
 
 export const elder = {
-  label: L('Vecā Anna', 'Old Anna'),
+  label: L('Annas māte', 'Mother Anna'),
 
-  /** First meeting: the errand that starts the game. */
+  /**
+   * First meeting. The intro already had her shouting over the fence about
+   * the rye, so she does not say it twice: by the time you are in her yard
+   * she has moved on to the gate, and to counting.
+   */
   greet: [
     L(
-      'Vecā Anna stāv pie durvīm, it kā būtu tevi gaidījusi visu rītu.',
-      'Old Anna is standing at her door, as though she had been waiting for you all morning.',
+      'Annas māte joprojām stāv pie durvīm. «Aizver vārtiņus. Vējš nav aicināts.»',
+      'Mother Anna is still standing at her door. “Shut the gate. The wind is not invited.”',
     ),
     L(
-      '«Rudzi laukā stāv nopļaujami, un ciemā nav neviena cita, kam rokas brīvas.»',
-      '“The rye is standing out there waiting to be cut, and there is nobody else in this village with free hands to do it.”',
+      '«Tātad. Lauks, sirpis, tu. Trīs lietas, un divas no tām jau ir savā vietā.»',
+      '“Right. The field, the sickle, you. Three things, and two of them are already where they should be.”',
     ),
   ],
   ask: L('«Aiziesi, {nameV}?»', '“Will you go, {name}?”'),
@@ -36,23 +53,23 @@ export const elder = {
     why: L('Kāpēc es?', 'Why me?'),
   },
   why: L(
-    '«Tāpēc, ka tavs vectēvs gāja. Un pirms viņa — viņa tēvs.»',
-    '“Because your grandfather went. And before him, his father.”',
+    '«Tāpēc, ka visi citi ciemā ir vai nu par vecu, vai par gudru. Tu esi tieši pa vidu.»',
+    '“Because everyone else in this village is either too old or too clever. You are exactly in between.”',
   ),
   accepted: L(
-    '«Sirpis karājas zem nojumes. Kur tu to atstāji.»',
-    '“The sickle is under the lean-to. Where you left it.”',
+    '«Sirpis karājas zem nojumes. Es to tur neliku.»',
+    '“The sickle is hanging under the lean-to. I did not put it there.”',
   ),
 
   /** The player heading out of the village before anyone has asked them to. */
   notAsked: L(
-    'Nav ko iet. Vispirms parunā ar Veco Annu.',
-    'There is no reason to go yet. Speak to Old Anna first.',
+    'Nav ko iet. Vispirms parunā ar Annas māti.',
+    'There is no reason to go yet. Speak to Mother Anna first.',
   ),
 
   /** Said when she is spoken to and there is nothing new to say. */
   remind: {
-    takeSickle: L('«Vispirms sirpi, {puis|meit}. Ar rokām nerauj.»', '“The sickle first. You do not pull it up by hand.”'),
+    takeSickle: L('«Vispirms sirpi, {puis|meit}. Ar rokām nerauj.»', '“The sickle first, {lad|lass}. You do not pull it up by hand.”'),
     harvest: L('«Lauks pats sevi nenopļaus.»', '“The field will not cut itself.”'),
     crossBog: L('«Pāreja pār purvu. Un neej tukšām rokām.»', '“The crossing over the bog. And do not go empty-handed.”'),
     done: L('«Tagad ej pie akmens. Tas atceras labāk par mani.»', '“Go to the stone now. It remembers better than I do.”'),
@@ -171,12 +188,12 @@ export const elder = {
  * game. Kept to a handful of words each: it is a signpost, not prose.
  */
 export const objectives = {
-  meetElder: L('Parunā ar Veco Annu', 'Speak to Old Anna'),
+  meetElder: L('Parunā ar Annas māti', 'Speak to Mother Anna'),
   takeSickle: L('Paņem sirpi no nojumes', 'Take the sickle from the lean-to'),
   harvest: L('Nopļauj rudzu lauku', 'Cut the rye field'),
-  returnHarvest: L('Aizved vezumu pie Vecās Annas', 'Take the cart to Old Anna'),
+  returnHarvest: L('Aizved vezumu pie Annas mātes', 'Take the cart to Old Anna'),
   crossBog: L('Tiec pāri purvam', 'Get across the bog'),
-  returnBog: L('Atgriezies pie Vecās Annas', 'Go back to Old Anna'),
+  returnBog: L('Atgriezies pie Annas mātes', 'Go back to Old Anna'),
   done: L('Ej pie akmens ciema vidū', 'Go to the stone in the village'),
   /** The word in front of whatever the line above says. */
   heading: L('Uzdevums', 'To do'),
