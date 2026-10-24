@@ -18,6 +18,16 @@ export const hero = {
   woman: L('Meita', 'A young woman'),
   name: L('Vārds', 'Name'),
   another: L('Cits vārds', 'Another name'),
+  /**
+   * The name as it will be called out, shown under the field so it can be
+   * seen before a whole year is spent being called the wrong thing. `{}` is
+   * the generated form, or whatever the player has corrected it to.
+   */
+  called: L('Annas māte tevi sauks: {}!', 'Mother Anna will call you: {}!'),
+  /** The small link that opens the correction. */
+  fix: L('labot', 'change'),
+  /** The label over the correction field. */
+  fixLabel: L('Kā tevi sauks', 'What she will call you'),
   begin: L('Sākt gadu', 'Begin the year'),
   /** Said under the field when it is left empty. */
   needName: L('Kā tevi sauc?', 'What are you called?'),

@@ -2,15 +2,23 @@ import { describe, expect, it } from 'vitest';
 import { personalise, vocative } from './i18n';
 
 describe('vocative', () => {
+  // The name form shows whatever this produces, with a link to correct it, so
+  // a wrong form is seen before a whole year is spent being called it. These
+  // are the ones checked by hand.
   it('calls out the common Latvian endings', () => {
     expect(vocative('Jānis')).toBe('Jāni');
     expect(vocative('Pēteris')).toBe('Pēteri');
     expect(vocative('Mārtiņš')).toBe('Mārtiņ');
     expect(vocative('Jēkabs')).toBe('Jēkab');
+    expect(vocative('Kristaps')).toBe('Kristap');
+    expect(vocative('Oskars')).toBe('Oskar');
     expect(vocative('Mikus')).toBe('Miku');
     expect(vocative('Grieta')).toBe('Grieta');
+    expect(vocative('Marta')).toBe('Marta');
+    expect(vocative('Ilze')).toBe('Ilze');
     expect(vocative('Līze')).toBe('Līze');
   });
+
   it('leaves a short or empty name alone', () => {
     expect(vocative('')).toBe('');
     expect(vocative('Ivs')).toBe('Ivs');

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { t } from '../core/i18n';
+import { t, vocative } from '../core/i18n';
 import { hero, pickName } from '../content/hero';
 import { state, type Gender } from '../core/state';
 import { Hex, Fonts } from '../core/theme';
@@ -13,11 +13,30 @@ import { audio } from '../core/audio';
  * typed, and a real text field is the only thing that brings up the phone's
  * own keyboard (with its Latvian letters) and lets a name be corrected the
  * way people expect.
+ *
+ * Under the field it says what Anna will call the player — Jānis is called
+ * «Jāni» — because Latvian calls people by a different form of their name
+ * and the game says it out loud all year. `vocative` covers the endings a
+ * parish register is full of, but not every name anyone will type, so the
+ * line has a link that opens it for correction and the corrected form is
+ * kept as `nameV`.
+ *
+ * Editing the NAME clears a correction: the called form was generated from
+ * a name that is no longer the one being used, and a stale one is worse than
+ * a generated one.
  */
+
+/** Anything put into the card is player-typed or content, so it is escaped. */
+const esc = (s: string): string => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+
 export class HeroPick {
   private root: HTMLDivElement;
   private gender: Gender;
   private input!: HTMLInputElement;
+  /** The correction field, which only matters once it has been opened. */
+  private vInput!: HTMLInputElement;
+  /** True once the player has opened the called form for correction. */
+  private fixing = false;
   private done = false;
 
   constructor(
@@ -38,7 +57,6 @@ export class HeroPick {
   }
 
   private html(name: string): string {
-    const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
     return `
       <style>
         .vv-hero { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -57,6 +75,12 @@ export class HeroPick {
         .vv-hero .who button[aria-pressed="true"] { color: ${Hex.ink}; background: ${Hex.rye}; border-color: ${Hex.rye}; }
         .vv-hero label { display: block; text-align: left; font-size: 14px; color: ${Hex.parchmentDim}; margin-bottom: 6px; letter-spacing: .06em; }
         .vv-hero .name { display: flex; gap: 8px; margin-bottom: 6px; }
+        .vv-hero .called { text-align: left; font-size: 14px; font-style: normal; color: ${Hex.parchmentDim}; margin: 0 0 6px; }
+        .vv-hero .called b { font-weight: normal; color: ${Hex.rye}; }
+        .vv-hero .called button { font: inherit; font-size: 14px; padding: 0; margin-left: 8px; background: none;
+          border: none; border-bottom: 1px dotted ${Hex.rye}; color: ${Hex.rye}; cursor: pointer; }
+        .vv-hero .vrow { display: none; margin-bottom: 6px; }
+        .vv-hero .vrow.on { display: block; }
         .vv-hero input { flex: 1; min-width: 0; font: inherit; font-size: clamp(17px, 3.2vh, 21px); padding: 10px 12px; color: ${Hex.parchment};
           background: rgba(0,0,0,0.35); border: 1px solid rgba(232,223,205,0.3); border-radius: 4px; }
         .vv-hero input:focus { outline: none; border-color: ${Hex.rye}; }
@@ -81,6 +105,11 @@ export class HeroPick {
           <input id="vv-name" name="name" type="text" maxlength="20" autocomplete="off" autocapitalize="words" spellcheck="false" value="${esc(name)}" />
           <button class="dice" type="button">${esc(t(hero.another))}</button>
         </div>
+        <p class="called" aria-live="polite"></p>
+        <div class="vrow">
+          <label for="vv-namev">${esc(t(hero.fixLabel))}</label>
+          <input id="vv-namev" name="namev" type="text" maxlength="20" autocomplete="off" autocapitalize="words" spellcheck="false" />
+        </div>
         <div class="warn" aria-live="polite"></div>
         <button class="go" type="submit">${esc(t(hero.begin))}</button>
       </form>`;
@@ -88,8 +117,38 @@ export class HeroPick {
 
   private wire(): void {
     const r = this.root;
-    this.input = r.querySelector('input')!;
+    this.input = r.querySelector<HTMLInputElement>('#vv-name')!;
     const warn = r.querySelector<HTMLDivElement>('.warn')!;
+    const called = r.querySelector<HTMLParagraphElement>('.called')!;
+    const vrow = r.querySelector<HTMLDivElement>('.vrow')!;
+    this.vInput = r.querySelector<HTMLInputElement>('#vv-namev')!;
+
+    // The called form, said back to the player: generated, or theirs.
+    const showCalled = () => {
+      const form = this.calledForm();
+      called.innerHTML = form
+        ? esc(t(hero.called)).replace('{}', `<b>${esc(form)}</b>`) +
+          (this.fixing ? '' : `<button class="editV" type="button">${esc(t(hero.fix))}</button>`)
+        : '';
+      called.querySelector('.editV')?.addEventListener('click', () => {
+        audio.play('click', { volume: 0.3 });
+        this.fixing = true;
+        vrow.classList.add('on');
+        this.vInput.value = this.calledForm();
+        showCalled();
+        this.vInput.focus();
+        this.vInput.select();
+      });
+    };
+
+    // A name typed or rolled again is a different name, so a correction made
+    // for the old one is dropped rather than quietly kept.
+    const nameChanged = () => {
+      this.fixing = false;
+      vrow.classList.remove('on');
+      this.vInput.value = '';
+      showCalled();
+    };
     r.querySelectorAll<HTMLButtonElement>('.who button').forEach((b) =>
       b.addEventListener('click', () => {
         const g = b.dataset.g as Gender;
@@ -103,6 +162,9 @@ export class HeroPick {
         if (fromDice) {
           this.input.value = pickName(g);
           this.input.dataset.dice = '1';
+          nameChanged();
+        } else {
+          showCalled();
         }
       }),
     );
@@ -110,12 +172,15 @@ export class HeroPick {
     this.input.addEventListener('input', () => {
       this.input.dataset.dice = '0';
       warn.textContent = '';
+      nameChanged();
     });
+    this.vInput.addEventListener('input', () => showCalled());
     r.querySelector('.dice')!.addEventListener('click', () => {
       audio.play('click', { volume: 0.3 });
       this.input.value = pickName(this.gender, this.input.value.trim());
       this.input.dataset.dice = '1';
       warn.textContent = '';
+      nameChanged();
     });
     r.querySelector('form')!.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -127,7 +192,11 @@ export class HeroPick {
         return;
       }
       const tidy = name.charAt(0).toLocaleUpperCase('lv') + name.slice(1);
-      state.patch({ gender: this.gender, name: tidy, heroChosen: true });
+      // A correction is only worth keeping while it says something the
+      // generator does not already say for this name.
+      const fixed = this.vInput.value.replace(/\s+/g, ' ').trim().slice(0, 20);
+      const nameV = this.fixing && fixed && fixed !== vocative(tidy) ? fixed : '';
+      state.patch({ gender: this.gender, name: tidy, nameV, heroChosen: true });
       audio.play('click', { volume: 0.5 });
       this.finish(this.onDone);
     });
@@ -138,6 +207,25 @@ export class HeroPick {
       if (e.key === 'Escape') this.finish(this.onCancel);
     });
     r.addEventListener('keyup', (e) => e.stopPropagation());
+
+    // A player who has already corrected the form and come back to this card
+    // gets their own correction back, not the generator's guess again.
+    const saved = state.get().nameV.trim();
+    if (saved) {
+      this.fixing = true;
+      this.vInput.value = saved;
+      vrow.classList.add('on');
+    }
+    showCalled();
+  }
+
+  /** What the game will shout at the player: their correction, or the generator's. */
+  private calledForm(): string {
+    if (this.fixing) {
+      const typed = this.vInput.value.trim();
+      if (typed) return typed;
+    }
+    return vocative(this.input.value.replace(/\s+/g, ' ').trim());
   }
 
   private finish(then: () => void): void {
