@@ -1,11 +1,11 @@
 import Phaser from 'phaser';
 import { beloved } from '../content/beloved';
 import { fillLoc, i18n, L, t, type Loc } from '../core/i18n';
-import { outro, tally, ui } from '../content/script';
-import { state } from '../core/state';
+import { feast, outro, tally, ui } from '../content/script';
+import { CHAPTER_ONE, state } from '../core/state';
 import { bag } from '../core/inventory';
 import { holdings, BREAD_CAP } from '../core/holdings';
-import { ending, shortfalls } from '../core/rules';
+import { ending, loafFrom, loafGood, shortfalls } from '../core/rules';
 import { Hex, Fonts, Layout, Palette, Timing, px, scaled } from '../core/theme';
 import { Narration } from '../ui/Narration';
 import { Chrome } from '../ui/Chrome';
@@ -21,14 +21,28 @@ import { stoneNote } from '../content/primer';
 import { makeBlob } from '../fx/textures';
 
 /**
- * The ending, in three movements:
+ * The ending, in four movements:
  *
- *   1. closing narration over the village as the player left it — at dusk,
+ *   1. APJUMĪBAS — the harvest-home feast, in Anna's house, on the evening
+ *      the last swath went down: the wreath, what is or is not hanging over
+ *      the table, who you end up sitting beside, and the year's first loaf
+ *      going onto the shelf. There is no painting of the inside of her house
+ *      and there will not be one before 18 Nov, so it plays over the dusk
+ *      village under a vignette and a pool of lamplight — close enough to a
+ *      doorway, and the words do the rest. The real painting is asked for in
+ *      ART_NOTES.md.
+ *   2. closing narration over the village as the player left it — at dusk,
  *      with as many lit windows as there is bread
- *   2. THE TALLY — both marks side by side, each whole or unfinished, a line
+ *   3. THE TALLY — both marks side by side, each whole or unfinished, a line
  *      for each share, the smaller facts under them, and the total said plainly
- *   3. the way on: another run, from the beginning
+ *   4. the way on: another run, from the beginning
+ *
+ * The chapter used to go from the cart straight to the verdict. The tally is
+ * a verdict and reads like one; the evening is what it is a verdict on.
  */
+
+/** How close you have to have come for them to sit down beside you. */
+const SEAT_BOND = 3;
 export class OutroScene extends Phaser.Scene {
   private narration!: Narration;
   /** The "start over" button is up and can be pressed. */
@@ -75,14 +89,123 @@ export class OutroScene extends Phaser.Scene {
       this.playAgain();
     });
 
-    // Who is standing at the stone with the player, if anyone.
-    const close = run.talks.includes('meet')
-      ? [run.bond >= 4 ? beloved.ending.close : run.bond >= 2 ? beloved.ending.warm : beloved.ending.cold]
-      : [];
-    this.narration.say([...outro[ending(run.jumis, run.velns)], ...close], () => {
-      this.narration.hide();
-      this.time.delayedCall(500, () => this.showTally());
+    this.feast(() => {
+      // Who is standing at the stone with the player, if anyone.
+      const close = run.talks.includes('meet')
+        ? [run.bond >= 4 ? beloved.ending.close : run.bond >= 2 ? beloved.ending.warm : beloved.ending.cold]
+        : [];
+      this.narration.say([...outro[ending(run.jumis, run.velns)], ...close], () => {
+        this.narration.hide();
+        this.time.delayedCall(500, () => this.showTally());
+      });
     });
+  }
+
+  /**
+   * The feast. The lines, then the loaf drawn onto its shelf while Anna's
+   * line about it is still up, then on to the closing narration.
+   *
+   * The loaf is written to the save here rather than read from it: this is
+   * the moment it is baked, and it is the chapter after this one that reads
+   * the shelf.
+   */
+  private feast(then: () => void): void {
+    const run = state.get();
+    const pick = run.jumisPick === 'none' ? (run.jumis === 'good' ? 'leave' : 'all') : run.jumisPick;
+    const good = loafGood(loafFrom(pick));
+    state.recordLoaf(CHAPTER_ONE, good);
+
+    const lamp = this.lampLight();
+
+    const overTable = pick === 'take' ? feast.jumis.take : pick === 'leave' ? feast.jumis.leave : feast.jumis.none;
+    // A seat beside them is only on offer to somebody who has met them.
+    const seat = run.talks.includes('meet') && run.bond >= SEAT_BOND ? feast.seat.close : feast.seat.anna;
+    const parting = run.talks.includes('invited') ? [feast.mikeli] : [];
+
+    this.narration.say([...feast.open, overTable, seat, feast.anna], () => {
+      this.shelveLoaf(good);
+      this.narration.say([good ? feast.loaf.good : feast.loaf.flat, ...parting], () => {
+        this.tweens.add({
+          targets: lamp,
+          alpha: 0,
+          duration: 900,
+          ease: 'Sine.easeInOut',
+          onComplete: () => lamp.destroy(),
+        });
+        then();
+      });
+    });
+  }
+
+  /**
+   * A doorway's worth of warmth over the dusk village: the frame darkened at
+   * the edges, and one pool of lamplight where the table would be. It is not
+   * the inside of a house and does not pretend to be — it is enough to say
+   * "evening, indoors, people" over a painting of the village at dusk, which
+   * is what the slice has to work with.
+   */
+  private lampLight(): Phaser.GameObjects.Container {
+    const { width, height } = Layout;
+    const root = this.add.container(0, 0).setDepth(600).setAlpha(0);
+
+    // Darkened at the edges, so the eye goes to the light and not the roofs.
+    const edges = this.add.graphics();
+    const steps = 26;
+    for (let i = 0; i < steps; i++) {
+      const t = i / steps;
+      const top = height * 0.3 * (1 - t) + 2;
+      const foot = height * 0.34 * (1 - t) + 2;
+      const side = width * 0.22 * (1 - t) + 2;
+      edges.fillStyle(Palette.ink, 0.055);
+      edges.fillRect(0, 0, width, top);
+      edges.fillRect(0, height - foot, width, foot);
+      edges.fillRect(0, 0, side, height);
+      edges.fillRect(width - side, 0, side, height);
+    }
+    root.add(edges);
+
+    // The lamp over the table, and a slow guttering in it.
+    const glow = this.add
+      .image(width * 0.5, height * 0.58, 'fx-blob')
+      .setTint(0xffc679)
+      .setBlendMode(Phaser.BlendModes.ADD);
+    glow.setScale((width * 0.62) / glow.width);
+    root.add(glow);
+    this.tweens.add({
+      targets: glow,
+      alpha: { from: 0.26, to: 0.38 },
+      duration: 4200,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    this.tweens.add({ targets: root, alpha: 1, duration: 1400, ease: 'Sine.easeOut' });
+    return root;
+  }
+
+  /**
+   * The year's first loaf, onto a shelf by the oven: tall and golden, or flat
+   * and heavy. The same two pictures the bag uses for it, so the loaf on the
+   * shelf is recognisably the one that was carried around all day.
+   */
+  private shelveLoaf(good: boolean): void {
+    const { width, height } = Layout;
+    const x = width * 0.5;
+    const boardY = height * 0.56;
+
+    const shelf = this.add.graphics().setDepth(610).setAlpha(0);
+    shelf.fillStyle(Palette.timber, 0.92).fillRect(x - scaled(160), boardY, scaled(320), scaled(14));
+    shelf.fillStyle(Palette.ink, 0.5).fillRect(x - scaled(160), boardY + scaled(14), scaled(320), scaled(10));
+
+    const loaf = this.add.image(x, boardY, good ? 'item-bread-good' : 'item-bread-poor').setDepth(611).setAlpha(0);
+    loaf.setScale(scaled(150) / loaf.width);
+    // A thin year's loaf sits lower and wider on the board; a good one stands.
+    if (!good) loaf.setScale(loaf.scaleX * 1.12, loaf.scaleY * 0.72);
+    loaf.setY(boardY - loaf.displayHeight / 2 + scaled(4));
+
+    this.tweens.add({ targets: [shelf, loaf], alpha: 1, duration: 800, ease: 'Quad.easeOut' });
+    audio.play('bag', { volume: 0.25 });
   }
 
   private playAgain(): void {
@@ -105,6 +228,8 @@ export class OutroScene extends Phaser.Scene {
     const perfect = short.length === 0;
 
     state.set('outroSeen', true);
+    // The chapter is over, and the next one can look back on it.
+    state.finishChapter(CHAPTER_ONE);
 
     const veil = this.add.rectangle(width / 2, height / 2, width, height, Palette.ink, 0).setDepth(700);
     this.tweens.add({ targets: veil, fillAlpha: 0.9, duration: 800, ease: 'Sine.easeOut' });

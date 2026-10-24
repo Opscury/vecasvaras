@@ -78,6 +78,34 @@ The card now shows the LD number under the verse.
 | Lights on the bog lead you astray | ✅ | Šmits 28643 |
 | The first bite of new bread at the stone | ✅ (reworked) | Šmits 19325, 19340 |
 
+## Apjumības — the feast at the end of chapter one (October 2026)
+
+The outro now plays a short harvest-home feast before the tally. The brief
+asked for the Jumis sheaf to go up over the table, and for that custom to be
+**checked against Šmits before being written as tradition**. It was checked,
+against the full Jumis section of «Latviešu tautas ticējumi»
+([jumis.htm](https://valoda.ailab.lv/folklora/ticejumi/jumis.htm), read 24 Oct
+2026, windows-1257).
+
+| What the feast says | Status | Source |
+|---|---|---|
+| A wreath of ears is woven from the last of the rye | ✅ | Šmits **11989**: «Pļāvējam bija jānovij vaiņagi no pļaujamās labības, Jumja ņemot.» |
+| …and goes to whoever the house belongs to | ✅ | Šmits **11990**: «Mājas saimniekam pasniedz vārpu vaiņagu un jostu.» In the game the house is Anna's, so she wears it. |
+| The last stalks stay standing in the field, decked | ✅ | Šmits **11990**: «Atstāj tīrumā pēdējos rudzu steibrus un appušķo to ar puķēm.» |
+| The Jumis ear is kept in the granary | ✅ | Šmits **11998** (already quoted, and already the granary sprite) |
+| **The double ear hung over the feast table** | ❌ **not found** — the game's own | Not in 11989–12035. The records keep it in the granary behind a beam (11998), wedge it into a crack in the wall (11997), or weave it into the wreath (11989, 11990). Listed in «Avoti» as `stasts:overTable`. |
+
+Both new records are in `sources.ts` verbatim, line-break hyphens joined.
+**11989** is kept whole for the sake of its last sentence.
+
+Also found and **deliberately not used**: Šmits **11995** is the fullest feast
+record there is — the host at the head of the table in a wreath of ears, the
+first drop and the first bites of meat and flatbread poured under the table
+for Jumis, «apēda, zināms, suņi». It is a record of **Miķeļa diena**, not of
+the end of the rye harvest, so it belongs to chapter two and is left for it.
+Using it here would be the same mistake as the mislabelled *Jumja ķeršana*
+further up this file.
+
 ## Open — needs a decision, because the fix changes the game
 
 1. **Taking Jumis home costs a loaf.** The game says Jumis carried home «will

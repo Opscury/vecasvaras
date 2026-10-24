@@ -204,6 +204,19 @@ export function allEntries(): SourceEntry[] {
       'Retold in conversation. The record: young people tried to find such grown-together ears, as a sign that the finder would soon marry.',
     ),
   });
+  out.push({
+    key: 'svetki:apjumibas',
+    kind: 'ticejums',
+    title: L('Apjumības: vārpu vaiņags', 'Apjumības: the wreath of ears'),
+    where: L('Svētkos pēc pļaujas', 'The feast after the harvest'),
+    status: 'attested',
+    cite: fillLoc(TIC, same('11989, 11990')),
+    url: beliefs.jumis.source,
+    note: L(
+      'Pārstāstīts, ne citēts: vaiņagu vij no pļaujamās labības, Jumi ņemot (11989), un to pasniedz tam, kam pieder nams (11990). Pēdējie stiebri paliek tīrumā un tiek appušķoti (11990). Spēlē vaiņagu nes Annas māte.',
+      'Retold, not quoted: the wreath is woven from the grain being reaped, as Jumis is taken (11989), and handed to whoever the house belongs to (11990). The last stalks are left standing in the field and decked with flowers (11990). In the game it is Mother Anna who wears the wreath.',
+    ),
+  });
   out.push(dainaEntry('velns', L('«Ēdat, govis, purva zāli…»', '“Eat, cows, the grass of the bog…”'), L('Purva sākumā', 'Opening the bog'), '24910'));
   out.push({
     key: 'karte:velns',
@@ -311,6 +324,19 @@ export function allEntries(): SourceEntry[] {
     cite: null,
     url: null,
     note: L('Strīds ar velnu par maizi un to, ka šī gada klaips viņu padzen, ir spēles stāsts.', 'The argument with the Devil about bread, and the loaf of this year’s rye that sends him off, are the game’s story.'),
+  });
+  out.push({
+    key: 'stasts:overTable',
+    kind: 'stasts',
+    title: L('Divvārpa pakārta virs galda', 'The double ear hung over the table'),
+    where: L('Apjumībās', 'At the harvest feast'),
+    status: 'own',
+    cite: null,
+    url: null,
+    note: L(
+      'Spēles izdomājums. Pierakstos Jumja vārpu glabā klētī aiz sijas (Šmits, Nr. 11998), iesprauž sienas spraugā (11997) vai ietin vaiņagā (11989, 11990); ka to pakārtu virs svētku galda, mēs neatradām. Pats vaiņags un appušķotie pēdējie stiebri ir no avota.',
+      'The game’s own. In the records the Jumis ear is kept in the granary behind a beam (Šmits, no. 11998), wedged into a crack in the wall (11997), or woven into the wreath (11989, 11990); hanging it over the feast table we could not find. The wreath itself, and the last stalks left decked with flowers, are from the record.',
+    ),
   });
   out.push({
     key: 'stasts:jug',

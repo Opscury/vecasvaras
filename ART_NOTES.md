@@ -255,3 +255,31 @@ card before the opening. Seedream 5.0 Lite, prompted the same way as the codex v
 master in `art-src/primer_stone_raw.jpg`. Converted to one ink colour (`#48301a`) with alpha
 from darkness and an oval feather by `tools/ink_vignette.ps1` (the Windows twin of the codex
 step), so it can sit on the paper disc the cards draw under ink art.
+
+## Still to paint: the Apjumības table (asked for 24 Oct 2026, for after 18 Nov)
+
+Chapter one now ends on a short harvest-home feast in Anna's house, before the
+tally at the stone: the wreath of ears on her head, the double ear over the
+table (or the empty beam where it is not), the player sitting beside Ilze or
+Krišs — or beside Anna, being talked at.
+
+**For 18 Nov it has no painting.** It plays over `village.jpg` at dusk with a
+vignette and one pool of lamplight drawn in `OutroScene.lampLight()` — the
+edges darkened, a warm `fx-blob` where the table would be. It reads as a
+doorway in the evening, which is as much as a village exterior can be made to
+say, and the words carry the rest.
+
+**What to commission from Anda.** One interior, the same hand and palette as
+`village.jpg`: a low room by splinter-light, a long table with people at it
+seen from the player's own end, the oven and its shelf on one side, and a beam
+over the table with room on it for one double ear. The ear itself, the loaf on
+the shelf and the faces should be paintable as separate pieces, the way the
+granary and the bridge are, so the scene can set them per run:
+
+- the ear over the beam — present only when the player carried Jumis home
+- the loaf on the shelf — two versions, tall and golden, flat and heavy
+  (`item-bread-good` / `item-bread-poor` are standing in for these now)
+- Ilze and Krišs at the near end of the table, as the courting ribbon allows
+
+Group `village` in `scenes/assets.ts` when it arrives; `SCENE_NEEDS.Outro`
+already waits for that group.

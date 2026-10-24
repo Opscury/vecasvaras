@@ -786,6 +786,82 @@ export const velns = {
   },
 };
 
+/**
+ * Apjumības — the harvest-home feast, the evening the last swath goes down.
+ *
+ * The chapter used to end on the tally, which is a verdict and reads like
+ * one. The year it judges had no evening in it: the harvest came home, Anna
+ * threshed it, and the next thing the player saw was a stone marking them.
+ * This is the evening between the two.
+ *
+ * FOLKLORE (FOLKLORE.md, «Avoti»). Retold from the records, not quoted:
+ *   the wreath   woven from the grain being reaped, and handed to whoever the
+ *                house belongs to — Šmits 11989, 11990
+ *   the field    the last stalks left standing and decked with flowers —
+ *                Šmits 11990
+ *   the granary  the Jumis ear kept there — Šmits 11998
+ * The double ear HUNG OVER THE TABLE is the game's own: it is not in any
+ * record we could find, and it is listed as the game's own in «Avoti».
+ */
+export const feast = {
+  open: [
+    L(
+      'Vakars. Annas mātes namā deg skals, un galds ir pievilkts pie sienas, lai visi tiktu klāt. Apjumības.',
+      'Evening. A splinter burns in Mother Anna’s house, and the table has been pushed against the wall so that everyone fits. Apjumības — the harvest-home feast.',
+    ),
+    L(
+      'No pēdējās rudzu saujas ir novīts vārpu vaiņags. Tas pienākas tai, kam pieder nams, un Annas māte to nes galvā kā kroni. Smieties neviens nedrīkst.',
+      'A wreath of ears has been woven from the last handful of rye. It goes to whoever the house belongs to, and Mother Anna wears it like a crown. Nobody is allowed to laugh.',
+    ),
+  ],
+  /** What is, or is not, over the table — by what was done in the field. */
+  jumis: {
+    take: L(
+      'Divvārpa ir atnesta no klēts un pakārta virs galda. Tā tur šūpojas visu vakaru, un ik pa laikam kāds paskatās augšup, vai tā vēl ir.',
+      'The double ear has been fetched in from the granary and hung over the table. It sways there all evening, and every so often somebody looks up to see whether it is still there.',
+    ),
+    leave: L(
+      'Divvārpa šovakar stāv laukā, sasieta mezglā un appušķota. Tā tur paliks pār ziemu un sargās nākamo gadu. Pie galda par to nerunā. Visi zina.',
+      'Tonight the double ear is standing out in the field, tied in its knot and decked with flowers. It will stay there over the winter and guard next year. Nobody at the table mentions it. Everybody knows.',
+    ),
+    none: L(
+      'Virs galda nekas nekarājas. Vaiņags ir, bet divvārpas nav ne klētī, ne mezglā laukā. Kāds to pamana un neko nesaka, un tas ir sliktāk.',
+      'Nothing hangs over the table. There is a wreath, but no double ear — not in the granary, and not tied in a knot in the field. Somebody notices, and says nothing, which is worse.',
+    ),
+  },
+  /** Who you end up sitting next to, by how close you came. */
+  seat: {
+    close: L(
+      '{Ilze|Krišs} apsēžas tev blakus galda galā, it kā tas būtu norunāts jau no rīta. Varbūt bija.',
+      '{Ilze|Krišs} sits down beside you at the head of the table, as though it had been settled that morning. Perhaps it had.',
+    ),
+    anna: L(
+      'Tu sēdi blakus Annas mātei, un viņa runā visu vakaru. Par ceļiem, par rudziem un par to, kā tas viss bija jādara.',
+      'You sit next to Mother Anna, and she talks all evening. About her knees, about the rye, and about how all of it should have been done.',
+    ),
+  },
+  /** The line the chapter is for, and the loaf that proves it. */
+  anna: L(
+    '«Katru maizi, ko šogad izcepsi, gads atcerēsies.»',
+    '“Every loaf you bake this year, the year remembers.”',
+  ),
+  loaf: {
+    good: L(
+      'Pirmais klaips nonāk uz plaukta pie krāsns — augsts un zeltains. Tam tur stāvēt līdz nākamajiem svētkiem.',
+      'The first loaf goes onto the shelf by the oven — tall and golden. There it stands until the next festival.',
+    ),
+    flat: L(
+      'Pirmais klaips nonāk uz plaukta pie krāsns — plakans un smags. Tam tur stāvēt līdz nākamajiem svētkiem.',
+      'The first loaf goes onto the shelf by the oven — flat and heavy. There it stands until the next festival.',
+    ),
+  },
+  /** Said at the door, and only to somebody who has been asked to the dancing. */
+  mikeli: L(
+    '«Miķeļi būs klāt, pirms paspēsi apskatīties,» Annas māte saka durvīs. «Nomazgā kaklu.»',
+    '“Miķeļi — Michaelmas — will be here before you know it,” Mother Anna says at the door. “Wash your neck.”',
+  ),
+};
+
 export const outro = {
   both: [
     L(
