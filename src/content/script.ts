@@ -5,22 +5,27 @@
  * or hand the Latvian to a proofreader, this is the only file that matters
  * (with `elder.ts` and `ticejumi.ts` beside it).
  *
- * THE RIDDLES are all traditional, and quoted (checked Sept 2026 — sources
- * in FOLKLORE.md and src/content/sources.ts, tested by lore.test.ts):
+ * THE RIDDLES are all traditional, and quoted (checked Sept 2026, the frost
+ * one Oct 2026 — sources in FOLKLORE.md and src/content/sources.ts, tested by
+ * lore.test.ts):
  *   velns.riddle          — the wind: I. Kalniņa, «Latviešu tautas mīklas –
  *                           lieliem un maziem» (Avots, 2015)
+ *   velns.riddleFrost     — the frost, which builds a bridge without hands or
+ *                           feet: «Latviešu bērnu folklora», no. 11
  *   velns.riddle2         — sweeter than honey: asked by the Devil himself in
  *                           Šmits, «Latviešu pasakas un teikas» X, «Velna
  *                           uzdotās mīklas» 2 (Valmiera district)
  *   velns.askBack.riddle  — the cock: «Latviešu bērnu folklora»
  * The earlier "faster than the wind — a thought" and "what sings, and the
  * night is over" were not traditional and are gone.
+ * `velns.opening` is the pool he draws his first riddle from, at the bottom
+ * of this file — add one there and the scene, «Avoti» and the test pick it up.
  *
  * Lines added in the September "fun pass" are marked NEW in a comment and have
  * not been through a proofreader yet.
  */
 
-import { L } from '../core/i18n';
+import { L, type Loc } from '../core/i18n';
 
 export const ui = {
   langSwitch: L('EN', 'LV'),
@@ -581,6 +586,21 @@ export const velns = {
     '„Vējš,“ viņš saka un saviebjas. „Vējš, protams. Tu esi {klausījies|klausījusies} vecos ļaudīs.“',
     '“The wind,” he says, and pulls a face. “The wind, of course. You have been listening to old people.”',
   ),
+  /** The frost riddle: the second one he can open with. */
+  riddleFrost: L('„Bez roku, bez kāju, tiltu taisa. Kas tas ir?“', '“Without hands, without feet, it builds a bridge. What is it?”'),
+  riddleFrostChoices: {
+    beaver: L('Bebrs.', 'A beaver.'),
+    spider: L('Zirneklis.', 'A spider.'),
+    frost: L('Sals.', 'The frost.'),
+  },
+  riddleFrostRight: L(
+    '„Sals,“ viņš nopūšas un paskatās uz savām rokām. „Sals to izdara vienā naktī un par velti. Es prasu dārgāk.“',
+    '“The frost,” he sighs, and looks at his own hands. “The frost does it in one night and for nothing. I charge more.”',
+  ),
+  riddleFrostWrong: L(
+    'Viņš smejas tā, ka no ciņa nokrīt sūnas. „Sals, {muļķi|muļķe}, sals! Tev ir kājas, bebram ir kājas, man arī. Labi, vēl vienu — man vienalga garlaicīgi.“',
+    'He laughs so hard the moss falls off the hummock. “The frost, fool, the frost! You have legs, a beaver has legs, so have I. All right, one more — I am bored anyway.”',
+  ),
   /** NEW — after a right answer, the player may give one back. */
   askBack: {
     lead: L('„Nu? Par tiltu?“', '“Well? The bridge?”'),
@@ -1000,6 +1020,62 @@ export const reckoning = {
     },
   },
 };
+
+/**
+ * The riddle he opens with: one of these, drawn when the night begins.
+ *
+ * He asks a riddle because that is what he does in the records, and a second
+ * year that asks the same question has nothing in it but the answer the
+ * player already wrote down. Both are quoted from riddle collections; the
+ * frost one is the better joke, because frost throws a bridge across water in
+ * one night for nothing, which is exactly his price list.
+ *
+ * One shape per riddle, so the scene does not need to know which it drew and
+ * nobody can add a third without its own right and wrong answers.
+ */
+export interface OpeningRiddle {
+  ask: Loc;
+  /** The three answers offered, in the order they are shown. */
+  choices: readonly [Loc, Loc, Loc];
+  /** Which of the three is the one the collection prints. */
+  right: 0 | 1 | 2;
+  /** What he says to it, right and wrong. A wrong answer goes on to `riddle2`. */
+  onRight: Loc;
+  onWrong: Loc;
+  /** Where it is from, for «Avoti». */
+  where: Loc;
+  cite: Loc;
+  url: string | null;
+}
+
+export const opening: readonly OpeningRiddle[] = [
+  {
+    ask: velns.riddle,
+    choices: [velns.riddleChoices.thief, velns.riddleChoices.wind, velns.riddleChoices.bear],
+    right: 1,
+    onRight: velns.riddleRight,
+    onWrong: velns.riddleWrong,
+    where: L('Velna pirmā mīkla', 'The Devil’s first riddle'),
+    cite: L(
+      'I. Kalniņa, «Latviešu tautas mīklas – lieliem un maziem» (2015). Atminējums: vējš.',
+      'I. Kalniņa, Latviešu tautas mīklas – lieliem un maziem (2015). Answer: the wind.',
+    ),
+    url: 'https://e-biblioteka.lv/latviesu-miklas-berniem/miklas-par-dabu/',
+  },
+  {
+    ask: velns.riddleFrost,
+    choices: [velns.riddleFrostChoices.beaver, velns.riddleFrostChoices.spider, velns.riddleFrostChoices.frost],
+    right: 2,
+    onRight: velns.riddleFrostRight,
+    onWrong: velns.riddleFrostWrong,
+    where: L('Velna pirmā mīkla', 'The Devil’s first riddle'),
+    cite: L(
+      '«Latviešu bērnu folklora», Nr. 11 (D. Kindzule, «Latviešu tautas mīklas», 2022). Atminējums: sals.',
+      '«Latviešu bērnu folklora», no. 11 (D. Kindzule, Latviešu tautas mīklas, 2022). Answer: the frost.',
+    ),
+    url: null,
+  },
+];
 
 /** The closing tally — the player's whole record, said plainly. */
 export const tally = {

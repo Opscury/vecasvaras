@@ -83,7 +83,7 @@ describe('the folklore gate', () => {
  */
 describe('the folklore is quoted, not imagined', async () => {
   const { TICEJUMI, TEIKAS, MIKLAS } = await import('../content/sources');
-  const { velns } = await import('../content/script');
+  const { velns, opening } = await import('../content/script');
 
   /** Spacing, dashes and quotation marks vary between print and screen. */
   const norm = (s: string) =>
@@ -129,12 +129,22 @@ describe('the folklore is quoted, not imagined', async () => {
     // line-initial capitals go; neither is part of the words.
     const flat = (t: string) => norm(t).replace(/,/g, '').toLowerCase();
     const quoted = (loc: { lv: string }) => flat(loc.lv.replace(/\s*Kas tas ir\?/, '')).replace(/^"|"$/g, '');
-    const books = flat([...MIKLAS.kalnina2015, ...MIKLAS.bernuFolklora, TEIKAS.devilsRiddles].join(' '));
-    expect(books).toContain(quoted(velns.riddle));
+    const printed = [...MIKLAS.kalnina2015, ...MIKLAS.bernuFolklora];
+    const books = flat([...printed, TEIKAS.devilsRiddles].join(' '));
     expect(books).toContain(quoted(velns.riddle2));
     expect(books).toContain(quoted(velns.askBack.riddle));
-    // And the answers the game accepts are the printed ones.
-    expect(MIKLAS.kalnina2015[0]).toContain(`(${velns.riddleChoices.wind.lv.replace('.', '').toLowerCase()})`);
+
+    // Every riddle in the opening pool, with its answer — found in the SAME
+    // printed riddle, so a right answer cannot be matched off a different one.
+    expect(opening.length).toBeGreaterThan(1);
+    for (const r of opening) {
+      const asked = quoted(r.ask);
+      const line = printed.find((p) => flat(p).includes(asked));
+      expect(line, asked).toBeDefined();
+      expect(flat(line!), asked).toContain(flat(r.choices[r.right].lv).replace('.', ''));
+    }
+
+    // And the answer he accepts to his own second riddle is the printed one.
     expect(TEIKAS.devilsRiddles).toContain(`"${velns.riddle2Choices.sleep.lv}"`);
   });
 });

@@ -65,6 +65,19 @@ The card now shows the LD number under the verse.
 | The Devil's first | «Bez rokām, bez kājām, bet durvis ver» — close, unsourced | «Bez kājām, bez rokām, bet durvis attaisa» — vējš. **Kalniņa 2015.** |
 | The Devil's second | «Kas ir ātrāks par vēju?» — «Doma»: the question is in LPT X, but **not that answer** | «Kas ir saldāks par medu?» — «Miegs». **LPT X, «Velna uzdotās mīklas» 2**, where the Devil himself asks it. |
 | The player's, asked back | «Kas dzied, un nakts ir galā?» — ❌ invented | «Vīrs niķu, niķiem, svārki stiķu, stiķiem, kaula deguns, gaļas bārda» — gailis. **Latviešu bērnu folklora.** He will not say the word: the cock is what drives him off (Šmits 32406). |
+| The Devil's first, second of two (Oct 2026) | — | «Bez roku, bez kāju, tiltu taisa» — sals. **«Latviešu bērnu folklora» no. 11**, as reprinted in Kindzule 2022 and already quoted verbatim in `sources.ts`. |
+
+His **first** riddle is now drawn from a pool of two (`velns.opening`), so a
+second year does not ask the question whose answer the player wrote down. The
+frost one earns its place twice over: it is the one riddle in the collections
+whose answer builds a bridge across water in a single night for nothing, which
+is the whole of his price list. Both are listed in «Avoti», and `lore.test.ts`
+now checks every riddle in the pool — question **and** accepted answer — against
+the same printed riddle, so adding a third without a source fails the build.
+
+Nothing was taken from garamantas.lv: it is still behind a bot check from this
+machine. The pool's second riddle was already in `sources.ts`, quoted and
+unused.
 
 ## Customs told in the story
 

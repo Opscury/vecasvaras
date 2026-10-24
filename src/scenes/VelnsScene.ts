@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { velns, reckoning, items } from '../content/script';
+import { velns, opening, reckoning, items, type OpeningRiddle } from '../content/script';
 import { state } from '../core/state';
 import {
   NIGHT,
@@ -169,6 +169,8 @@ export class VelnsScene extends Phaser.Scene {
   private narration!: Narration;
   private portrait!: Portrait;
   private riddleRight = false;
+  /** Which of the opening riddles he drew this time. */
+  private riddle!: OpeningRiddle;
   private quick = false;
   private bagUi!: Bag;
   private prompt!: Prompt;
@@ -213,6 +215,7 @@ export class VelnsScene extends Phaser.Scene {
 
     // Phaser reuses this instance on every visit, so every bog starts over.
     this.riddleRight = false;
+    this.riddle = Phaser.Utils.Array.GetRandom(opening as OpeningRiddle[]);
     this.quick = false;
     this.phase = 'arrive';
     this.listedBargain = false;
@@ -694,14 +697,20 @@ export class VelnsScene extends Phaser.Scene {
     this.narration.say(lines, () => this.askRiddle());
   }
 
-  /** What opens doors without hands? The bog answers first, for anyone looking. */
+  /**
+   * His opening riddle, drawn from the pool when the scene starts.
+   *
+   * The wind one is answered by the bog itself, for anyone looking; the frost
+   * one is answered by what he is standing in. Either way a wrong answer is
+   * not the end of it — he offers the second, harder one, because he is bored.
+   */
   private askRiddle(): void {
     this.gust();
-    this.narration.ask(velns.riddle, [
-      { label: velns.riddleChoices.thief, onPick: () => this.answerFirst(false) },
-      { label: velns.riddleChoices.wind, onPick: () => this.answerFirst(true) },
-      { label: velns.riddleChoices.bear, onPick: () => this.answerFirst(false) },
-    ]);
+    const r = this.riddle;
+    this.narration.ask(
+      r.ask,
+      r.choices.map((label, i) => ({ label, onPick: () => this.answerFirst(i === r.right) })),
+    );
   }
 
   /** A gust across the bog: mist racing, lights pushed, the reeds bending. */
@@ -730,7 +739,7 @@ export class VelnsScene extends Phaser.Scene {
   private answerFirst(correct: boolean): void {
     if (correct) {
       this.riddleRight = true;
-      this.narration.say([velns.riddleRight], () => {
+      this.narration.say([this.riddle.onRight], () => {
         this.narration.ask(velns.askBack.lead, [
           {
             label: velns.askBack.ask,
@@ -746,7 +755,7 @@ export class VelnsScene extends Phaser.Scene {
       return;
     }
     this.devilLaugh();
-    this.narration.say([velns.riddleWrong], () => {
+    this.narration.say([this.riddle.onWrong], () => {
       this.narration.ask(velns.riddle2, [
         { label: velns.riddle2Choices.beer, onPick: () => this.answerSecond(false) },
         { label: velns.riddle2Choices.berries, onPick: () => this.answerSecond(false) },

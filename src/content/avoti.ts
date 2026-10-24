@@ -20,7 +20,7 @@ import { type Loc, L, fillLoc } from '../core/i18n';
 import type { LoreId } from '../core/lore';
 import { beliefs } from './ticejumi';
 import { dainas } from './dainas';
-import { velns as velnsScript } from './script';
+import { opening, velns as velnsScript } from './script';
 
 export type SourceStatus = 'attested' | 'own';
 
@@ -236,15 +236,23 @@ export function allEntries(): SourceEntry[] {
   });
   out.push(beliefEntry('maldugunis'));
 
-  out.push({
-    key: 'mikla:wind',
-    kind: 'mikla',
-    title: velnsScript.riddle,
-    where: L('Velna pirmā mīkla', 'The Devil’s first riddle'),
-    status: 'attested',
-    cite: L('I. Kalniņa, «Latviešu tautas mīklas – lieliem un maziem» (2015). Atminējums: vējš.', 'I. Kalniņa, Latviešu tautas mīklas – lieliem un maziem (2015). Answer: the wind.'),
-    url: 'https://e-biblioteka.lv/latviesu-miklas-berniem/miklas-par-dabu/',
-  });
+  // Every riddle he can open with — one is drawn per run, so all of them are
+  // listed, and adding one to the pool lists it here without touching this.
+  opening.forEach((r, i) =>
+    out.push({
+      key: `mikla:opening${i}`,
+      kind: 'mikla',
+      title: r.ask,
+      where: r.where,
+      status: 'attested',
+      cite: r.cite,
+      url: r.url,
+      note:
+        opening.length > 1
+          ? L('Velns vienā spēlē uzdod vienu no šīm mīklām.', 'He asks one of these in any one run of the game.')
+          : undefined,
+    }),
+  );
   out.push({
     key: 'mikla:sweeterThanHoney',
     kind: 'mikla',
