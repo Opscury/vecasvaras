@@ -30,8 +30,8 @@ export const beloved = {
   look: B(
     'Ilze no Kalējiem nes no strauta ūdeni. Pilnu spaini, un ne lāsītes pāri malai.',
     'Krišs no Kalējiem skalda malku. Pagale pēc pagales, un ne reizi nekļūdās.',
-    'Ilze from the smithy farm is carrying water up from the stream. A full bucket, and not a drop over the rim.',
-    'Krišs from the smithy farm is splitting wood. Log after log, and not one miss.',
+    'Ilze from Kalēji, the smithy farm, is carrying water up from the stream. A full bucket, and not a drop over the rim.',
+    'Krišs from Kalēji, the smithy farm, is splitting wood. Log after log, and not one miss.',
   ),
 
   /** The first time. */
@@ -179,10 +179,10 @@ export const beloved = {
     plain: S('«Tu pārnāci.» Ar to pietiek.', '“You came home.” That is enough.'),
     /** Close enough to be asked. */
     invite: B(
-      '«Pēc Miķeļiem pie Kalējiem būs danči.» Ilze to saka, skatīdamās uz strautu, ne uz tevi. «Ja tu nāktu…»',
-      '«Pēc Miķeļiem pie Kalējiem būs danči.» Krišs to saka, skatīdamies uz strautu, ne uz tevi. «Ja tu nāktu…»',
-      '“After Michaelmas there will be dancing at the smithy farm.” Ilze says it looking at the stream, not at you. “If you came…”',
-      '“After Michaelmas there will be dancing at the smithy farm.” Krišs says it looking at the stream, not at you. “If you came…”',
+      '«Miķeļos pie Kalējiem būs danči.» Ilze to saka, skatīdamās uz strautu, ne uz tevi. «Ja tu nāktu…»',
+      '«Miķeļos pie Kalējiem būs danči.» Krišs to saka, skatīdamies uz strautu, ne uz tevi. «Ja tu nāktu…»',
+      '“On Miķeļi — Michaelmas — there’ll be dancing at Kalēji.” Ilze says it looking at the stream, not at you. “If you came…”',
+      '“On Miķeļi — Michaelmas — there’ll be dancing at Kalēji.” Krišs says it looking at the stream, not at you. “If you came…”',
     ),
     inviteChoices: {
       yes: S('Nākšu.', 'I will come.'),

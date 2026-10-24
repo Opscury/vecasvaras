@@ -168,7 +168,7 @@ export const elder = {
     ),
     dawn: L(
       '«Gaidīji līdz gaiļiem.» Viņa pašūpo galvu. «Ar velnu nevilcinās.»',
-      '“You waited for the cocks.” She shakes her head. “You do not dawdle with the Devil.”',
+      '“You waited for the cocks.” She shakes her head. “You do not dawdle with Velns.”',
     ),
     hat: L(
       'Viņa ierauga cepuri tavā kulē un ilgi klusē. «Tātad viņš tevi cienīja.» Viņa nopūšas. «Pakar to klētī. Lai redz.»',

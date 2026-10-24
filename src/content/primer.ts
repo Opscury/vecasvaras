@@ -16,6 +16,13 @@
  *
  * The «beings» cards SUMMARISE the records — they are the game talking, not
  * a quotation — and each cites what it summarises (FOLKLORE.md, «Cards»).
+ *
+ * They are also where an English player is told who these two are, so the
+ * English titles and opening sentences carry the glosses the style guide
+ * fixes: Jumis is the harvest spirit, Velns is the bog devil, more fool than
+ * fiend. Both names keep their diacritics, and after this card the English
+ * uses the name. The Latvian says the same thing in its own words rather
+ * than in a translation of these.
  */
 
 import { L } from '../core/i18n';
@@ -34,7 +41,7 @@ export const beings = {
   kicker: L('Pirms ceļa', 'Before you go'),
   ok: L('Iet', 'Go'),
   jumis: {
-    title: L('Jumis', 'Jumis'),
+    title: L('Jumis', 'Jumis, the harvest spirit'),
     body: L(
       'Latviešu ticējumos Jumis ir labības svētība — gars, kas dzīvo laukā. Divas vārpas uz viena stiebra arī sauca par Jumi.\n\nPļaujas beigās Jumim atstāja mazu nenopļautu saliņu un vārpas sasēja mezglā. Citi Jumja vārpu nesa mājās un glabāja klētī.\n\nTev būs jāizvēlas: atstāt viņu laukam vai ņemt līdzi.',
       'In Latvian folk belief Jumis is the blessing of the grain — a spirit that lives in the field. Two ears grown on one stalk were called Jumis too.\n\nAt the end of the harvest the reapers left him a small uncut patch and tied its ears in a knot. Others carried the Jumis ear home and kept it in the granary.\n\nYou will have to choose: leave him to the field, or take him home.',
@@ -45,10 +52,10 @@ export const beings = {
     ),
   },
   velns: {
-    title: L('Velns', 'Velns, the Devil'),
+    title: L('Velns', 'Velns, the bog devil'),
     body: L(
       'Latviešu teikās velns ir drīzāk purva viltnieks nekā ļaunuma valdnieks. Viņš mīl darījumus un mīklas — un viņu var pārspēt.\n\nTiltu viņš var uzcelt vienā naktī, bet tikai pirms gailis dzied. Gaiļa dziesma viņu padzen.\n\nNeej tukšām rokām. Ar to, kas tev kulē, var samaksāt — un ne tikai vienā veidā.',
-      'In Latvian legends the Devil is more a trickster of the bog than a lord of evil. He loves bargains and riddles — and he can be outwitted.\n\nHe can build a bridge in a single night, but only before the cock crows. The cock’s crow drives him off.\n\nDo not go empty-handed. What is in your bag can pay him — and there is more than one way to pay.',
+      'In the Latvian legends Velns is the bog devil — more fool than fiend. He loves bargains and riddles, and he can be outwitted.\n\nHe can build a bridge in a single night, but only before the cock crows. The cock’s crow drives him off.\n\nDo not go empty-handed. What is in your bag can pay him — and there is more than one way to pay.',
     ),
     note: L(
       'Pēc P. Šmita «Latviešu pasakām un teikām» X, XV un «Ticējumiem», Nr. 32406',

@@ -305,14 +305,14 @@ export function allEntries(): SourceEntry[] {
   out.push({
     key: 'stasts:courting',
     kind: 'stasts',
-    title: L('Ilze, Krišs un danči pēc Miķeļiem', 'Ilze, Krišs and the dancing after Michaelmas'),
+    title: L('Ilze, Krišs un danči Miķeļos', 'Ilze, Krišs and the dancing on Miķeļi'),
     where: L('Ciemā', 'The village'),
     status: 'own',
     cite: null,
     url: null,
     note: L(
-      'Spēles stāsts. Ilzes vainags apģērbā ir meitas galvas rota, bet par to spēle neko neapgalvo.',
-      'The game’s story. Ilze’s woven crown is a maiden’s headdress in her costume; the game makes no claim about it.',
+      'Spēles stāsts. Ilzes vainags apģērbā ir meitas galvas rota, bet par to spēle neko neapgalvo. Danči Miķeļos ir izdomāti; Miķeļi kā rudens svētki, protams, nav.',
+      'The game’s story. Ilze’s woven crown is a maiden’s headdress in her costume; the game makes no claim about it. The dancing on Miķeļi is invented; Miķeļi itself, as the autumn feast, of course is not.',
     ),
   });
   out.push({

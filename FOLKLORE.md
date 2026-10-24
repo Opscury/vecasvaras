@@ -171,7 +171,7 @@ quotation, and it says so in «Avoti» (`karte:jumis`, `karte:velns`).
 | Card | Rests on | The game's own wording |
 |---|---|---|
 | Jumis | Šmits 11991 (double ear is Jumis), 11992 (uncut patch, ears tied in a knot), 11998 (kept in the granary); LD 28543 (he sleeps in the field) | «labības svētība» / “the blessing of the grain” |
-| Velns | LPT X «Velna uzdotās mīklas» (riddles, bargains), LPT XV «Kalni» 14 (bridge in one night before cockcrow), Šmits 32406 (cockcrow drives him off) | «purva viltnieks, nevis ļaunuma valdnieks» / “a trickster of the bog” |
+| Velns | LPT X «Velna uzdotās mīklas» (riddles, bargains), LPT XV «Kalni» 14 (bridge in one night before cockcrow), Šmits 32406 (cockcrow drives him off) | «purva viltnieks, nevis ļaunuma valdnieks» / “the bog devil — more fool than fiend” (the English style guide's wording, not a translation of the Latvian) |
 
 After each encounter the matching **ticējums** is shown in full on a card
 (quoted from `ticejumi.ts`, unchanged): Jumis or Jumis klētī after the field,

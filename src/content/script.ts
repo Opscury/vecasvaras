@@ -855,10 +855,14 @@ export const feast = {
       'The first loaf goes onto the shelf by the oven — flat and heavy. There it stands until the next festival.',
     ),
   },
-  /** Said at the door, and only to somebody who has been asked to the dancing. */
+  /**
+   * Said at the door, and only to somebody who has been asked to the dancing
+   * — which is where Miķeļi was glossed for an English player, so here it is
+   * just the name.
+   */
   mikeli: L(
     '«Miķeļi būs klāt, pirms paspēsi apskatīties,» Annas māte saka durvīs. «Nomazgā kaklu.»',
-    '“Miķeļi — Michaelmas — will be here before you know it,” Mother Anna says at the door. “Wash your neck.”',
+    '“Miķeļi will be here before you know it,” Mother Anna says at the door. “Wash your neck.”',
   ),
 };
 
