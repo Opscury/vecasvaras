@@ -104,6 +104,13 @@ put in the book — and nothing in the book claims them.
   Jumis mark is the traditional Jumja zīme.
 - **The Devil's hat**, the bread argument, Anna, the village and its people:
   fiction.
+- **The jug of beer owed at Jāņi** (`velns.jug`, Nov 2026). He names it at
+  every ending of the bargain, and it is the game's own: the records have him
+  striking bargains and losing them, but no debt of beer, and no legend that
+  sends him back for payment at midsummer. Listed in «Avoti» as `stasts:jug`.
+  It exists so that nothing in chapter one can say he is gone for good — he is
+  a comic rogue who comes back every chapter, and a loaf with Jumis in it
+  chases him off **until Jāņi**, not for ever.
 
 ## Still to do by a human
 

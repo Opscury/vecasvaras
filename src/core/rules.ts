@@ -186,9 +186,30 @@ export function velnsOutcome(pick: VelnsPick, riddleRight: boolean, loaf: Loaf |
 /** The cat goes with him, whether or not the bridge came out whole. */
 export const catLost = (pick: VelnsPick): boolean => pick === 'cat';
 
-/** Against a loaf with Jumis in it he does not argue; he leaves the bog. */
+/**
+ * Against a loaf with Jumis in it he does not argue; he leaves the bog — for
+ * this year. Nothing in the game sends him away for good: he is a comic rogue
+ * who comes back every chapter, and he says so himself on the way out. The
+ * field name is the one old saves were written with.
+ */
 export const devilGone = (pick: VelnsPick, loaf: Loaf | 'none'): boolean =>
   pick === 'bread' && loaf === 'jumis';
+
+/**
+ * Which parting line names the debt.
+ *
+ * Every way the night can end, he leaves owed a jug of beer at Jāņi, and says
+ * so before he goes; that debt is what brings him back in a later chapter. A
+ * loaf with Jumis in it gets its own line, because it is the one night he
+ * does not win and he has to name it anyway.
+ *
+ * A line per pick, chosen here rather than in the scene, so an ending cannot
+ * be added that quietly forgets to collect.
+ */
+export type JugLine = VelnsPick | 'jumis';
+
+export const jugLine = (pick: VelnsPick, loaf: Loaf | 'none'): JugLine =>
+  pick === 'bread' && loaf === 'jumis' ? 'jumis' : pick;
 
 // --- the year ---------------------------------------------------------------
 

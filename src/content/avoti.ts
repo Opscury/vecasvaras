@@ -312,6 +312,19 @@ export function allEntries(): SourceEntry[] {
     url: null,
     note: L('Strīds ar velnu par maizi un to, ka šī gada klaips viņu padzen, ir spēles stāsts.', 'The argument with the Devil about bread, and the loaf of this year’s rye that sends him off, are the game’s story.'),
   });
+  out.push({
+    key: 'stasts:jug',
+    kind: 'stasts',
+    title: L('Velna parāds: krūze alus Jāņos', 'The Devil’s debt: a jug of beer at Jāņi'),
+    where: L('Purvā', 'The bog'),
+    status: 'own',
+    cite: null,
+    url: null,
+    note: L(
+      'Spēles stāsts. Pierakstos velns slēdz darījumus un tos zaudē, bet neviens no tiem nav alus parāds, un neviena mums zināma teika viņu nesūta pēc samaksas Jāņos. Spēlē tas ir veids, kā viltnieks atgriežas nākamajā nodaļā: padzīts viņš ir tikai līdz Jāņiem.',
+      'The game’s story. In the records the Devil strikes bargains and loses them, but none of them is a debt of beer, and no legend we know sends him back for payment at Jāņi. In the game it is how the trickster gets to return in a later chapter: he is only ever chased off until midsummer.',
+    ),
+  });
   return out;
 }
 

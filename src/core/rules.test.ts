@@ -7,6 +7,7 @@ import {
   catLost,
   devilGone,
   ending,
+  jugLine,
   judgeField,
   jumisOutcome,
   loafFrom,
@@ -16,8 +17,10 @@ import {
   velnsMisses,
   velnsOutcome,
   type JumisPick,
+  type Loaf,
   type VelnsPick,
 } from './rules';
+import { velns } from '../content/script';
 
 describe('the field', () => {
   it('counts both the tithe and carrying Jumis home as good', () => {
@@ -106,6 +109,22 @@ describe('the bog', () => {
   it('lets an unpaid bridge sink at dawn, and keeps everything in the bag', () => {
     expect(velnsOutcome('dawn', true, 'jumis')).toBe('poor');
     expect(catLost('dawn')).toBe(false);
+  });
+
+  it('leaves him owed a jug at Jāņi however the night ended', () => {
+    // There is no way to settle with him that does not end in a debt: every
+    // pick has a parting line, so no ending can forget to book one.
+    const picks: VelnsPick[] = ['cat', 'bread', 'self', 'dawn'];
+    const loaves: Array<Loaf | 'none'> = ['jumis', 'good', 'thin', 'none'];
+    for (const pick of picks) {
+      for (const loaf of loaves) {
+        expect(velns.jug[jugLine(pick, loaf)], `${pick} + ${loaf}`).toBeTruthy();
+      }
+    }
+    // The one night he loses gets its own line, and it is not the bread one.
+    expect(jugLine('bread', 'jumis')).toBe('jumis');
+    expect(jugLine('bread', 'good')).toBe('bread');
+    expect(jugLine('cat', 'jumis')).toBe('cat');
   });
 });
 

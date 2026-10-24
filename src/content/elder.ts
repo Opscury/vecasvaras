@@ -146,8 +146,8 @@ export const elder = {
       '“And the cat?” She looks at the empty doorstep and says nothing more.',
     ),
     devilGone: L(
-      '«Aizgāja? Pavisam?» Viņa iesmejas — pirmo reizi, cik tu atceries.',
-      '“Gone? For good?” She laughs — for the first time you can remember.',
+      '«Aizgāja?» Viņa iesmejas — pirmo reizi, cik tu atceries. «Līdz Jāņiem. Tādi atgriežas.»',
+      '“He went?” She laughs — for the first time you can remember. “Till Jāņi. That sort comes back.”',
     ),
     dawn: L(
       '«Gaidīji līdz gaiļiem.» Viņa pašūpo galvu. «Ar velnu nevilcinās.»',

@@ -161,8 +161,8 @@ export const beloved = {
       'Krišs is sitting on the chopping block, still warm from the day. When he sees you he gets up.',
     ),
     devilGone: S(
-      '«Saka, ka viņš aizgāja no purva pavisam. Tevis dēļ.» Acīs ir kas tāds, ko tu agrāk neesi redzējis.',
-      '“They say he has left the bog for good. Because of you.” There is something in those eyes you have not seen before.',
+      '«Saka, ka viņš aizgāja no purva. Līdz Jāņiem, bet aizgāja. Tevis dēļ.» Acīs ir kas tāds, ko tu agrāk neesi redzējis.',
+      '“They say he has gone off the bog. Till Jāņi, but gone. Because of you.” There is something in those eyes you have not seen before.',
     ),
     catLost: S(
       '«Kur kaķis?» Klusums. «Tu viņu atdevi.» Un tālāk saruna neiet tik viegli.',

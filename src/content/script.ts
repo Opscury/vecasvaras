@@ -257,8 +257,8 @@ export const village = {
     ),
     // NEW
     gone: L(
-      'Purva ceļš. Uz ciņa vairs neviens nesēž — ne šogad, ne citreiz.',
-      'The bog road. Nobody sits on the hummock any more — not this year, not ever.',
+      'Purva ceļš. Uz ciņa šogad vairs neviens nesēž. Šogad.',
+      'The bog road. Nobody is sitting on the hummock this year. This year.',
     ),
   },
   /** NEW — the cat's doorstep, once the cat is not on it. */
@@ -700,8 +700,8 @@ export const velns = {
         'He picks up the bread, sniffs it and sits back down. “There is Jumis in it,” he whispers.',
       ),
       L(
-        'Viņš paklanās maizei — ne tev — un aiziet purvā. Kaut kur iebrēcas gailis, par agru. Tilts stāv gatavs, un šoreiz viņš neatgriezīsies.',
-        'He bows to the bread — not to you — and walks off into the bog. Somewhere a cock crows, too early. The bridge stands finished, and this time he will not come back.',
+        'Viņš paklanās maizei — ne tev — un aiziet purvā. Kaut kur iebrēcas gailis, par agru. Tilts stāv gatavs, un uz ciņa šogad vairs neviens nesēdēs.',
+        'He bows to the bread — not to you — and walks off into the bog. Somewhere a cock crows, too early. The bridge stands finished, and nobody will sit on that hummock again this year.',
       ),
     ],
     breadPoor: [
@@ -740,6 +740,36 @@ export const velns = {
     L('Sūnas un ūdens. Tuvāk neej.', 'Moss and water. Do not go closer.'),
     L('Kaut kur kaut kas iešļakstās. Nekā nav redzams.', 'Something splashes somewhere. There is nothing to see.'),
   ],
+  /**
+   * The last thing he says, whatever the night came to: what is still owed.
+   *
+   * He is a comic rogue, not a lord of evil, and nothing sends him away for
+   * good — so he books the debt before he goes, in June, three festivals off.
+   * The game's own; no record has him collecting beer (FOLKLORE.md, «Avoti»).
+   * A line per ending of the bargain, picked by `jugLine` in `core/rules`.
+   */
+  jug: {
+    cat: L(
+      'Jau sūnās, viņš pagriežas uz pusi atpakaļ. „Un vēl, cilvēciņ: krūzi alus Jāņos tu man paliec parādā. Tilts ir tilts, bet slāpes ir slāpes.“',
+      'Already in the moss, he turns half back. “And one more thing, little {man|woman}: you owe me a jug of beer at Jāņi. A bridge is a bridge, but thirst is thirst.”',
+    ),
+    bread: L(
+      'Viņš noslauka rokas pret svārkiem. „Par tiltu samaksāts. Bet krūzi alus Jāņos tu man paliec parādā — to maize nesedz.“',
+      'He wipes his hands on his coat. “The bridge is paid for. But you owe me a jug of beer at Jāņi — bread does not cover that.”',
+    ),
+    jumis: L(
+      'No sūnām, neatskatoties: „Līdz Jāņiem, {puis|meit}! Un krūzi alus tu man būsi parādā arī tad.“',
+      'From the moss, without looking back: “Till Jāņi, then! And you will owe me a jug of beer even then.”',
+    ),
+    self: L(
+      'No purva vidus atskan: „Un krūzi alus Jāņos tu man joprojām paliec parādā! Par tādu tiltu — pusi krūzes.“',
+      'From out in the bog: “And you still owe me a jug of beer at Jāņi! For a bridge like that — half a jug.”',
+    ),
+    dawn: L(
+      'Tad, jau no sūnām: „Bet krūzi alus Jāņos tu man paliec parādā. Par gaidīšanu es rēķinu atsevišķi.“',
+      'Then, from the moss: “But you owe me a jug of beer at Jāņi. Waiting I charge for separately.”',
+    ),
+  },
   /** NEW */
   replies: {
     sickle: L('Ar sirpi te neko neizlīgsi.', 'You will not settle anything here with a sickle.'),
@@ -839,10 +869,10 @@ export const reckoning = {
     },
     // NEW
     gone: {
-      verdict: L('Velns aizgāja no purva.', 'The Devil has left the bog.'),
+      verdict: L('Velns padzīts — līdz Jāņiem.', 'The Devil is chased off — till Jāņi.'),
       gain: L(
-        'Pāreja: akmens un ozola tilts. Uz ciņa vairs neviens nesēž.',
-        'Crossing: a bridge of stone and oak. Nobody sits on the hummock any more.',
+        'Pāreja: akmens un ozola tilts. Uz ciņa šogad vairs neviens nesēž.',
+        'Crossing: a bridge of stone and oak. Nobody sits on the hummock this year.',
       ),
     },
     // NEW
@@ -895,7 +925,7 @@ export const tally = {
   },
   rowVelns: {
     good: L('Velns — tilts vesels', 'The Devil — a whole bridge'),
-    gone: L('Velns — aizgājis no purva', 'The Devil — gone from the bog'),
+    gone: L('Velns — padzīts līdz Jāņiem', 'The Devil — chased off till Jāņi'),
     poor: L('Velns — divi baļķi', 'The Devil — two logs'),
   },
   // NEW — the smaller facts under the two marks.

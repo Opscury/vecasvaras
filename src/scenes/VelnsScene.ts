@@ -5,6 +5,7 @@ import {
   NIGHT,
   catLost,
   devilGone,
+  jugLine,
   loafFrom,
   velnsMisses,
   velnsOutcome,
@@ -53,8 +54,13 @@ import { MODAL, keysOf } from '../ui/keys';
  *   BARGAIN  "the first living thing to cross is mine." The cat always works,
  *            and never comes home. The loaf works when it was baked from a
  *            field that kept its share — and a loaf with Jumis in it sends him
- *            off the bog for good. Let the cocks crow with nothing paid and the
- *            unpaid bridge sinks by morning.
+ *            off the bog for the year. Let the cocks crow with nothing paid and
+ *            the unpaid bridge sinks by morning.
+ *
+ * Nothing here sends him away for good. However the night ended, the last
+ * thing he does is name the jug of beer he is owed at Jāņi (`velns.jug`,
+ * picked by `jugLine`) and book it against the save — which is how a comic
+ * rogue gets to walk back on in a later chapter and collect.
  *
  * The first encounter is not a separate level; it is the loaf you argue with
  * here.
@@ -945,7 +951,9 @@ export class VelnsScene extends Phaser.Scene {
     // Commit now, in the same moment the offering left the bag — the hat
     // included, so a tab closed while it is still falling does not lose it.
     // It stays out of the tray until it has visibly landed in the bag.
-    state.patch({ velns: outcome, velnsPick: pick, catLost: catLost(pick), devilGone: gone });
+    // The jug is booked here with everything else: he names it on the way out
+    // whatever happened, so there is no ending in which the debt is not owed.
+    state.patch({ velns: outcome, velnsPick: pick, catLost: catLost(pick), devilGone: gone, jugOwed: true });
     if (respect) {
       this.bagUi.setAway('hat', true);
       bag.add('hat');
@@ -997,7 +1005,11 @@ export class VelnsScene extends Phaser.Scene {
         onDone: () => showBelief(this, lore.has('gailis') ? 'gailis' : 'velnaTilts', () => goTo(this, 'Village')),
       });
     };
-    const finish = () => (respect ? this.leaveHat(reckon) : reckon());
+    // Last of all, from wherever he has got to by then: what is still owed.
+    // After the hat, not before it — he takes that off while he is still
+    // standing there, and calls the debt back once he is in the moss.
+    const owed = () => this.narration.say([velns.jug[jugLine(pick, loaf)]], reckon);
+    const finish = () => (respect ? this.leaveHat(owed) : owed());
 
     const crow = () => {
       audio.play('cock');
