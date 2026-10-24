@@ -281,6 +281,11 @@ class GameState {
     once.forget('being:velns');
     // And the new bridge is struck onto the map again when it is built.
     once.forget('map:bridge');
+    // The courting ribbon says what it is again on the first knot of the new
+    // year, and the corner offers its «why» again. Both are teaching, like
+    // the bag's card, so a second year starts without having been told.
+    once.forget('bondWhat');
+    once.forget('objWhy');
     this.listeners.forEach((fn) => fn());
   }
 

@@ -25,6 +25,12 @@ const S = L;
 export const beloved = {
   name: L('{Ilze|Krišs}', '{Ilze|Krišs}'),
   ribbon: L('Saticība', 'Closeness'),
+  /**
+   * Said under the ribbon the first time a knot fills, and then never again
+   * this run. Five knots and a name is not self-explanatory, and the family
+   * playtest read it as a score.
+   */
+  ribbonNote: L('Saticība — cik tuvu esat.', 'Closeness — how near you’ve come.'),
 
   /** What they are doing, seen from across the yard. */
   look: B(

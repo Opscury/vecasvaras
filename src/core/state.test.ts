@@ -256,12 +256,17 @@ describe('saves', () => {
     expect(atlas().open).toBe(3);
   });
 
-  it('shows the bag card again after a new game', async () => {
-    const { state } = await boot({ 'vecasvaras.seen.v1': JSON.stringify(['bagIntro', 'daina:jumis']) });
+  it('teaches a new game everything again, and keeps the content seen', async () => {
+    const seen = ['bagIntro', 'bondWhat', 'objWhy', 'daina:jumis'];
+    const { state } = await boot({ 'vecasvaras.seen.v1': JSON.stringify(seen) });
     const { once } = await import('./once');
-    expect(once.has('bagIntro')).toBe(true);
+    seen.forEach((k) => expect(once.has(k), k).toBe(true));
     state.reset();
+    // The bag's card, the ribbon's one line, the corner's offer of a «why»:
+    // all three are teaching, and a second year is somebody's first.
     expect(once.has('bagIntro')).toBe(false);
+    expect(once.has('bondWhat')).toBe(false);
+    expect(once.has('objWhy')).toBe(false);
     // The verses stay seen: they are content, not instructions.
     expect(once.has('daina:jumis')).toBe(true);
   });
