@@ -51,6 +51,8 @@ export const loreUi = {
   toast: L('Jauns ticējums', 'A new belief'),
   locked: L('Vēl nav atrasts.', 'Not found yet.'),
   source: L('Pēc P. Šmita «Latviešu tautas ticējumiem», Nr. {}', 'After P. Šmits, Latvian Folk Beliefs, no. {}'),
+  /** The same, citing more than one record: «nos.» as the cards before each spirit have it. */
+  sources: L('Pēc P. Šmita «Latviešu tautas ticējumiem», Nr. {}', 'After P. Šmits, Latvian Folk Beliefs, nos. {}'),
   /** For a legend rather than a belief: volume and tale. */
   sourceTale: L('Pēc P. Šmita «Latviešu pasakām un teikām», {}', 'After P. Šmits, Latvian Tales and Legends, {}'),
   close: L('Pieskaries ārpus grāmatas, lai aizvērtu', 'Touch outside the book to close'),
@@ -322,6 +324,12 @@ export const village = {
       'Old Anna steps back. “Don’t show me that.” Then, more quietly: “But keep it. He doesn’t hand those out twice.”',
     ),
     hatOnCat: L('Kaķis cepuri apošņā, nošņācas un aiziet.', 'The cat sniffs the hat, hisses, and walks off.'),
+    // Anna says to hang it in the granary, and the tally has it on the beam:
+    // the stock «not wanted there» reply to anything else contradicted both.
+    hatOnGranary: L(
+      'Tu pacel cepuri pie klēts sijas. Te tā karāsies, kad visi būs sanākuši to redzēt.',
+      'You hold the hat up to the granary beam. That is where it will hang, once everyone is there to see it.',
+    ),
     hatOnStone: L(
       'Tu noliec cepuri pie akmens. Tā tur negrib palikt: vējš to atgrūž atpakaļ pie tavām kājām.',
       'You set the hat by the stone. It will not stay put, and the wind pushes it back to your feet.',
@@ -647,7 +655,7 @@ export const velns = {
   /** NEW — the night, while he builds. */
   /** A Devil answered as an equal and paid in full leaves something behind. */
   hat: L(
-    'Prom ejot, viņš noņem cepuri un noliek to uz laipas. „Tam, kas man atbildēja kā līdzīgs.“',
+    'Prom ejot, viņš noņem cepuri un noliek to uz laipas. „{Tam|Tai}, kas man atbildēja kā {līdzīgs|līdzīga}.“',
     'As he goes, he takes off his hat and leaves it on the planks. “For the one who answered me as an equal.”',
   ),
   night: {
@@ -784,8 +792,10 @@ export const velns = {
       'Already in the moss, he looks back over his shoulder. “And one more thing, little {man|woman}: at Jāņi, come midsummer, you owe me a jug of beer. A bridge is a bridge, but thirst is thirst.”',
     ),
     bread: L(
-      'Viņš noslauka rokas pret svārkiem. „Par tiltu samaksāts. Bet krūzi alus Jāņos tu man paliec parādā. To maize nesedz.“',
-      'He wipes his hands on his coat. “The bridge is paid for. But at Jāņi, come midsummer, you owe me a jug of beer. Bread doesn’t cover that.”',
+      // He is already gone when this is heard (the bread lines end on it),
+      // so it comes out of the moss like the others, not from beside you.
+      'No sūnām vēl atskan viņa balss: „Par tiltu samaksāts. Bet krūzi alus Jāņos tu man paliec parādā. To maize nesedz.“',
+      'His voice comes back out of the moss: “The bridge is paid for. But at Jāņi, come midsummer, you owe me a jug of beer. Bread doesn’t cover that.”',
     ),
     jumis: L(
       'No sūnām, neatskatoties: „Līdz Jāņiem, {puis|meit}! Un krūzi alus tu man būsi parādā arī tad.“',
@@ -977,6 +987,11 @@ export const reckoning = {
         'Crossing: a bridge of stone and oak. Beyond it, new ground.',
       ),
     },
+    /**
+     * Paid in bread: he built for a loaf and was argued out of anything
+     * living. "Got what he wanted" was the cat's verdict, and read wrong here.
+     */
+    outwitted: L('Velnu apvedi ap stūri.', 'You got the better of the Devil.'),
     // NEW
     gone: {
       verdict: L('Velns padzīts līdz Jāņiem.', 'The Devil is chased off until Jāņi.'),
@@ -1125,8 +1140,8 @@ export const arrival = {
     'A shed stands on the foundation. What is in it is good, but there is not much of it.',
   ),
   bridgeGood: L(
-    'Pār strautu ved akmens tilts. Pa to var vest ratus.',
-    'A stone bridge crosses the stream. A cart could go over it.',
+    'Pār strautu ved jauns ozola tilts. Pa to var vest ratus.',
+    'A new oak bridge crosses the stream. A cart could go over it.',
   ),
   bridgePoor: L(
     'Pār strautu guļ divi baļķi. Pa vienam, uzmanīgi.',
@@ -1189,6 +1204,8 @@ export const items = {
     'Ņem sirpi no kules un velc to pāri rudziem.',
     'Take the sickle from your bag and sweep it across the rye.',
   ),
+  // The same instruction once the sickle is already in hand.
+  cutPromptHeld: L('Velc sirpi pāri rudziem.', 'Sweep the sickle across the rye.'),
   cutWrongTool: L('Ar to te nav ko darīt.', 'That is no use here.'),
   // Replies to an item used in the wrong place or at the wrong time.
   cutWrongPlace: L('Sirpis rudziem, ne debesīm.', 'The sickle is for the rye, not the sky.'),

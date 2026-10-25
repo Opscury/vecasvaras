@@ -324,7 +324,7 @@ await page.evaluate(() => {
       const n = g.scene.getScene(k).narration;
       return { busy: n.busy, idle: n.idle, choices: n.choices.length, queue: n.queue.length, line: n.label?.text?.slice(0, 40) };
     },
-    state: () => JSON.parse(localStorage.getItem('vecasvaras.save.v3') || '{}'),
+    state: () => JSON.parse(localStorage.getItem('vecasvaras.save.v4') || '{}'),
     log: (...a) => console.log('DBG', ...a.map((v) => (typeof v === 'string' ? v : JSON.stringify(v)))),
     /** A check: throws, and so fails the route, unless `ok`. */
     assert: (ok, ...what) => {

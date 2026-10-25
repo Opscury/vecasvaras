@@ -23,7 +23,7 @@ import { showBeing, showBelief } from '../ui/Primer';
 import { earConfirm } from '../content/primer';
 import { SheafTally } from '../ui/SheafTally';
 import { Atmosphere } from '../fx/Atmosphere';
-import { Bag } from '../ui/Bag';
+import { BAG_HELD, Bag } from '../ui/Bag';
 import { Painting } from '../ui/Painting';
 import { Prompt } from '../ui/Prompt';
 import { ignoreKey, keysOf, markHandled } from '../ui/keys';
@@ -316,6 +316,11 @@ export class JumisScene extends Phaser.Scene {
     });
 
     this.bagUi = new Bag(this);
+    // The standing instruction follows the sickle in and out of the hand.
+    this.events.on(BAG_HELD, () => {
+      if (this.phase === 'cutting') this.prompt?.restand(this.cutPrompt());
+    });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(BAG_HELD));
     this.bagUi.onUse = (id, x, y) => this.useItem(id, x, y);
 
     this.prompt = new Prompt(this);
@@ -447,12 +452,37 @@ export class JumisScene extends Phaser.Scene {
    * together on the first stroke, faded out well before the crop, so the two
    * horizons never meet along whatever line the highest stroke reached.
    */
-  private revealSky(): void {
+  /**
+   * «Take the sickle from your bag…» while it is already in hand read as a
+   * step not yet done; with it in hand the line says only what is left.
+   */
+  private cutPrompt(): Loc {
+    return this.bagUi.holding === 'sickle' ? items.cutPromptHeld : items.cutPrompt;
+  }
+
+  private revealSky(instant = false): void {
     if (this.skyDone) return;
     this.skyDone = true;
+    if (instant) {
+      const now = this.make.image({ key: 'fx-swath' }, false).setOrigin(0.5).setDisplaySize(2600, 700);
+      this.maskRT.draw(now, Layout.width / 2, 110);
+      now.destroy();
+      return;
+    }
+    // Over a second and a half rather than in the frame of the first stroke:
+    // the two paintings' skies differ, and swapped at once the whole horizon
+    // jumped. Thin passes build up in the mask until it is fully open.
     const wide = this.make.image({ key: 'fx-swath' }, false).setOrigin(0.5).setDisplaySize(2600, 700);
-    this.maskRT.draw(wide, Layout.width / 2, 110);
-    wide.destroy();
+    const passes = 12;
+    for (let i = 1; i <= passes; i++) {
+      this.time.delayedCall(i * 120, () => {
+        if (!this.maskRT.active) return;
+        wide.setAlpha(i === passes ? 1 : 0.2);
+        this.maskRT.draw(wide, Layout.width / 2, 110);
+        if (i === passes) wide.destroy();
+      });
+    }
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => wide.destroy());
   }
 
   // --- cutting --------------------------------------------------------------
@@ -460,7 +490,7 @@ export class JumisScene extends Phaser.Scene {
   private beginCut(): void {
     this.narration.hide();
     this.phase = 'cutting';
-    this.prompt.show(items.cutPrompt);
+    this.prompt.show(this.cutPrompt());
     this.tally.set(0, false);
     this.tally.show();
 
@@ -761,7 +791,7 @@ export class JumisScene extends Phaser.Scene {
           onPick: () => {
             this.narration.hide();
             this.phase = 'cutting';
-            this.prompt.show(items.cutPrompt);
+            this.prompt.show(this.cutPrompt());
             this.tally.setEnough(true);
             this.enoughSpot?.setEnabled(true);
             this.enoughSpot?.zone.disableInteractive();
@@ -1041,7 +1071,8 @@ export class JumisScene extends Phaser.Scene {
     // stubble's haze hanging over the standing rye along the horizon.
     this.cover.decode(run.fieldMask);
     this.maskRT.clear();
-    this.revealSky();
+    // On a revisit the sky is already the stubble's: no fade.
+    this.revealSky(true);
     if (this.cover.left <= 0) {
       this.maskRT.fill(0xffffff, 1);
     } else {

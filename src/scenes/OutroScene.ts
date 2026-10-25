@@ -13,6 +13,7 @@ import { Atmosphere } from '../fx/Atmosphere';
 import { Painting } from '../ui/Painting';
 import { SignMark } from '../ui/Sign';
 import { padHit } from '../ui/hit';
+import { HeroPick } from '../ui/HeroPick';
 import { ignoreKey, isAdvanceKey, markHandled } from '../ui/keys';
 import { fadeIn, goTo, isLeaving } from './transition';
 import { CHIMNEYS, SHEAF_SLOTS, addEvening, addSheaf, addUpgrades } from './villageArt';
@@ -47,6 +48,8 @@ export class OutroScene extends Phaser.Scene {
   private narration!: Narration;
   /** The "start over" button is up and can be pressed. */
   private canGoOn = false;
+  /** The who-are-you card is up for the next year. */
+  private picking = false;
 
   constructor() {
     super('Outro');
@@ -56,6 +59,7 @@ export class OutroScene extends Phaser.Scene {
     audio.ambient('village');
 
     this.canGoOn = false;
+    this.picking = false;
     fadeIn(this, Timing.fade * 2);
     makeBlob(this);
 
@@ -123,14 +127,18 @@ export class OutroScene extends Phaser.Scene {
     const parting = run.talks.includes('invited') ? [feast.mikeli] : [];
 
     this.narration.say([...feast.open, overTable, seat, feast.anna], () => {
-      this.shelveLoaf(good);
+      const shelf = this.shelveLoaf(good);
       this.narration.say([good ? feast.loaf.good : feast.loaf.flat, ...parting], () => {
+        // The loaf goes with the lamp. Left up, it sat at a tenth of its
+        // strength behind the tally, with the board as a dark bar under the
+        // bread line.
+        this.tweens.killTweensOf(shelf);
         this.tweens.add({
-          targets: lamp,
+          targets: [lamp, ...shelf],
           alpha: 0,
           duration: 900,
           ease: 'Sine.easeInOut',
-          onComplete: () => lamp.destroy(),
+          onComplete: () => [lamp, ...shelf].forEach((o) => o.destroy()),
         });
         then();
       });
@@ -189,7 +197,7 @@ export class OutroScene extends Phaser.Scene {
    * and heavy. The same two pictures the bag uses for it, so the loaf on the
    * shelf is recognisably the one that was carried around all day.
    */
-  private shelveLoaf(good: boolean): void {
+  private shelveLoaf(good: boolean): Phaser.GameObjects.GameObject[] {
     const { width, height } = Layout;
     const x = width * 0.5;
     const boardY = height * 0.56;
@@ -219,12 +227,29 @@ export class OutroScene extends Phaser.Scene {
 
     this.tweens.add({ targets: [shelf, shade, loaf], alpha: 1, duration: 800, ease: 'Quad.easeOut' });
     audio.play('bag', { volume: 0.25 });
+    return [shelf, shade, loaf];
   }
 
+  /**
+   * A fresh year starts the way the first one did: with who the player is.
+   * Going straight to the intro skipped that card, so the new run carried no
+   * name of its own (Anna fell back on the default one) and, once the intro
+   * had been seen, a reload counted the hero as chosen and never asked.
+   * The last year's choice is offered again, ready to keep or change.
+   */
   private playAgain(): void {
-    if (isLeaving(this)) return;
+    if (isLeaving(this) || this.picking) return;
+    const { gender, name, nameV } = state.get();
     state.reset();
-    goTo(this, 'Intro');
+    state.patch({ gender, name, nameV });
+    this.picking = true;
+    new HeroPick(
+      this,
+      () => goTo(this, 'Intro'),
+      // Closed without choosing: the old year is over either way, so back to
+      // the title, whose Begin asks again.
+      () => goTo(this, 'Title'),
+    );
   }
 
   /** Both shares, marked and named, and what the run came to. */

@@ -1005,7 +1005,7 @@ export class VelnsScene extends Phaser.Scene {
       new Reckoning(this, {
         sign: 'crossing',
         good,
-        verdict: r.verdict,
+        verdict: good && !gone && pick === 'bread' ? reckoning.velns.outwitted : r.verdict,
         gain,
         missed: this.missedLine(misses),
         cost: good && pick === 'cat' ? reckoning.velns.catCost : null,

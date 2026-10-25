@@ -136,6 +136,27 @@ export class Reckoning {
       .setAlpha(0);
     this.items.push(this.go);
 
+    // The lines stack from the verdict down, and the arrow goes under the
+    // last of them. At fixed places a long «what you could have done» (the
+    // Latvian, held sideways on a phone) ran its last line under the arrow;
+    // now the arrow moves down, and if that would take it off the frame the
+    // whole block rises towards the mark to make room.
+    const layout = () => {
+      const top = height * 0.52;
+      const place = (shift: number) => {
+        verdict.setY(top - shift);
+        gain.setY(verdict.y + scaled(74));
+        missed?.setY(gain.y + gain.height + scaled(26));
+        const last = missed ?? gain;
+        return Math.max(height * 0.88, last.y + last.height + scaled(24) + this.go.height / 2);
+      };
+      let goY = place(0);
+      const over = goY + this.go.height / 2 - (height - scaled(12));
+      if (over > 0) goY = place(Math.min(over, top - height * 0.47));
+      this.go.setY(goY);
+    };
+    layout();
+
     // A short rule under the mark, drawn only once the mark is finished.
     this.rule = scene.add.graphics().setDepth(820).setAlpha(0);
     this.rule.lineStyle(1, opts.good ? Palette.rye : 0x6a7176, 0.6);
@@ -185,6 +206,7 @@ export class Reckoning {
     this.offLang = i18n.onChange(() => {
       this.texts.forEach((x) => x.obj.setText(t(x.loc)));
       this.go.setText(t(ui.next) + '  ▸');
+      layout();
     });
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.offLang();

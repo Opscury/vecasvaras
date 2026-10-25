@@ -51,7 +51,7 @@ export const beliefs: Record<LoreId, Belief> = {
     hint: L('Laukā, pie robežakmens…', 'In the field, by the boundary stone…'),
     source: SMITS + 'jumis.htm',
     book: 'ticejumi',
-    ref: '11992, 11991',
+    ref: '11991, 11992',
     verified: true,
   },
   // The id is kept for old saves; the title is not. «Jumja ķeršana» in Šmits

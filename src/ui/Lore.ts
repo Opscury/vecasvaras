@@ -386,7 +386,7 @@ export class LorePage {
 
     if (found && b.verified && b.ref) {
       const src = this.scene.add
-        .text(cx, y + 14, t(fillLoc(b.book === 'teikas' ? loreUi.sourceTale : loreUi.source, L(b.ref, b.ref))), {
+        .text(cx, y + 14, t(fillLoc(b.book === 'teikas' ? loreUi.sourceTale : b.ref.includes(',') ? loreUi.sources : loreUi.source, L(b.ref, b.ref))), {
           fontFamily: Fonts.body,
           fontSize: px(19),
           color: INK_FAINT,

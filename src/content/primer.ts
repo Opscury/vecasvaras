@@ -55,7 +55,7 @@ export const beings = {
     title: L('Velns', 'Velns, the Devil'),
     body: L(
       'Latviešu teikās velns nav nekāds briesmonis. Viņš ir viltnieks, kas mīl darījumus un mīklas, un gudrs cilvēks viņu var apmānīt.\n\nViņš sola uzcelt tiltu vienā naktī, bet gaiļa dziesma viņu pārtrauc un padzen.\n\nNeej tukšām rokām. Ar to, kas tev kulē, var samaksāt, un ne tikai vienā veidā.',
-      'In Latvian legend Velns, the Devil, is more fool than fiend. He loves bargains and riddles, and a clever person can beat him at both.\n\nHe promises to build a bridge in a single night, but the cock crows before he is done, and the crow drives him off.\n\nDo not go empty-handed. What is in your bag can pay him, in more than one way.',
+      'In Latvian legend Velns, the Devil, is more fool than fiend. He loves bargains and riddles, and a clever person can beat him at both.\n\nHe promises to build a bridge in a single night, but the cock crows before he is done, and the crowing drives him off.\n\nDo not go empty-handed. What is in your bag can pay him, in more than one way.',
     ),
     note: L(
       'Pēc P. Šmita «Latviešu pasakām un teikām» X, XV un «Ticējumiem», Nr. 21224, 32406',

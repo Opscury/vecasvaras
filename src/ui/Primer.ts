@@ -61,7 +61,7 @@ export function showBelief(scene: Phaser.Scene, id: LoreId, onDone: () => void):
   lore.unlock(id);
   const b = beliefs[id];
   const note = b.ref
-    ? fillLoc(b.book === 'teikas' ? loreUi.sourceTale : loreUi.source, L(b.ref, b.ref))
+    ? fillLoc(b.book === 'teikas' ? loreUi.sourceTale : b.ref.includes(',') ? loreUi.sources : loreUi.source, L(b.ref, b.ref))
     : undefined;
   new Notice(scene, {
     kicker: beliefCard.kicker,

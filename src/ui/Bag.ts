@@ -57,6 +57,9 @@ function noteFor(id: ItemId): Loc {
  *     really is in front of it: nothing in the corner can be clicked through a
  *     verdict.
  */
+/** Scene event: the item in hand changed (the id, or null when put back). */
+export const BAG_HELD = 'bag:held';
+
 export class Bag {
   private scene: Phaser.Scene;
   private root: Phaser.GameObjects.Container;
@@ -426,6 +429,7 @@ export class Bag {
   private setHeld(id: ItemId | null): void {
     this.held = id;
     keysOf(this.scene).holding = id !== null;
+    this.scene.events.emit(BAG_HELD, id);
     this.restack();
     this.scene.tweens.killTweensOf(this.cancel);
     this.scene.tweens.add({

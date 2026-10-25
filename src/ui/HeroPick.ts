@@ -227,7 +227,9 @@ export class HeroPick {
       const typed = this.vInput.value.trim();
       if (typed) return typed;
     }
-    return vocative(this.input.value.replace(/\s+/g, ' ').trim());
+    // Capitalised the way the name is saved, so «jānis» previews as «Jāni».
+    const name = this.input.value.replace(/\s+/g, ' ').trim();
+    return vocative(name.charAt(0).toLocaleUpperCase('lv') + name.slice(1));
   }
 
   private finish(then: () => void): void {

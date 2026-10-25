@@ -63,6 +63,16 @@ export class Prompt {
     this.fade(0, duration, 'Quad.easeIn');
   }
 
+  /**
+   * Changes the standing instruction without interrupting a remark that is
+   * up: it shows now if nothing else is, or when the remark ends.
+   */
+  restand(loc: Loc): void {
+    if (!this.standing) return;
+    this.standing = loc;
+    if (!this.flashTimer) this.put(loc);
+  }
+
   /** A brief remark, then back to the standing instruction (or nothing). */
   flash(loc: Loc, ms = 2200): void {
     this.cancelFlash();

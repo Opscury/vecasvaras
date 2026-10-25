@@ -91,7 +91,9 @@ const APPROACH: Record<string, Pt & { face?: 'left' | 'right' }> = {
   granary: { x: 610, y: 640, face: 'left' },
   bridge: { x: 1420, y: 642, face: 'right' },
   anna: { x: 790, y: 612, face: 'left' },
-  shed: { x: 800, y: 702 },
+  // On the yard side of the front house. At y 702 the feet landed on its
+  // roof ridge, and the villager stood on the roof to fetch the sickle.
+  shed: { x: 780, y: 650 },
   cat: { x: 1180, y: 588, face: 'right' },
   beloved: { x: 1312, y: 600, face: 'right' },
 };
@@ -650,8 +652,14 @@ export class VillageScene extends Phaser.Scene {
       this.faces(id);
       click();
     };
+    const guard = o.guard;
     o = {
       ...o,
+      // With something in hand, a tap on a person or a place is the item being
+      // used on them, not a tap on them. Without this both ran: the reply to
+      // the item covered whatever the tap had started, and a one-time talk
+      // (Ilze's after the bog) was marked as had and never seen.
+      guard: () => !this.bagUi.holding && (guard ? guard() : true),
       // The player walks over first, and the thing happens on arrival. Nothing
       // waits on them: a click elsewhere on the way simply changes their mind.
       onClick: () => {
@@ -720,7 +728,7 @@ export class VillageScene extends Phaser.Scene {
         }
         break;
       case 'granary':
-        line = run.jumis === 'none' ? r.onFoundation : r.onGranary;
+        line = run.jumis === 'none' ? r.onFoundation : id === 'hat' ? r.hatOnGranary : r.onGranary;
         break;
       case 'bridge':
         line = r.onStream;
