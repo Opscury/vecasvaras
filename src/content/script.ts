@@ -78,9 +78,9 @@ export const settingsUi = {
   /** Shown in the chosen size and at the chosen speed, so the choice can be judged. */
   sample: L(
     '«Rudzi stāv gatavi. Rudzi negaida. Es ietu pati, bet ceļi vairs neiet.»',
-    '“The rye is standing ready. Rye does not wait. I would go myself, but my knees have stopped going.”',
+    '“The rye is standing ready. Rye doesn’t wait. I’d go myself, but my knees have stopped going.”',
   ),
-  sizeNote: L('Jaunais izmērs — no nākamās vietas, kur ieej.', 'The new size applies from the next place you go.'),
+  sizeNote: L('Jaunais izmērs būs redzams nākamajā vietā, kur ieiesi.', 'The new size applies from the next place you go.'),
   close: L('Pieskaries ārpusē, lai aizvērtu', 'Touch outside to close'),
 };
 
@@ -124,7 +124,7 @@ export const mapUi = {
       'The rye field. Your grandfather cut it, and his father before him.',
     ),
     bog: L(
-      'Purvā naktīs deg ugunis. Vecie teica — neej tām pakaļ.',
+      'Purvā naktīs deg ugunis. Vecie teica: neej tām pakaļ.',
       'Lights burn on the bog at night. The old people said: do not follow them.',
     ),
     beyondShut: L(
@@ -132,11 +132,11 @@ export const mapUi = {
       'While the bridge stood, this was the road to market. Now nobody takes it.',
     ),
     beyondOpen: L(
-      'Aiz tilta sākas zeme, kurā neviens nav gājis. Tur arī kaut kas ir.',
-      'Beyond the bridge lies land nobody has walked. There is something out there too.',
+      'Aiz tilta sākas zeme, kurā neviens no ciema nav bijis. Kas tur ir, vēl nezina neviens.',
+      'Past the bridge is country nobody from the village has been to. Nobody knows yet what is out there.',
     ),
     mill: L(
-      'Dzirnavnieku neviens nav redzējis kopš pavasara. Saka, ka strauts viņu paņēma līdzi ceļam.',
+      'Dzirnavnieku neviens nav redzējis kopš pavasara. Saka, ka strauts viņu aiznesa reizē ar ceļu.',
       'Nobody has seen the miller since spring. They say the stream took him along with the road.',
     ),
   },
@@ -155,16 +155,16 @@ export const mapUi = {
 export const intro = {
   lines: [
     L(
-      '«Nu beidzot!» Annas māte sauc pār sētu tādā balsī, it kā tu būtu kavējies trīs dienas. «Rudzi stāv gatavi. Rudzi negaida.»',
-      '“There you are!” Mother Anna shouts over the fence, in a voice that says you are three days late. “The rye is standing ready. Rye does not wait.”',
+      '«Nu beidzot!» Annas māte sauc pār sētu tādā balsī, it kā tu būtu {kavējies|kavējusies} trīs dienas. «Rudzi stāv gatavi. Rudzi negaida.»',
+      '“There you are!” Mother Anna shouts over the fence, in a voice that says you are three days late. “The rye is standing ready. Rye doesn’t wait.”',
     ),
     L(
-      '«Es ietu pati, bet ceļi vairs neiet. Pār ceļiem es vairs neesmu saimniece.»',
-      '“I would go myself, but my knees have stopped going. I am not the boss of my knees any more.”',
+      '«Es ietu pati, bet ceļi vairs neiet. Neklausa mani vairs.»',
+      '“I’d go myself, but my knees have stopped going. They don’t take orders from me any more.”',
     ),
     L(
-      '«Un vēl viena lieta. Tavs vectēvs vienmēr atstāja laukam savu daļu. Tā arī tu darīsi. Es redzēšu.»',
-      '“And one more thing. Your grandfather always left the field its share. So will you. I will be watching.”',
+      '«Un vēl viena lieta. Tavs vectēvs vienmēr atstāja laukam savu daļu. Tā arī tu darīsi. Es skatīšos.»',
+      '“And one more thing. Your grandfather always left the field its share. So will you. I’ll be watching.”',
     ),
   ],
 };
@@ -187,8 +187,8 @@ export const village = {
       // Šmits 19325: the house spirit may dwell «pašu laukā kādā akmenī»;
       // 19340: the first bite of baked bread is his.
       L(
-        'Vecie saka, ka tajā mīt mājas kungs, un pirmais kumoss no jaunās maizes pienākas viņam. Katru gadu. Nedomājot.',
-        'The old people say the house spirit lives in it, and the first bite of the new bread is his. Every year. Without thinking.',
+        'Vecie saka, ka tajā mīt mājas kungs un pirmais kumoss no katras maizes pienākas viņam. To dod, ne brīdi nedomājot.',
+        'The old people say the house spirit lives in it, and the first bite of every loaf is his. People give it without a second thought.',
       ),
     ],
     // NEW — after the crumb.
@@ -201,10 +201,10 @@ export const village = {
   crumb: {
     give: [
       L(
-        'Tu atlauz no klaipa pirmo kumosu un noliec to akmens pakājē — mājas kungam. Kā visi. Nedomājot.',
-        'You break the first bite off the loaf and set it at the foot of the stone — for the house spirit. Like everyone. Without thinking.',
+        'Tu atlauz no klaipa pirmo kumosu un noliec to akmens pakājē mājas kungam, kā to dara visi, nedomājot.',
+        'You break the first bite off the loaf and set it at the foot of the stone for the house spirit, the way everyone does without thinking.',
       ),
-      L('Tikai šoreiz tu padomāji.', 'Only this time you did think.'),
+      L('Tu šoreiz par to padomāji.', 'This time you thought about it.'),
     ],
     already: L('Pirmais kumoss jau ir akmenim.', 'The stone already has the first crumb.'),
   },
@@ -224,23 +224,23 @@ export const village = {
     ),
     // NEW
     take: L(
-      'Klēts stāv uz saviem pamatiem. Pie sijas karājas divvārpa, un zem tās neviens nestāv.',
-      'The granary stands on its own foundation. The double ear hangs from the beam, and nobody stands under it.',
+      'Klēts stāv uz saviem pamatiem. Aiz sijas glabājas divvārpa.',
+      'The granary stands on its own foundation. The double ear is kept behind the beam.',
     ),
   },
   bridgeSlot: {
     label: L('Pāreja', 'The crossing'),
     empty: L(
-      'Strauts un tiltiņa atliekas — divi baļķi, pārējo aiznesa ūdens. Tālāk par šo neviens neiet.',
+      'Strauts un tiltiņa atliekas: divi baļķi, pārējo aiznesa ūdens. Tālāk par šo neviens neiet.',
       'The stream, and what is left of a bridge: two beams, the rest washed away. Nobody goes further than this.',
     ),
     poor: L(
-      'Divi baļķi un pāris dēļu pāri. Var tikt pāri, ja iet uzmanīgi un vienatnē.',
+      'Divi baļķi, pār tiem pāris dēļu. Tikt otrā pusē var, ja iet uzmanīgi un pa vienam.',
       'Two logs and a few planks across them. You can get over, carefully, one at a time.',
     ),
     good: L(
-      'Akmens un ozola tilts — pa to var vest ratus. Aiz tā sākas zeme, kurā neviens nav gājis.',
-      'A bridge of stone and oak; a cart could cross it. Beyond it lies land nobody has walked.',
+      'Akmens un ozola tilts, pa kuru var vest ratus. Otrā pusē sākas zeme, kurā neviens no ciema nav bijis.',
+      'A bridge of stone and oak, wide enough for a cart. On the far side begins country nobody from the village has seen.',
     ),
   },
   pathField: {
@@ -255,8 +255,8 @@ export const village = {
   pathBog: {
     label: L('Ceļš uz purvu', 'The path to the bog'),
     locked: L(
-      'Ceļš uz purvu. Uz turieni tukšām rokām neiet — un tavas rokas ir tukšas.',
-      'The path to the bog. You do not go that way empty-handed — and your hands are empty.',
+      'Ceļš uz purvu. Uz turieni tukšām rokām neiet, un tavas rokas ir tukšas.',
+      'The path to the bog. You do not go that way empty-handed, and your hands are empty.',
     ),
     ready: L(
       'Ceļš uz purvu. Tev kulē ir rudzu maize, un pār purvu nav pārejas.',
@@ -268,8 +268,8 @@ export const village = {
     ),
     // NEW
     gone: L(
-      'Purva ceļš. Uz ciņa šogad vairs neviens nesēž. Šogad.',
-      'The bog road. Nobody is sitting on the hummock this year. This year.',
+      'Purva ceļš. Ciņš ir tukšs, vismaz šogad.',
+      'The bog road. The hummock is empty, this year at least.',
     ),
   },
   /** NEW — the cat's doorstep, once the cat is not on it. */
@@ -287,10 +287,10 @@ export const village = {
    * lives on these.
    */
   replies: {
-    sickleOnAnna: L('«Ar to uz mani nevicini, {puis|meit}.»', '“Do not wave that at me, {lad|lass}.”'),
+    sickleOnAnna: L('«Ar to uz mani nevicini, {puis|meit}.»', '“Don’t wave that at me, {lad|lass}.”'),
     catOnAnna: L(
-      'Anna pakasa kaķim aiz auss. «Tas nav mans. Tas ir neviena.»',
-      'Anna scratches the cat behind the ear. “It is not mine. It is nobody’s.”',
+      'Annas māte pakasa kaķim aiz auss. «Tas nav mans. Tas ir neviena.»',
+      'Old Anna scratches the cat behind the ear. “It isn’t mine. It’s nobody’s.”',
     ),
     breadOnAnna: L('«Tā ir tava. Es to cepu tev, ne sev.»', '“That one is yours. I baked it for you, not for me.”'),
     breadOnCat: L(
@@ -307,7 +307,7 @@ export const village = {
       'The cat jumps down, walks once round the stone, and hops back into the bag.',
     ),
     onFoundation: L(
-      'Klēts vēl nav, kur ko likt.',
+      'Klēts vēl nav. Nav kur ko likt.',
       'There is no granary yet to put anything in.',
     ),
     onGranary: L(
@@ -318,13 +318,13 @@ export const village = {
     onPath: L('Ceļš pats aizvedīs. Ej.', 'The path will take you itself. Go.'),
     // The Devil's hat, shown around the village.
     hatOnAnna: L(
-      'Anna atkāpjas soli. «To tu man nerādi.» Tad, klusāk: «Bet glabā. Tādu dāvanu otrreiz nedod.»',
-      'Anna steps back. “Don’t show me that.” Then, more quietly: “But keep it. That gift is not given twice.”',
+      'Annas māte atkāpjas par soli. «To tu man nerādi.» Tad, klusāk: «Bet glabā. Tādu dāvanu otrreiz nedod.»',
+      'Old Anna steps back. “Don’t show me that.” Then, more quietly: “But keep it. He doesn’t hand those out twice.”',
     ),
     hatOnCat: L('Kaķis cepuri apošņā, nošņācas un aiziet.', 'The cat sniffs the hat, hisses, and walks off.'),
     hatOnStone: L(
-      'Tu noliec cepuri pie akmens. Tā tur neguļ mierīgi — vējš to atgrūž atpakaļ pie tavām kājām.',
-      'You set the hat by the stone. It will not lie there — the wind pushes it back to your feet.',
+      'Tu noliec cepuri pie akmens. Tā tur negrib palikt: vējš to atgrūž atpakaļ pie tavām kājām.',
+      'You set the hat by the stone. It will not stay put, and the wind pushes it back to your feet.',
     ),
   },
   // A click on nothing in particular gets one of these, in rotation, rather
@@ -346,8 +346,8 @@ export const jumis = {
     L(
       // Sirpis, not izkapts: the tool in the bag is a sickle, not a scythe.
       // Named here, because the being card has just said what a double ear is.
-      'Tur, labajā malā, viens stiebrs nes divas vārpas — divvārpa. Jumis.',
-      'There, over on the right, one stem carries two ears — a double ear. Jumis.',
+      'Tur, labajā malā, viens stiebrs nes divas vārpas. Tā ir divvārpa, Jumis.',
+      'Over on the right, one stem carries two ears. That is a double ear, and that is Jumis.',
     ),
   ],
   /** Said once the day's work is done and the one thing left standing is the point. */
@@ -378,12 +378,12 @@ export const jumis = {
   /** NEW — what the double ear asks of the hand, once the field is down. */
   // The tithe as Šmits 11992 has it: the ears tied in a knot.
   gesturePrompt: L(
-    'Jumis. Velc uz leju — sasiet un atstāt laukam. Uz augšu — izraut un nest mājās.',
-    'Jumis. Drag down to tie him and leave him to the field. Drag up to pull him and take him home.',
+    'Jumis. Velc uz leju, lai sasietu un atstātu laukam, vai uz augšu, lai izrautu un nestu mājās.',
+    'Jumis. Drag down to tie him and leave him to the field, or up to pull him and take him home.',
   ),
   gestureTap: L(
-    'Velc, nevis spied: uz leju — sasiet, uz augšu — izraut.',
-    'Drag, do not tap: down to tie it, up to pull it.',
+    'Nespied, bet velc: uz leju, lai sasietu, uz augšu, lai izrautu.',
+    'Drag it, don’t tap: down ties him, up pulls him.',
   ),
   gestureNoBlade: L('Nocirst to var tikai ar sirpi.', 'Only the sickle will cut it.'),
   hintStone: {
@@ -391,11 +391,11 @@ export const jumis = {
     // Rewritten for the pass: the field is now judged by how much is left, so
     // the rule has to say "a little island", not just "a share".
     text: L(
-      'Robežakmens, ķērpjiem apaudzis. Vecmāmiņa teica: nopļauj visu, tikai divvārpai atstāj mazu saliņu — ne vairāk, ne mazāk.',
-      'A boundary stone, grown over with lichen. Grandmother used to say: cut it all, but leave the double ear a little island — no more, no less.',
+      'Robežakmens, ķērpjiem apaudzis. Vecmāmiņa teica: nopļauj visu, tikai divvārpai atstāj mazu saliņu, ne vairāk, ne mazāk.',
+      'A boundary stone, grown over with lichen. Grandmother used to say: cut it all, but leave the double ear a little island, and only a little.',
     ),
   },
-  question: L('Ko tu dari ar Jumi? To vairs nevarēs pārdomāt.', 'What do you do with Jumis? There is no undoing it.'),
+  question: L('Ko tu darīsi ar Jumi? To vairs nevarēs pārdomāt.', 'What do you do with Jumis? There is no undoing it.'),
   // The list is the fallback now; the double ear is bent or pulled by hand.
   choices: {
     leave: L(
@@ -410,18 +410,18 @@ export const jumis = {
   outcomes: {
     all: [
       L(
-        'Tu nopļauj visu. Lauks noguļas vienā pēcpusdienā, un divvārpa aiziet kūlī kopā ar pārējiem.',
+        'Tu nopļauj visu. Lauks noguļas vienā pēcpusdienā, un divvārpa aiziet kūlī kopā ar visu pārējo.',
         'You cut everything. The field goes flat in one afternoon, and the double ear goes into the sheaf with the rest.',
       ),
       L(
-        'Nekas nenotiek. Tieši tā ir tā nelaime — nekas nenotiek.',
-        'Nothing happens. That is exactly the trouble — nothing happens.',
+        'Nekas nenotiek, un tieši tas ir slikti.',
+        'Nothing happens, and that is what’s wrong.',
       ),
     ],
     leave: [
       L(
-        'Tu sasien divvārpu mezglā, kā to darīja vecie, un atstāj to laukam.',
-        'You tie the double ear in a knot, the way the old people did, and leave it to the field.',
+        'Tu sasien saliņas vārpas mezglā ap divvārpu un atstāj to laukam.',
+        'You tie the ears of the little island in a knot around the double ear, and leave it to the field.',
       ),
       L(
         'Pār saliņu uz mirkli pārskrien vējš, lai gan citur lauks stāv mierā.',
@@ -437,8 +437,8 @@ export const jumis = {
         'You pull the double ear up, roots and all. The earth comes with it, heavy and black.',
       ),
       L(
-        'Mājās tu to pakārsi klētī pie sijas, kā vecie. Tur Jumis dzīvos — un ēdīs no klēts, ne no lauka.',
-        'At home you will hang it from the granary beam, like the old people did. Jumis will live there — and eat from the granary, not the field.',
+        'Mājās tu to noliksi klētī aiz sijas, kā vecie. Tur Jumis dzīvos un ēdīs no klēts, nevis no lauka.',
+        'At home you will put it away behind the granary beam, as the old people did. Jumis will live there and eat from the granary instead of the field.',
       ),
     ],
     // NEW — the opposite mistake.
@@ -456,7 +456,7 @@ export const jumis = {
   /** NEW — the cart, said as it leaves the field. What it is worth is Anna's to say. */
   cart: {
     leave: L('Tu pārved mājās vezumu.', 'You bring the cart home.'),
-    take: L('Tu pārved mājās vezumu, un Jumis brauc virsū.', 'You bring the cart home, with Jumis riding on top.'),
+    take: L('Tu pārved mājās vezumu, un Jumis brauc pašā vezuma galā.', 'You bring the cart home, with Jumis riding on top.'),
     all: L(
       'Tu pārved mājās lielāko vezumu, kādu ciems pēdējos gados redzējis. Tas ir savādi viegls.',
       'You bring home the biggest cart the village has seen in years. It is strangely light.',
@@ -472,7 +472,7 @@ export const jumis = {
   /** NEW — something from the bag that is not the sickle. */
   replies: {
     cat: L('Kaķis nav pļāvējs.', 'The cat is not a reaper.'),
-    bread: L('Maizi laukā atpakaļ nenes — lauks to jau zina.', 'You do not bring bread back to the field. The field knows it already.'),
+    bread: L('Maizi laukā atpakaļ nenes. No lauka tā nāca.', 'You do not bring bread back to the field. That is where it came from.'),
   },
   /** NEW — walking back out to the field once it is cut. */
   after: {
@@ -485,8 +485,8 @@ export const jumis = {
     holeLabel: L('Bedrīte', 'The hole'),
     patchLabel: L('Nenopļautais', 'The uncut rye'),
     bound: L(
-      'Divvārpa guļ, vārpas sasietas mezglā. Kāds — ne tu — tai blakus nolicis graudu.',
-      'The double ear lies with its ears tied in a knot. Someone — not you — has left a grain beside it.',
+      'Divvārpa guļ, vārpas sasietas mezglā. Kāds, ne tu, tai blakus nolicis graudu.',
+      'The double ear lies with its ears tied in a knot. Someone, and it wasn’t you, has left a grain beside it.',
     ),
     hole: L(
       'Tur, kur stāvēja divvārpa, ir tukša bedrīte. Zeme vēl irdena.',
@@ -511,11 +511,11 @@ const catCrosses = L(
 );
 const breadThrown = L(
   'Tu pārlauz klaipu un aizsvied pusi pāri. Tā nokrīt otrā krastā, un viņš uzlec kājās. „Maize nav dzīva!“',
-  'You break the loaf and throw half across. It lands on the far bank, and he leaps up. “Bread is not living!”',
+  'You break the loaf and throw half across. It lands on the far bank, and he leaps up. “Bread isn’t living!”',
 );
 const breadArgued = L(
   '„Tā ir cepta no rudziem, ko lauks man deva pats,“ tu saki. „Tajā ir viss lauks. Ja tas nav dzīvs, tad tu esi būvējis par velti.“',
-  '“It is baked from rye the field gave me itself,” you say. “The whole field is in it. If that is not living, then you have built for nothing.”',
+  '“It’s baked from rye the field gave me itself,” you say. “The whole field is in it. If that isn’t living, then you have built for nothing.”',
 );
 
 export const velns = {
@@ -534,17 +534,17 @@ export const velns = {
   // Two lines now, not three: the offer and the riddle.
   greet: [
     L(
-      '„Labvakar, labvakar! Cilvēciņš uz maniem dēļiem. Gribi pāri? Uzbūvēšu tev tiltu līdz gaiļiem — akmenī un kokā, un lēti.“',
-      '“Good evening, good evening! A little {man|woman} on my planks. Want to get across? I will build you a bridge before the cocks crow — stone and timber, and cheap.”',
+      '„Labvakar, labvakar! Cilvēciņš uz maniem dēļiem. Gribi pāri? Uzbūvēšu tev tiltu līdz gaiļiem, no akmens un ozola, un vēl lēti!“',
+      '“Good evening, good evening! A little {man|woman} on my planks. Want to get across? I’ll build you a bridge before the cocks crow, stone and oak, and cheap too!”',
     ),
     L(
-      '„Bet vispirms — mīkla. Man garlaicīgi.“',
-      '“But first — a riddle. I am bored.”',
+      '„Bet vispirms mīkla. Man laiks garš.“',
+      '“But first, a riddle. I’m bored.”',
     ),
   ],
   // NEW — he has noticed what is in the bag. Foreshadowing, and nothing more.
   catNoticed: L(
-    '„Un kas tev tur kulē ņaud?“ Viņš pavelk nāsis. „Nu, labi. Vēlāk.“',
+    '„Un kas tev tur kulē ņaud?“ Viņš paošņā gaisu. „Nu, labi. Vēlāk.“',
     '“And what is that mewing in your bag?” He sniffs. “Never mind. Later.”',
   ),
   /** Getting out to him: the causeway, and the lights that offer a better way. */
@@ -556,12 +556,12 @@ export const velns = {
     causeway: L('Laipa', 'The causeway'),
     light: L('Uguntiņa', 'A little light'),
     walk: L(
-      'Dēļi zem kājām šūpojas, bet tur. Ūdens ir melns un nekustīgs kā darva.',
+      'Dēļi zem kājām šūpojas, bet iztur. Ūdens ir melns un nekustīgs kā darva.',
       'The boards rock underfoot, but they hold. The water is black and as still as tar.',
     ),
     lured: L(
-      'Uguntiņa aizveda tevi sūnās. Tu iegrimsti līdz ceļiem un izrāpies atpakaļ krastā.',
-      'The little light led you into the moss. You sink to the knees and crawl back to the bank.',
+      'Uguntiņa aizved tevi sūnās. Tu iegrimsti līdz ceļiem un izrāpies atpakaļ krastā.',
+      'The little light leads you into the moss. You sink to the knees and crawl back to the bank.',
     ),
     catAhead: L(
       'Kaķis izlec no kules un aiziet pa laipu tev pa priekšu.',
@@ -598,8 +598,8 @@ export const velns = {
     '“The frost,” he sighs, and looks at his own hands. “The frost does it in one night and for nothing. I charge more.”',
   ),
   riddleFrostWrong: L(
-    'Viņš smejas tā, ka no ciņa nokrīt sūnas. „Sals, {muļķi|muļķe}, sals! Tev ir kājas, bebram ir kājas, man arī. Labi, vēl vienu — man vienalga garlaicīgi.“',
-    'He laughs so hard the moss falls off the hummock. “The frost, fool, the frost! You have legs, a beaver has legs, so have I. All right, one more — I am bored anyway.”',
+    'Viņš smejas tā, ka no ciņa nokrīt sūnas. „Sals, {muļķi|muļķe}, sals! Tev ir kājas, bebram ir kājas, man arī. Labi, vēl vienu. Man tik un tā laiks garš.“',
+    'He laughs so hard the moss falls off the hummock. “The frost, fool, the frost! You have legs, a beaver has legs, so have I. All right, one more. I’m bored anyway.”',
   ),
   /** NEW — after a right answer, the player may give one back. */
   askBack: {
@@ -613,14 +613,14 @@ export const velns = {
       '“A man all airs and graces, a coat all stitch on stitch, a nose of bone and a beard of flesh. What is it?”',
     ),
     stumped: L(
-      '„Tas ir… tas…“ Viņš saviebjas. „To vārdu es nesaukšu! Labi, tu esi {viltīgs|viltīga} — strādāšu ātri.“',
-      '“That is… that…” He grimaces. “That word I will not say! All right, you are sly — I will work fast.”',
+      '„Tas ir… tas…“ Viņš saviebjas. „To vārdu es nesaukšu! Labi, tu esi {viltīgs|viltīga}. Strādāšu ātri.“',
+      '“That’s… that…” He grimaces. “I’m not saying that word! Fine, you’re a sly one. I’ll work fast.”',
     ),
   },
   /** NEW — a wrong first answer is not the end of it: he wants to keep playing. */
   riddleWrong: L(
-    'Viņš smejas tā, ka no ciņa nokrīt sūnas. „Nē! Vējš, {muļķi|muļķe}, vējš! Labi, vēl vienu — man vienalga garlaicīgi.“',
-    'He laughs so hard the moss falls off the hummock. “No! The wind, fool, the wind! All right, one more — I am bored anyway.”',
+    'Viņš smejas tā, ka no ciņa nokrīt sūnas. „Nē! Vējš, {muļķi|muļķe}, vējš! Labi, vēl vienu. Man tik un tā laiks garš.“',
+    'He laughs so hard the moss falls off the hummock. “No! The wind, fool, the wind! All right, one more. I’m bored anyway.”',
   ),
   // Quoted: the Devil's own riddle, and its answer, in Šmits LPT X, «Velna
   // uzdotās mīklas» 2 — «Kas ir saldāks par medu?» «Miegs.»
@@ -640,8 +640,8 @@ export const velns = {
   ),
   terms: [
     L(
-      '„Cena vienkārša: pirmais dzīvais, kas pāri ies, būs mans. Nu — pie darba!“',
-      '“The price is simple: the first living thing to cross is mine. Now — to work!”',
+      '„Cena vienkārša: pirmais dzīvais, kas pāri ies, būs mans. Nu, pie darba!“',
+      '“The price is simple: the first living thing to cross is mine. Right. To work!”',
     ),
   ],
   /** NEW — the night, while he builds. */
@@ -652,20 +652,20 @@ export const velns = {
   ),
   night: {
     prompt: L(
-      'Viņš būvē. Līdz gaiļiem viņam jāsaņem samaksa — dod kaut ko no kules.',
-      'He is building. Before the cocks crow he must be paid — give him something from your bag.',
+      'Viņš būvē. Līdz gaiļiem viņam jāsaņem samaksa: dod kaut ko no kules.',
+      'He is building. Before the cocks crow he must be paid, so give him something from your bag.',
     ),
     built: L('Tilts gatavs. Viņš sēž un gaida.', 'The bridge is finished. He sits and waits.'),
     greying: L('Austrumos debess kļūst pelēka.', 'In the east the sky is turning grey.'),
     bridgeLabel: L('Jaunais tilts', 'The new bridge'),
-    stepAsk: L('Iet pāri pašam?', 'Walk across yourself?'),
+    stepAsk: L('Iet pāri {pašam|pašai}?', 'Walk across yourself?'),
     stepYes: L('Iet.', 'Go.'),
     stepNo: L('Vēl ne.', 'Not yet.'),
   },
-  question: L('Kā tu to izkārto?', 'How do you settle it?'),
+  question: L('Kā tu ar viņu norēķināsies?', 'How do you settle it?'),
   choices: {
     self: L(
-      'Piekrist un iet pāri pašam.',
+      'Piekrist un iet pāri {pašam|pašai}.',
       'Agree, and walk across first yourself.',
     ),
     cat: L(
@@ -673,8 +673,8 @@ export const velns = {
       'Agree, and send the village cat over ahead of you.',
     ),
     bread: L(
-      'Piekrist un aizsviest pāri rudzu klaipu — lai maize iet pirmā.',
-      'Agree, and throw the rye loaf across — let the bread go first.',
+      'Piekrist un aizsviest pāri rudzu klaipu, lai maize iet pirmā.',
+      'Agree, and throw the rye loaf across, so the bread goes first.',
     ),
   },
   outcomes: {
@@ -691,8 +691,8 @@ export const velns = {
     cat: [
       catCrosses,
       L(
-        '„Kaķis,“ viņš saka. „Kaķis.“ Tad ceļas un iet tam līdzi — un tilts paliek, akmens un ozols, kā solīts.',
-        '“A cat,” he says. “A cat.” Then he gets up and follows it — and the bridge stays, stone and oak, as promised.',
+        '„Kaķis,“ viņš saka. „Kaķis.“ Tad ceļas un iet tam līdzi, un tilts paliek, akmens un ozols, kā solīts.',
+        '“A cat,” he says. “A cat.” Then he gets up and follows it, and the bridge stays, stone and oak, as promised.',
       ),
     ],
     catFumbled: [
@@ -706,16 +706,16 @@ export const velns = {
       breadThrown,
       breadArgued,
       L(
-        'Viņš atver muti. Aizver. Purvā kaut kur iebrēcas gailis — par agru, un tomēr. Tilts stāv gatavs, un viņa vairs nav.',
-        'He opens his mouth. Closes it. Somewhere out in the bog a cock crows — too early, and yet. The bridge stands finished, and he is gone.',
+        'Viņš atver muti. Aizver. Purvā kaut kur iebrēcas gailis, vēl pirms laika. Tilts stāv gatavs, un viņa vairs nav.',
+        'He opens his mouth. Closes it. Somewhere out in the bog a cock crows, well before its time. The bridge stands finished, and he is gone.',
       ),
     ],
     breadGoodFumbled: [
       breadThrown,
       breadArgued,
       L(
-        'Viņš atver muti. Aizver. Purvā kaut kur iebrēcas gailis — par agru, un tomēr. Viņa vairs nav, un pār ūdeni guļ divi baļķi un pāris dēļu.',
-        'He opens his mouth. Closes it. Somewhere out in the bog a cock crows — too early, and yet. He is gone, and two logs and a few planks lie over the water.',
+        'Viņš atver muti. Aizver. Purvā kaut kur iebrēcas gailis, vēl pirms laika. Viņa vairs nav, un pār ūdeni guļ divi baļķi un pāris dēļu.',
+        'He opens his mouth. Closes it. Somewhere out in the bog a cock crows, well before its time. He is gone, and two logs and a few planks lie over the water.',
       ),
     ],
     // NEW — a loaf with Jumis in it. No argument needed.
@@ -723,25 +723,25 @@ export const velns = {
       breadThrown,
       L(
         'Viņš paceļ maizi, paošņā un apsēžas atpakaļ. „Tajā ir Jumis,“ viņš čukst.',
-        'He picks up the bread, sniffs it and sits back down. “There is Jumis in it,” he whispers.',
+        'He picks up the bread, sniffs it and sits back down. “There’s Jumis in it,” he whispers.',
       ),
       L(
-        'Viņš paklanās maizei — ne tev — un aiziet purvā. Kaut kur iebrēcas gailis, par agru. Tilts stāv gatavs, un uz ciņa šogad vairs neviens nesēdēs.',
-        'He bows to the bread — not to you — and walks off into the bog. Somewhere a cock crows, too early. The bridge stands finished, and nobody will sit on that hummock again this year.',
+        'Viņš paklanās maizei, ne tev, un aiziet purvā. Kaut kur iebrēcas gailis, par agru. Tilts stāv gatavs, un uz ciņa šogad vairs neviens nesēdēs.',
+        'He bows to the bread, not to you, and walks off into the bog. Somewhere a cock crows, too early. The bridge stands finished, and nobody will sit on that hummock again this year.',
       ),
     ],
     breadPoor: [
       L(
-        'Tu pārlauz klaipu un aizsvied pusi pāri. Tas nokrīt smagi, kā akmens.',
+        'Tu pārlauz klaipu un aizsvied pusi pāri. Tā nokrīt smagi, kā akmens.',
         'You break the loaf and throw half across. It lands heavily, like a stone.',
       ),
       L(
-        'Viņš to paceļ, pasver rokā un iesmejas. „Tas ir plāns gads, cilvēciņ. Tur iekšā nav nekā. Tā ir viltota nauda.“',
-        'He picks it up, weighs it in his hand and laughs. “That is a thin year, little {man|woman}. There is nothing inside it. That is counterfeit coin.”',
+        'Viņš to paceļ, pasver rokā un iesmejas. „Tas ir plāns gads, cilvēciņ. Tur iekšā nav nekā. Tukša kā vecs maks.“',
+        'He picks it up, weighs it in his hand and laughs. “Thin year, little {man|woman}. Nothing inside. That’s counterfeit coin.”',
       ),
       L(
-        'Viņš tomēr uzbūvē — divus baļķus un dēļus. Tik daudz, cik tava maize bija vērta.',
-        'He builds it anyway — two logs and some planks. As much as your bread was worth.',
+        'Viņš tomēr pārmet pār ūdeni divus baļķus un pāris dēļu, tik, cik tava maize bija vērta.',
+        'He builds it anyway: two logs and some planks, as much as your bread was worth.',
       ),
     ],
     // NEW — the cocks crow with nothing paid.
@@ -780,29 +780,29 @@ export const velns = {
    */
   jug: {
     cat: L(
-      'Jau sūnās, viņš pagriežas uz pusi atpakaļ. „Un vēl, cilvēciņ: krūzi alus Jāņos tu man paliec parādā. Tilts ir tilts, bet slāpes ir slāpes.“',
-      'Already in the moss, he turns half back. “And one more thing, little {man|woman}: at Jāņi, come midsummer, you owe me a jug of beer. A bridge is a bridge, but thirst is thirst.”',
+      'Jau sūnās viņš vēl pagriež galvu atpakaļ. „Un vēl, cilvēciņ: krūzi alus Jāņos tu man paliec parādā. Tilts ir tilts, bet slāpes ir slāpes.“',
+      'Already in the moss, he looks back over his shoulder. “And one more thing, little {man|woman}: at Jāņi, come midsummer, you owe me a jug of beer. A bridge is a bridge, but thirst is thirst.”',
     ),
     bread: L(
-      'Viņš noslauka rokas pret svārkiem. „Par tiltu samaksāts. Bet krūzi alus Jāņos tu man paliec parādā — to maize nesedz.“',
-      'He wipes his hands on his coat. “The bridge is paid for. But at Jāņi, come midsummer, you owe me a jug of beer — bread does not cover that.”',
+      'Viņš noslauka rokas pret svārkiem. „Par tiltu samaksāts. Bet krūzi alus Jāņos tu man paliec parādā. To maize nesedz.“',
+      'He wipes his hands on his coat. “The bridge is paid for. But at Jāņi, come midsummer, you owe me a jug of beer. Bread doesn’t cover that.”',
     ),
     jumis: L(
       'No sūnām, neatskatoties: „Līdz Jāņiem, {puis|meit}! Un krūzi alus tu man būsi parādā arī tad.“',
-      'From the moss, without looking back: “Till Jāņi, then — till midsummer! And you will owe me a jug of beer even then.”',
+      'From the moss, without looking back: “Till Jāņi, {lad|lass}, come midsummer! And you’ll still owe me a jug of beer.”',
     ),
     self: L(
-      'No purva vidus atskan: „Un krūzi alus Jāņos tu man joprojām paliec parādā! Par tādu tiltu — pusi krūzes.“',
-      'From out in the bog: “And at Jāņi, come midsummer, you still owe me a jug of beer! For a bridge like that — half a jug.”',
+      'No purva vidus atskan: „Un krūzi alus Jāņos tu man joprojām paliec parādā! Par tādu tiltu, pusi krūzes.“',
+      'From out in the bog: “And at Jāņi, come midsummer, you still owe me a jug of beer! For a bridge like that, half a jug.”',
     ),
     dawn: L(
-      'Tad, jau no sūnām: „Bet krūzi alus Jāņos tu man paliec parādā. Par gaidīšanu es rēķinu atsevišķi.“',
-      'Then, from the moss: “But at Jāņi, come midsummer, you owe me a jug of beer. Waiting I charge for separately.”',
+      'Tad, jau no sūnām: „Bet krūzi alus Jāņos tu man paliec parādā. Par gaidīšanu es ņemu atsevišķi.“',
+      'Then, from the moss: “But at Jāņi, come midsummer, you owe me a jug of beer. Waiting’s extra.”',
     ),
   },
   /** NEW */
   replies: {
-    sickle: L('Ar sirpi te neko neizlīgsi.', 'You will not settle anything here with a sickle.'),
+    sickle: L('Ar sirpi te neko nepanāksi.', 'You will not settle anything here with a sickle.'),
   },
 };
 
@@ -827,11 +827,11 @@ export const feast = {
   open: [
     L(
       'Vakars. Annas mātes namā deg skals, un galds ir pievilkts pie sienas, lai visi tiktu klāt. Apjumības.',
-      'Evening. A splinter burns in Mother Anna’s house, and the table has been pushed against the wall so that everyone fits. Apjumības — the harvest-home feast.',
+      'Evening. A pine splinter burns in its holder in Mother Anna’s house, and the table has been pushed against the wall so that everyone fits. Apjumības, the harvest-home feast.',
     ),
     L(
-      'No pēdējās rudzu saujas ir novīts vārpu vaiņags. Tas pienākas tai, kam pieder nams, un Annas māte to nes galvā kā kroni. Smieties neviens nedrīkst.',
-      'A wreath of ears has been woven from the last handful of rye. It goes to whoever the house belongs to, and Mother Anna wears it like a crown. Nobody is allowed to laugh.',
+      'No pļaujamajiem rudziem ir novīts vārpu vaiņags. Tas pienākas tai, kam pieder nams, un Annas māte to nes galvā kā kroni. Smieties neviens neuzdrošinās.',
+      'A wreath of ears has been woven from the rye as it was reaped. It goes to whoever the house belongs to, and Mother Anna wears it like a crown. Nobody dares to laugh.',
     ),
   ],
   /** What is, or is not, over the table — by what was done in the field. */
@@ -841,12 +841,12 @@ export const feast = {
       'The double ear has been fetched in from the granary and hung over the table. It sways there all evening, and every so often somebody looks up to see whether it is still there.',
     ),
     leave: L(
-      'Divvārpa šovakar stāv laukā, sasieta mezglā un appušķota. Tā tur paliks pār ziemu un sargās nākamo gadu. Pie galda par to nerunā. Visi zina.',
-      'Tonight the double ear is standing out in the field, tied in its knot and decked with flowers. It will stay there over the winter and guard next year. Nobody at the table mentions it. Everybody knows.',
+      'Divvārpa šovakar stāv laukā, sasieta mezglā un appušķota. Tā tur paliks pār ziemu un sargās nākamo gadu. Pie galda par to nerunā, jo visi tāpat zina.',
+      'Tonight the double ear is standing out in the field, tied in its knot and decked with flowers. It will stay there over the winter and guard next year. Nobody at the table mentions it, because everybody knows.',
     ),
     none: L(
-      'Virs galda nekas nekarājas. Vaiņags ir, bet divvārpas nav ne klētī, ne mezglā laukā. Kāds to pamana un neko nesaka, un tas ir sliktāk.',
-      'Nothing hangs over the table. There is a wreath, but no double ear — not in the granary, and not tied in a knot in the field. Somebody notices, and says nothing, which is worse.',
+      'Virs galda nekas nekarājas. Vaiņags ir, bet divvārpas nav ne klētī, ne mezglā laukā. Kāds to pamana, un neviens neko nesaka.',
+      'Nothing hangs over the table. There is a wreath, but no double ear, not in the granary and not tied in a knot in the field. Somebody notices, and nobody says a word.',
     ),
   },
   /** Who you end up sitting next to, by how close you came. */
@@ -867,12 +867,12 @@ export const feast = {
   ),
   loaf: {
     good: L(
-      'Pirmais klaips nonāk uz plaukta pie krāsns — augsts un zeltains. Tam tur stāvēt līdz nākamajiem svētkiem.',
-      'The first loaf goes onto the shelf by the oven — tall and golden. There it stands until the next festival.',
+      'Pirmais klaips nonāk uz plaukta pie krāsns, augsts un zeltains. Tam tur stāvēt līdz nākamajiem svētkiem.',
+      'The first loaf goes onto the shelf by the oven, tall and golden. It will stand there until the next festival.',
     ),
     flat: L(
-      'Pirmais klaips nonāk uz plaukta pie krāsns — plakans un smags. Tam tur stāvēt līdz nākamajiem svētkiem.',
-      'The first loaf goes onto the shelf by the oven — flat and heavy. There it stands until the next festival.',
+      'Pirmais klaips nonāk uz plaukta pie krāsns, plakans un smags. Tam tur stāvēt līdz nākamajiem svētkiem.',
+      'The first loaf goes onto the shelf by the oven, flat and heavy. It will stand there until the next festival.',
     ),
   },
   /**
@@ -881,7 +881,7 @@ export const feast = {
    * just the name.
    */
   mikeli: L(
-    '«Miķeļi būs klāt, pirms paspēsi apskatīties,» Annas māte saka durvīs. «Nomazgā kaklu.»',
+    '«Miķeļi būs klāt, pirms paspēsi atskatīties,» Annas māte saka durvīs. «Nomazgā kaklu.»',
     '“Miķeļi will be here before you know it,” Mother Anna says at the door. “Wash your neck.”',
   ),
 };
@@ -894,11 +894,11 @@ export const outro = {
     ),
     L(
       'Ciems to vēl neprot pateikt, bet redz: šogad neviens netika apkrāpts. Kāds beidzot atcerējās, ko atstāt.',
-      'The village has no words for it yet, but it can see: nobody was short-changed this year. Somebody finally remembered what to leave behind.',
+      'Nobody in the village says it out loud, but everyone can see that nobody was short-changed this year.',
     ),
     L(
-      'Aiz jaunā tilta sākas zeme, kurā neviens nav gājis. Tur arī kaut kas ir. Tur vienmēr kaut kas ir.',
-      'Beyond the new bridge lies land nobody has walked. There is something out there too. There always is.',
+      'Aiz jaunā tilta sākas zeme, kurā neviens no ciema nav bijis, un arī tur kaut kas mīt.',
+      'Past the new bridge is country nobody from the village has walked, and something lives out there as well.',
     ),
   ],
   half: [
@@ -911,8 +911,8 @@ export const outro = {
       'The village will live. Not richly, but it will live, and next year somebody will remember this year and do better.',
     ),
     L(
-      'Vecās varas nesoda. Tās tikai atceras, cik tu iedevi.',
-      'The old powers do not punish. They only remember how much you gave.',
+      'Vecās varas tevi par to nesodīs. Tās atcerēsies, cik tu iedevi.',
+      'The old powers will not punish you for it. They will remember how much you gave.',
     ),
   ],
   neither: [
@@ -921,8 +921,8 @@ export const outro = {
       'You have a shed and two logs over the bog, and a winter ahead.',
     ),
     L(
-      'Neviens tevi nenolādēja, neviens nedusmojās. Tev vienkārši iedeva tieši tik, cik tu atstāji.',
-      'Nobody cursed you, nobody was angry. You were simply given exactly as much as you left behind.',
+      'Neviens tevi nenolādēja un neviens nedusmojās. Tu dabūji atpakaļ tik, cik atstāji, un ne vairāk.',
+      'Nobody cursed you and nobody was angry. You got back what you left, and no more.',
     ),
     L(
       'Nākamgad rudzi atkal stāvēs gatavi. Lauks gaida ilgi.',
@@ -941,7 +941,7 @@ export const outro = {
  *             what it would have got you
  */
 export const reckoning = {
-  title: L('Kā palika', 'How it was left'),
+  title: L('Kā izgāja', 'How it went'),
   jumis: {
     leave: {
       verdict: L('Jumis ir mierā.', 'Jumis is satisfied.'),
@@ -956,8 +956,8 @@ export const reckoning = {
       verdict: L('Jumis nav mierā.', 'Jumis is not satisfied.'),
       gain: L('Klēts: lāpīta būda. Maize: viens smags klaips.', 'Granary: a patched shed. Bread: one heavy loaf.'),
       missed: L(
-        'Divvārpu nenocērt. Pļauj apkārt un atstāj to stāvam mazā saliņā — tad klēts būtu pilna.',
-        'Never cut the double ear. Cut around it and leave it standing in a little island — then the granary would have been full.',
+        'Divvārpu nenocērt. Pļauj apkārt un atstāj to stāvam mazā saliņā. Tad klēts būtu bijusi pilna.',
+        'Never cut the double ear. Cut around it and leave it standing in a little island. Then the granary would have been full.',
       ),
     },
     spare: {
@@ -979,7 +979,7 @@ export const reckoning = {
     },
     // NEW
     gone: {
-      verdict: L('Velns padzīts — līdz Jāņiem.', 'The Devil is chased off — till Jāņi.'),
+      verdict: L('Velns padzīts līdz Jāņiem.', 'The Devil is chased off until Jāņi.'),
       gain: L(
         'Pāreja: akmens un ozola tilts. Uz ciņa šogad vairs neviens nesēž.',
         'Crossing: a bridge of stone and oak. Nobody sits on the hummock this year.',
@@ -987,8 +987,8 @@ export const reckoning = {
     },
     // NEW
     catCost: L('Cena: ciema kaķis.', 'The price: the village cat.'),
-    catKept: L('Kaķis — tev kulē.', 'The cat — still in your bag.'),
-    hatKept: L('Velna cepure — tev kulē.', 'The Devil’s hat — in your bag.'),
+    catKept: L('Kaķis vēl ir tavā kulē.', 'The cat is still in your bag.'),
+    hatKept: L('Velna cepure ir tavā kulē.', 'The Devil’s hat is in your bag.'),
     poor: {
       verdict: L('Velns guva virsroku.', 'The Devil came out ahead.'),
       gain: L(
@@ -998,18 +998,18 @@ export const reckoning = {
       // Every reason that applies is shown, in the order it happened, then one
       // closing line.
       missedRiddle: L(
-        'Pareiza atbilde — kaut viena no divām — un viņš būtu runājis ar tevi kā ar līdzīgu.',
-        'One right answer — either of the two — and he would have dealt with you as an equal.',
+        'Būtu pieticis ar vienu pareizu atbildi no divām, un viņš būtu runājis ar tevi kā ar sev līdzīgu.',
+        'One right answer out of the two, and he would have dealt with you as an equal.',
       ),
       // Reworded so it no longer names the cat: the reckoning may teach, but
       // the bargain is still the player's to work out.
       missedSelf: L(
-        'Nekad neej pāri pirmais. Pirmajam jābūt kaut kam dzīvam, kas nav tu — vai kaut kam, kas reiz bija dzīvs.',
-        'Never cross first yourself. The first across must be something living that is not you — or something that once was.',
+        'Nekad neej pāri {pirmais|pirmā}. Pirmajam jābūt kaut kam dzīvam, kas nav tu, vai kaut kam, kas reiz bija dzīvs.',
+        'Never cross first. The first across must be something living that is not you, or something that once was.',
       ),
       missedBread: L(
-        'Maize bija plāna, jo lauks tika nopļauts līdz pēdējam. Ja laukam būtu atstāts savs, tas arguments būtu turējis.',
-        'The bread was thin because the field was cut to the last stem. Had the field been left its own, that argument would have held.',
+        'Maize bija plāna, jo lauks tika nopļauts līdz pēdējam. Ja laukam būtu atstāts tas, kas tam pienākas, velns tev neko nebūtu varējis iebilst.',
+        'The bread was thin because the field was cut to the last stem. If the field had been left its share, he would have had no answer to it.',
       ),
       missedDawn: L(
         'Tu vilcinājies līdz gaiļiem. Tilts, par kuru nav samaksāts, rītu nesagaida.',
@@ -1080,26 +1080,26 @@ export const opening: readonly OpeningRiddle[] = [
 /** The closing tally — the player's whole record, said plainly. */
 export const tally = {
   heading: L('Vecās varas', 'The old powers'),
-  both: L('Abas godā pavadītas.', 'Both were seen off with honour.'),
+  both: L('Abas godā pavadītas.', 'Both were honoured as they should be.'),
   half: L('Viena godā. Otra ne.', 'One with honour. One not.'),
-  neither: L('Neviena nav godā pavadīta.', 'Neither was seen off with honour.'),
+  neither: L('Neviena nav godā pavadīta.', 'Neither was honoured as it should be.'),
   rowJumis: {
-    leave: L('Jumis — palika mierā', 'Jumis — left content'),
-    take: L('Jumis — klētī', 'Jumis — in the granary'),
-    all: L('Jumis — paņemts viss', 'Jumis — everything taken'),
-    spare: L('Jumis — atstāts par daudz', 'Jumis — too much left'),
+    leave: L('Jumis: palika mierā', 'Jumis: left content'),
+    take: L('Jumis: klētī', 'Jumis: in the granary'),
+    all: L('Jumis: paņemts viss', 'Jumis: everything taken'),
+    spare: L('Jumis: atstāts par daudz', 'Jumis: too much left'),
   },
   rowVelns: {
-    good: L('Velns — tilts vesels', 'The Devil — a whole bridge'),
-    gone: L('Velns — padzīts līdz Jāņiem', 'The Devil — chased off till Jāņi'),
-    poor: L('Velns — divi baļķi', 'The Devil — two logs'),
+    good: L('Velns: tilts vesels', 'The Devil: a whole bridge'),
+    gone: L('Velns: padzīts līdz Jāņiem', 'The Devil: chased off until Jāņi'),
+    poor: L('Velns: divi baļķi', 'The Devil: two logs'),
   },
   // NEW — the smaller facts under the two marks.
   bread: L('Maize ziemai: {}', 'Bread for the winter: {}'),
   catLost: L('Kaķis palika purvā.', 'The cat stayed at the bog.'),
   catHome: L('Kaķis guļ uz sliekšņa.', 'The cat is asleep on its doorstep.'),
   hat: L('Velna cepure karājas klētī pie sijas.', 'The Devil’s hat hangs from the granary beam.'),
-  again: L('Otrā reizē var labāk.', 'It can be done better a second time.'),
+  again: L('Otrā reizē var labāk.', 'Next time it can go better.'),
   perfect: L('Labāk vairs nevar.', 'It cannot be done better than that.'),
   // NEW — what stood between this year and a perfect one, when both shares
   // are whole but something was still given up.
@@ -1109,11 +1109,11 @@ export const tally = {
 
 /** Said in the village the moment the player walks back in and sees the change. */
 export const arrival = {
-  granaryGood: L('Klēts stāv uz veciem pamatiem. Pilna.', 'The granary stands on the old foundation. Full.'),
+  granaryGood: L('Klēts stāv uz vecajiem pamatiem, un tā ir pilna.', 'The granary stands on the old foundation, and it is full.'),
   // NEW
   granaryTake: L(
-    'Klēts stāv uz veciem pamatiem. Pie sijas karājas Jumis.',
-    'The granary stands on the old foundation. Jumis hangs from the beam.',
+    'Klēts stāv uz vecajiem pamatiem. Aiz sijas glabājas Jumis.',
+    'The granary stands on the old foundation. Jumis is kept behind the beam.',
   ),
   granaryPoor: L(
     'Uz pamatiem stāv būda. Vietu tā aizņem, un tas arī viss.',
@@ -1121,8 +1121,8 @@ export const arrival = {
   ),
   // NEW
   granarySpare: L(
-    'Uz pamatiem stāv būda. Tas, kas tajā ir, ir labs — tikai tā ir maz.',
-    'A shed stands on the foundation. What is in it is good — there is only little of it.',
+    'Uz pamatiem stāv būda. Kas tajā ir, tas labs, tikai maz.',
+    'A shed stands on the foundation. What is in it is good, but there is not much of it.',
   ),
   bridgeGood: L(
     'Pār strautu ved akmens tilts. Pa to var vest ratus.',
@@ -1164,7 +1164,7 @@ export const items = {
   cat: {
     label: L('Kaķis', 'The cat'),
     there: L(
-      'Pelēks kaķis sēž uz sliekšņa un skatās uz tevi tā, it kā tu būtu aizkavējies.',
+      'Pelēks kaķis sēž uz sliekšņa un skatās uz tevi tā, it kā tu būtu {aizkavējies|aizkavējusies}.',
       'A grey cat sits on a doorstep, looking at you as though you were late.',
     ),
     tookIt: L(
@@ -1199,7 +1199,7 @@ export const items = {
     'Take a thing in hand, then point at where it goes.',
   ),
   // Said every time something is taken in hand.
-  inHand: L('{} rokā. Pieskaries tam, uz ko to lietot.', '{} in hand. Touch what to use it on.'),
+  inHand: L('{} rokā. Pieskaries tam, kam to likt klāt.', '{} in hand. Touch what to use it on.'),
   // The way back out of holding something, for a screen with no right button.
   putBack: L('Nolikt atpakaļ', 'Put it back'),
   /** The bag's own introduction, shown as a card the first time something goes into it. */
@@ -1215,8 +1215,8 @@ export const items = {
   // argument at the bog turns on. Shown under its name in the bag.
   breadNote: {
     good: L(
-      'Cepts no gada, kurā laukam netika paņemts viss. Smaržo pēc visa lauka.',
-      'Baked from a year in which the field was not taken to the last stem. It smells of the whole field.',
+      'Cepts no rudziem, kad laukam atstāja tā daļu. Smaržo pēc visa lauka.',
+      'Baked in a year the field was not cut to the last stem. It smells of the whole field.',
     ),
     jumis: L(
       'Cepts no graudiem, kas gulēja blakus Jumim. Smags un silts, kā dzīvs.',

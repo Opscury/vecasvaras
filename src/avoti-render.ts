@@ -31,7 +31,7 @@ const UI = {
   back: { lv: '← Uz spēli', en: '← To the game' },
   switchTo: { lv: 'English', en: 'Latviski' },
   open: { lv: 'Atvērt avotu', en: 'Open the source' },
-  noSource: { lv: 'Bez avota — spēles teksts', en: 'No source — the game’s own text' },
+  noSource: { lv: 'Bez avota: spēles teksts', en: 'No source: the game’s own text' },
   where: { lv: 'Spēlē', en: 'In the game' },
   updated: { lv: 'Atjaunināts', en: 'Updated' },
   write: { lv: 'Rakstīt', en: 'Write to' },

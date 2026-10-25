@@ -87,10 +87,10 @@ export const WORKS: readonly Work[] = [
   },
   {
     id: 'lfk',
-    short: L('Latviešu folkloras krātuve — garamantas.lv', 'Archives of Latvian Folklore — garamantas.lv'),
+    short: L('Latviešu folkloras krātuve (garamantas.lv)', 'Archives of Latvian Folklore (garamantas.lv)'),
     cite: L(
-      'LU Literatūras, folkloras un mākslas institūta Latviešu folkloras krātuve — digitālais arhīvs.',
-      'Archives of Latvian Folklore, Institute of Literature, Folklore and Art, University of Latvia — digital archive.',
+      'LU Literatūras, folkloras un mākslas institūta Latviešu folkloras krātuve, digitālais arhīvs.',
+      'Archives of Latvian Folklore, Institute of Literature, Folklore and Art, University of Latvia: digital archive.',
     ),
     url: 'https://garamantas.lv/',
     urlLabel: 'garamantas.lv',
@@ -183,11 +183,11 @@ export function allEntries(): SourceEntry[] {
     title: L('«Pirms ceļa»: Jumis', '“Before you go”: Jumis'),
     where: L('Kartīte pirms lauka', 'The card before the field'),
     status: 'attested',
-    cite: fillLoc(TIC, same('11991, 11992, 11998')),
+    cite: fillLoc(TIC, same('11989, 11991, 11992, 11998')),
     url: beliefs.jumis.source,
     note: L(
-      'Pārstāstīts, ne citēts: saliņa un mezgls (11992), divvārpa ir Jumis (11991), Jumis klētī (11998). «Labības svētība» ir spēles kopsavilkums.',
-      'Retold, not quoted: the patch and the knot (11992), the double ear is Jumis (11991), Jumis in the granary (11998). “The blessing of the grain” is the game’s summary.',
+      'Pārstāstīts, ne citēts: Jumis dzīvo labībā un, ja viņam neko neatstāj, neatgriežas (11989); saliņa un mezgls, pēc tam Jumi izrauj un nes mājās (11992); divvārpa ir Jumis (11991); Jumis klētī (11998). «Labības svētība» ir spēles kopsavilkums.',
+      'Retold, not quoted: Jumis lives in the grain and, if nothing is left for him, does not come back (11989); the patch and the knot, then Jumis pulled and carried home (11992); the double ear is Jumis (11991); Jumis in the granary (11998). “The blessing of the grain” is the game’s summary.',
     ),
   });
   (['jumis', 'jumjaKersana', 'maize', 'pirmaisKumoss'] as LoreId[]).forEach((id) => out.push(beliefEntry(id)));
@@ -225,13 +225,13 @@ export function allEntries(): SourceEntry[] {
     where: L('Kartīte pirms purva', 'The card before the bog'),
     status: 'attested',
     cite: L(
-      'P. Šmits, «Latviešu pasakas un teikas», X («Velna uzdotās mīklas»), XV («Kalni» 14); «Latviešu tautas ticējumi», Nr. 32406',
-      'P. Šmits, Latviešu pasakas un teikas, X («Velna uzdotās mīklas»), XV («Kalni» 14); Latviešu tautas ticējumi, no. 32406',
+      'P. Šmits, «Latviešu pasakas un teikas», X («Velna uzdotās mīklas»), XV («Kalni» 14); «Latviešu tautas ticējumi», Nr. 21224, 32406',
+      'P. Šmits, Latviešu pasakas un teikas, X («Velna uzdotās mīklas»), XV («Kalni» 14); Latviešu tautas ticējumi, nos. 21224, 32406',
     ),
     url: TEIKAS_URL,
     note: L(
-      'Pārstāstīts, ne citēts: velns uzdod mīklas un slēdz darījumus, ceļ tiltu vienā naktī līdz gaiļiem, gaiļa dziesma viņu padzen. «Purva viltnieks, nevis ļaunuma valdnieks» ir spēles kopsavilkums.',
-      'Retold, not quoted: the Devil asks riddles and strikes bargains, builds a bridge in one night until the cock crows, and cockcrow drives him off. “A trickster of the bog, not a lord of evil” is the game’s summary.',
+      'Pārstāstīts, ne citēts: velns klausās, kad min mīklas (21224), uzdod mīklas un slēdz darījumus, sola uzcelt tiltu vienā naktī, bet gailis iedziedas, pirms tas gatavs, un gaiļa dziesma viņu padzen. «Velns nav nekāds briesmonis» ir spēles kopsavilkums.',
+      'Retold, not quoted: the Devil listens when riddles are asked (21224), asks riddles and strikes bargains, promises a bridge in one night, but the cock crows before it is done, and cockcrow drives him off. “More fool than fiend” is the game’s summary.',
     ),
   });
   out.push(beliefEntry('maldugunis'));
@@ -293,7 +293,7 @@ export function allEntries(): SourceEntry[] {
     cite: null,
     url: null,
     note: L(
-      'Latviešu teikās velns ceļ tiltu vienā naktī līdz gaiļiem, bet maksa ar pirmo, kas pāri ies, un viltība ar dzīvnieku nāk no Viduseiropas teikas par velna tiltu. Latviešu pierakstos to neatradām. Tuvākais latviešu motīvs: velnam apsolīts tas, kas mājās gaida (piemēram, «Latviešu pasakas un teikas», X, «Velna uzdotās mīklas», Nr. 1–2).',
+      'Latviešu teikās velns ceļ tiltu vienā naktī līdz gaiļiem, bet maksa ar pirmo, kas pāri ies, un viltība ar dzīvnieku nāk no Viduseiropas teikas par velna tiltu. Latviešu pierakstos tos neatradām. Tuvākais latviešu motīvs: velnam apsolīts tas, kas mājās gaida (piemēram, «Latviešu pasakas un teikas», X, «Velna uzdotās mīklas», Nr. 1–2).',
       'In the Latvian legends the Devil builds a bridge in one night, until the cock crows; but the price of the first to cross, and cheating it with an animal, come from the Central European Devil’s-bridge legend. We did not find them in Latvian records. The nearest Latvian motif: the Devil is promised whatever waits at home (e.g. Latviešu pasakas un teikas, X, «Velna uzdotās mīklas», nos. 1–2).',
     ),
   });
@@ -319,8 +319,8 @@ export function allEntries(): SourceEntry[] {
     cite: null,
     url: null,
     note: L(
-      'Spēles stāsts. Ilzes vainags apģērbā ir meitas galvas rota, bet par to spēle neko neapgalvo. Danči Miķeļos ir izdomāti; Miķeļi kā rudens svētki, protams, nav.',
-      'The game’s story. Ilze’s woven crown is a maiden’s headdress in her costume; the game makes no claim about it. The dancing on Miķeļi is invented; Miķeļi itself, as the autumn feast, of course is not.',
+      'Spēles stāsts. Ilzes vaiņags apģērbā ir meitas galvas rota, bet par to spēle neko neapgalvo. Danči Miķeļos ir izdomāti, bet Miķeļi kā rudens svētki ir īsti.',
+      'The game’s story. Ilze’s woven crown is a maiden’s headdress in her costume; the game makes no claim about it. The dancing on Miķeļi is invented, but Miķeļi itself, the autumn feast, is real.',
     ),
   });
   out.push({
@@ -331,7 +331,53 @@ export function allEntries(): SourceEntry[] {
     status: 'own',
     cite: null,
     url: null,
-    note: L('Strīds ar velnu par maizi un to, ka šī gada klaips viņu padzen, ir spēles stāsts.', 'The argument with the Devil about bread, and the loaf of this year’s rye that sends him off, are the game’s story.'),
+    note: L('Strīds ar velnu par maizi, to, ka šī gada klaips viņu padzen, un to, ka maizei ar Jumi viņš paklanās, ir spēles stāsts.', 'The argument with the Devil about bread, the loaf of this year’s rye that sends him off, and his bow to a loaf with Jumis in it, are the game’s story.'),
+  });
+  out.push({
+    key: 'stasts:earInIsland',
+    kind: 'stasts',
+    title: L('Divvārpa saliņas vidū', 'The double ear in its little island'),
+    where: L('Laukā', 'The field'),
+    status: 'own',
+    cite: null,
+    url: null,
+    note: L(
+      'Spēlē saliņa un divvārpa ir viena lieta. Pierakstos tās ir divas: nenopļauts pauguriņš, kura vārpas sasien mezglā (Šmits, Nr. 11992), un divas vārpas uz viena salma, ko arī sauc par Jumi (11991).',
+      'In the game the little island and the double ear are one thing. In the records they are two: an uncut mound whose ears are tied in a knot (Šmits, no. 11992), and two ears on one stalk, also called Jumis (11991).',
+    ),
+  });
+  out.push({
+    key: 'stasts:villageStone',
+    kind: 'stasts',
+    title: L('Mājas kungs ciema akmenī', 'The house spirit in the village stone'),
+    where: L('Ciemā', 'The village'),
+    status: 'own',
+    cite: null,
+    url: null,
+    note: L(
+      'Pierakstos mājas kungs ir vienas sētas gars, un viņa vietai citi nedrīkst pieiet klāt (Šmits, Nr. 19325). Ka viņš mīt visa ciema kopīgajā akmenī, ir spēles izdomājums.',
+      'In the records the mājas kungs belongs to one farm, and others may not go near his place (Šmits, no. 19325). Living in a stone the whole village shares is the game’s own.',
+    ),
+  });
+  out.push({
+    key: 'stasts:emptyHanded',
+    kind: 'stasts',
+    title: L('«Uz purvu tukšām rokām neiet»', '“You do not go to the bog empty-handed”'),
+    where: L('Ciemā un kartē', 'The village and the map'),
+    status: 'own',
+    cite: null,
+    url: null,
+    note: L('Spēles noteikums, nevis ticējums.', 'A rule of the game, not a folk belief.'),
+  });
+  out.push({
+    key: 'stasts:hat',
+    kind: 'stasts',
+    title: L('Velna cepure', 'The Devil’s hat'),
+    where: L('Purvā un klētī', 'The bog and the granary'),
+    status: 'own',
+    cite: null,
+    url: null,
+    note: L('Spēles stāsts: cepure, ko velns atstāj tam, kas viņam atbildēja kā līdzīgs.', 'The game’s story: the hat the Devil leaves for someone who answered him as an equal.'),
   });
   out.push({
     key: 'stasts:overTable',
@@ -365,8 +411,8 @@ export function allEntries(): SourceEntry[] {
 export const AVOTI_TEXT = {
   heading: L('Avoti', 'Sources'),
   intro: L(
-    'Viss, ko spēle piedāvā kā veco ļaužu zināšanas, ir citēts no pierakstītas latviešu folkloras. Šeit ir katra tautasdziesma, ticējums, teika un mīkla, ko spēlē sastopi, ar avotu un numuru — un arī tas, ko spēle ir izdomājusi pati.',
-    'Everything the game offers as what the old people knew is quoted from recorded Latvian folklore. Here is every folk song, belief, legend and riddle you meet in the game, with its source and number — and also what the game has made up.',
+    'Viss, ko spēle piedāvā kā veco ļaužu zināšanas, ir citēts vai pārstāstīts no pierakstītas latviešu folkloras. Šeit ir katra tautasdziesma, ticējums, teika un mīkla, ko spēlē sastopi, ar avotu un numuru, kā arī tas, ko spēle izdomājusi pati.',
+    'Everything the game offers as what the old people knew is quoted or retold from recorded Latvian folklore. Here is every folk song, belief, legend and riddle you meet in the game, with its source and number, and also what the game made up itself.',
   ),
   fiction: L(
     'Ciems, Annas māte, akmens ciema vidū un spēles notikumi ir izdomāti. Folklora tajos ir īsta.',
@@ -389,7 +435,7 @@ export const AVOTI_TEXT = {
   /** The book's last spread. */
   bookLeft: L('Kas citēts un kas izdomāts:', 'What is quoted and what is invented:'),
   bookFull: L('Visi avoti ar numuriem un saitēm:', 'Every source, with numbers and links:'),
-  bookCount: L('{} folkloras vienības, katra citēta no avota', '{} items of folklore, each quoted from its source'),
+  bookCount: L('{} folkloras vienības, katra ar savu avotu', '{} items of folklore, each with its source'),
 };
 
 /** Where the standalone page lives, relative to the game's own page. */

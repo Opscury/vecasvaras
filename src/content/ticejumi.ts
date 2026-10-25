@@ -64,7 +64,7 @@ export const beliefs: Record<LoreId, Belief> = {
       'Jumja vārpu vajagot glabāt klētī aiz sijas, tad tur guļot klāt pūķis, kas velk bagātību klētī.',
       'The Jumis ear should be kept in the granary behind the beam: then a pūķis lies beside it there, and drags wealth into the granary.',
     ),
-    hint: L('Laukā — citādi, nekā saka akmens…', 'In the field — otherwise than the stone says…'),
+    hint: L('Laukā, ja dari citādi, nekā saka akmens…', 'In the field, if you go against what the stone says…'),
     source: SMITS + 'jumis.htm',
     book: 'ticejumi',
     ref: '11998',

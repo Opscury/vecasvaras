@@ -30,7 +30,7 @@ export const beloved = {
    * this run. Five knots and a name is not self-explanatory, and the family
    * playtest read it as a score.
    */
-  ribbonNote: L('Saticība — cik tuvu esat.', 'Closeness — how near you’ve come.'),
+  ribbonNote: L('Saticība: cik tuvi jūs esat.', 'Closeness: how near you’ve come.'),
 
   /** What they are doing, seen from across the yard. */
   look: B(
@@ -44,16 +44,16 @@ export const beloved = {
   meet: {
     lines: [
       B(
-        'Ilze noliek spaini un nobīda matus no pieres. «Tātad tevi Anna sūta uz lauku. Visu vienu pašu.»',
-        'Krišs atspiež cirvi pret bluķi. «Tātad tevi Anna sūta uz lauku. Visu vienu pašu.»',
-        'Ilze sets the bucket down and pushes the hair off her brow. “So Anna is sending you to the field. All on your own.”',
-        'Krišs leans the axe against the block. “So Anna is sending you to the field. All on your own.”',
+        'Ilze noliek spaini un nobīda matus no pieres. «Tātad tevi Annas māte sūta uz lauku. Pavisam vienu pašu.»',
+        'Krišs atspiež cirvi pret bluķi. «Tātad tevi Annas māte sūta uz lauku. Pavisam vienu pašu.»',
+        'Ilze sets the bucket down and pushes the hair off her brow. “So Old Anna is sending you to the field. All on your own.”',
+        'Krišs leans the axe against the block. “So Old Anna is sending you to the field. All on your own.”',
       ),
       B(
         '«Mans tēvs saka, ka tavs vectēvs pļāva tā, ka vārpas pašas gūlās. Redzēsim, puisi.»',
         '«Mans tēvs saka, ka tava vecmāmiņa sēja tā, ka rudzi auga taisni. Redzēsim, meitēn.»',
-        '“My father says your grandfather reaped so that the ears lay down on their own. We will see, lad.”',
-        '“My father says your grandmother sowed so that the rye grew straight. We will see, girl.”',
+        '“My father says your grandfather reaped so that the ears lay down on their own. We’ll see, lad.”',
+        '“My father says your grandmother sowed so that the rye grew straight. We’ll see, lass.”',
       ),
     ],
     ask: S('«Nu?»', '“Well?”'),
@@ -64,14 +64,14 @@ export const beloved = {
         'First let me carry that bucket up for you.',
         'First let me stack that wood for you.',
       ),
-      bold: S('Redzēsi. Un tad tu man būsi parādā dziesmu.', 'You will. And then you owe me a song.'),
+      bold: S('Redzēsi. Un tad tu man būsi parādā dziesmu.', 'You will see. And then you owe me a song.'),
       curt: S('Man nav laika runāt.', 'I have no time to talk.'),
     },
     help: B(
-      'Ilze tev spaini nedod. «Ej nu pļaut.» Bet viņa smaida, un smaids paliek ilgāk par vārdiem.',
-      'Krišs tev cirvi nedod. «Ej nu pļaut.» Bet viņš smaida, un smaids paliek ilgāk par vārdiem.',
-      'Ilze will not give you the bucket. “Go and reap.” But she is smiling, and the smile stays longer than the words.',
-      'Krišs will not give you the axe. “Go and reap.” But he is smiling, and the smile stays longer than the words.',
+      'Ilze tev spaini nedod. «Ej nu pļaut.» Bet viņa smaida, un vēl smaida, kad tu jau ej projām.',
+      'Krišs tev cirvi nedod. «Ej nu pļaut.» Bet viņš smaida, un vēl smaida, kad tu jau ej projām.',
+      'Ilze will not give you the bucket. “Go and reap.” But she is smiling, and still smiling as you walk off.',
+      'Krišs will not give you the axe. “Go and reap.” But he is smiling, and still smiling as you walk off.',
     ),
     bold: B(
       '«Dziesmu?» Ilze iesmejas. «Pļauj vispirms. Dziesmas dzied pēc pļaujas.»',
@@ -99,20 +99,24 @@ export const beloved = {
       '«Tu Jumi atvedi mājās? Ar visām saknēm?» Tas izklausās gan pēc brīnuma, gan pēc bažām.',
       '“You brought Jumis home? Roots and all?” It sounds like wonder and worry both.',
     ),
-    all: S(
-      '«Tu nopļāvi visu. Pat divvārpu.» Tas nav jautājums.',
-      '“You cut it all. Even the double ear.” It is not a question.',
+    all: B(
+      '«Tu nopļāvi visu. Pat divvārpu.» Ilzes balss ir vēsa.',
+      '«Tu nopļāvi visu. Pat divvārpu.» Kriša balss ir vēsa.',
+      '“You cut it all. Even the double ear.” Ilze’s voice is cool.',
+      '“You cut it all. Even the double ear.” Krišs’s voice is cool.',
     ),
-    spare: S(
-      '«Trešdaļu atstāji stāvam?» Galva noliecas uz sāniem. «Lauks tev būs pateicīgs. Ciems — nezinu.»',
-      '“You left a third of it standing?” A tilt of the head. “The field will thank you. The village, I do not know.”',
+    spare: B(
+      '«Trešdaļu atstāji stāvam?» Ilze noliec galvu uz sāniem. «Lauks tev būs pateicīgs. Ciems — nezinu.»',
+      '«Trešdaļu atstāji stāvam?» Krišs noliec galvu uz sāniem. «Lauks tev būs pateicīgs. Ciems — nezinu.»',
+      '“You left a third of it standing?” Ilze tilts her head. “The field will thank you. The village, I don’t know.”',
+      '“You left a third of it standing?” Krišs tilts his head. “The field will thank you. The village, I don’t know.”',
     ),
     /** The belief: retold from Šmits 11991. */
     omen: B(
-      '«Bet tu to atradi — divas vārpas uz viena salma.» Ilze pietvīkst. «Vecie saka: kas tādas atrod, tas drīz apprecēsies.»',
-      '«Bet tu to atradi — divas vārpas uz viena salma.» Krišs paskatās sānis. «Vecie saka: kas tādas atrod, tas drīz apprecēsies.»',
-      '“But you found it — two ears on one stalk.” Ilze colours. “The old people say whoever finds one will soon be married.”',
-      '“But you found it — two ears on one stalk.” Krišs looks away. “The old people say whoever finds one will soon be married.”',
+      '«Bet tu to atradi, divas vārpas uz viena salma.» Ilze pietvīkst. «Vecie saka: kas tādas atrod, tas drīz apprecēsies.»',
+      '«Bet tu to atradi, divas vārpas uz viena salma.» Krišs paskatās sānis. «Vecie saka: kas tādas atrod, tas drīz apprecēsies.»',
+      '“But you found one, two ears on one stalk.” Ilze colours. “The old people say whoever finds one will soon be married.”',
+      '“But you found one, two ears on one stalk.” Krišs looks away. “The old people say whoever finds one will soon be married.”',
     ),
     ask: S('Ko tu saki?', 'What do you say?'),
     choices: {
@@ -121,16 +125,16 @@ export const beloved = {
       flat: S('Tās ir tikai vārpas.', 'They are only ears of rye.'),
     },
     warm: B(
-      'Ilze neko neatbild. Tikai spainis viņas rokā pēkšņi kļūst ļoti interesants.',
-      'Krišs neko neatbild. Tikai cirvja kāts viņa rokā pēkšņi kļūst ļoti interesants.',
-      'Ilze says nothing. Only the bucket in her hand has suddenly become very interesting.',
-      'Krišs says nothing. Only the axe handle in his hand has suddenly become very interesting.',
+      'Ilze neko neatbild, tikai nolaiž acis un groza rokās spaiņa stīpu.',
+      'Krišs neko neatbild, tikai nolaiž acis un groza rokās cirvja kātu.',
+      'Ilze says nothing. She looks down and turns the bucket handle in her fingers.',
+      'Krišs says nothing. He looks down and turns the axe handle in his hands.',
     ),
     shy: B(
       '«Nu tad padomā,» Ilze saka un aiziet, bet pie sliekšņa vēl atskatās.',
       '«Nu tad padomā,» Krišs saka un aiziet, bet pie šķūņa vēl atskatās.',
-      '“Then think about it,” Ilze says, and goes — but at the doorstep she looks back.',
-      '“Then think about it,” Krišs says, and goes — but at the shed he looks back.',
+      '“Then think about it,” Ilze says, and goes, but at the doorstep she looks back.',
+      '“Then think about it,” Krišs says, and goes, but at the shed he looks back.',
     ),
     flat: S('«Jā. Tikai vārpas.» Un saruna ir beigusies.', '“Yes. Only ears of rye.” And that is the end of that.'),
   },
@@ -140,14 +144,14 @@ export const beloved = {
     jumis: B(
       'Ilze atlauž stūrīti, paošņā un aizver acis. «Tajā ir Jumis.» Klaipu viņa tev atdod. «Pārējo nes, kur tev jānes. Purvs ir tālu.»',
       'Krišs atlauž stūrīti, paošņā un aizver acis. «Tajā ir Jumis.» Klaipu viņš tev atdod. «Pārējo nes, kur tev jānes. Purvs ir tālu.»',
-      'Ilze breaks off a corner, breathes it in, and closes her eyes. “There is Jumis in it.” She hands you the loaf back. “Take the rest where you have to. The bog is a long way.”',
-      'Krišs breaks off a corner, breathes it in, and closes his eyes. “There is Jumis in it.” He hands you the loaf back. “Take the rest where you have to. The bog is a long way.”',
+      'Ilze breaks off a corner, breathes it in, and closes her eyes. “There’s Jumis in it.” She hands you the loaf back. “Take the rest where it’s going. The bog is a long way.”',
+      'Krišs breaks off a corner, breathes it in, and closes his eyes. “There’s Jumis in it.” He hands you the loaf back. “Take the rest where it’s going. The bog is a long way.”',
     ),
     good: B(
       'Ilze atlauž stūrīti un nogaršo. «Laba maize.» Klaipu viņa tev atdod. «Pārējo nes, kur tev jānes. Purvs ir tālu.»',
       'Krišs atlauž stūrīti un nogaršo. «Laba maize.» Klaipu viņš tev atdod. «Pārējo nes, kur tev jānes. Purvs ir tālu.»',
-      'Ilze breaks off a corner and tastes it. “Good bread.” She hands you the loaf back. “Take the rest where you have to. The bog is a long way.”',
-      'Krišs breaks off a corner and tastes it. “Good bread.” He hands you the loaf back. “Take the rest where you have to. The bog is a long way.”',
+      'Ilze breaks off a corner and tastes it. “Good bread.” She hands you the loaf back. “Take the rest where it’s going. The bog is a long way.”',
+      'Krišs breaks off a corner and tastes it. “Good bread.” He hands you the loaf back. “Take the rest where it’s going. The bog is a long way.”',
     ),
     thin: B(
       'Ilze atlauž stūrīti un ilgi košļā. «Smaga.» Bet viņa to apēd līdz galam, un tas ir vairāk, nekā tu gaidīji.',
@@ -161,41 +165,45 @@ export const beloved = {
   /** Home from the bog, in the evening. */
   evening: {
     open: B(
-      'Ilze sēž uz sliekšņa, kas vēl silts no dienas. Ieraudzījusi tevi, viņa paceļas.',
-      'Krišs sēž uz bluķa, kas vēl silts no dienas. Ieraudzījis tevi, viņš paceļas.',
-      'Ilze is sitting on the doorstep, still warm from the day. When she sees you she gets up.',
-      'Krišs is sitting on the chopping block, still warm from the day. When he sees you he gets up.',
+      'Ilze sēž uz sliekšņa, kas vēl silts no dienas. Ieraudzījusi tevi, viņa pieceļas.',
+      'Krišs sēž uz bluķa, kas vēl silts no dienas. Ieraudzījis tevi, viņš pieceļas.',
+      'Ilze is sitting on the doorstep, which is still warm from the day. When she sees you she gets up.',
+      'Krišs is sitting on the chopping block, which is still warm from the day. When he sees you he gets up.',
     ),
-    devilGone: S(
-      '«Saka, ka viņš aizgāja no purva. Līdz Jāņiem, bet aizgāja. Tevis dēļ.» Acīs ir kas tāds, ko tu agrāk neesi redzējis.',
-      '“They say he has gone off the bog. Till Jāņi, but gone. Because of you.” There is something in those eyes you have not seen before.',
+    devilGone: B(
+      '«Saka, ka viņš aizgāja no purva. Līdz Jāņiem, bet aizgāja. Tevis dēļ.» Ilze to saka, skatīdamās tev tieši acīs.',
+      '«Saka, ka viņš aizgāja no purva. Līdz Jāņiem, bet aizgāja. Tevis dēļ.» Krišs to saka, skatīdamies tev tieši acīs.',
+      '“They say he has gone off the bog. Till Jāņi, but gone. Because of you.” Ilze says it looking you straight in the eye.',
+      '“They say he has gone off the bog. Till Jāņi, but gone. Because of you.” Krišs says it looking you straight in the eye.',
     ),
     catLost: S(
       '«Kur kaķis?» Klusums. «Tu viņu atdevi.» Un tālāk saruna neiet tik viegli.',
       '“Where is the cat?” Silence. “You gave it away.” And after that the talk does not come so easily.',
     ),
     hat: S(
-      '«Velna cepure?!» Smiekli, un tad roka pie mutes. «Tu ar viņu runāji kā ar līdzīgu.»',
+      '«Velna cepure?!» Smiekli, un tad roka pie mutes. «Tu ar viņu runāji kā līdzīgs ar līdzīgu.»',
       '“The Devil’s hat?!” A laugh, then a hand over the mouth. “You talked to him as an equal.”',
     ),
-    dawn: S(
-      '«Tu gaidīji līdz gaiļiem? Visu nakti purvā?» Galva papurinās. «Un tomēr pārnāci.»',
-      '“You waited for the cocks? All night on the bog?” A shake of the head. “And still you came home.”',
+    dawn: B(
+      '«Tu gaidīji līdz gaiļiem? Visu nakti purvā?» Ilze papurina galvu. «Un tomēr pārnāci.»',
+      '«Tu gaidīji līdz gaiļiem? Visu nakti purvā?» Krišs papurina galvu. «Un tomēr pārnāci.»',
+      '“You waited for the cocks? All night on the bog?” Ilze shakes her head. “And still you came home.”',
+      '“You waited for the cocks? All night on the bog?” Krišs shakes his head. “And still you came home.”',
     ),
-    plain: S('«Tu pārnāci.» Ar to pietiek.', '“You came home.” That is enough.'),
+    plain: B('«Tu pārnāci.» Ilze vairāk neko nejautā.', '«Tu pārnāci.» Krišs vairāk neko nejautā.', '“You came home.” Ilze asks nothing more.', '“You came home.” Krišs asks nothing more.'),
     /** Close enough to be asked. */
     invite: B(
       '«Miķeļos pie Kalējiem būs danči.» Ilze to saka, skatīdamās uz strautu, ne uz tevi. «Ja tu nāktu…»',
       '«Miķeļos pie Kalējiem būs danči.» Krišs to saka, skatīdamies uz strautu, ne uz tevi. «Ja tu nāktu…»',
-      '“On Miķeļi — Michaelmas — there’ll be dancing at Kalēji.” Ilze says it looking at the stream, not at you. “If you came…”',
-      '“On Miķeļi — Michaelmas — there’ll be dancing at Kalēji.” Krišs says it looking at the stream, not at you. “If you came…”',
+      '“On Miķeļi, at Michaelmas, there’ll be dancing at Kalēji.” Ilze says it looking at the stream, not at you. “If you came…”',
+      '“On Miķeļi, at Michaelmas, there’ll be dancing at Kalēji.” Krišs says it looking at the stream, not at you. “If you came…”',
     ),
     inviteChoices: {
       yes: S('Nākšu.', 'I will come.'),
       maybe: S('Redzēs.', 'We will see.'),
     },
-    yes: B('Ilze pamāj. Tikai vienreiz, bet ar to pietiek.', 'Krišs pamāj. Tikai vienreiz, bet ar to pietiek.', 'Ilze nods. Just once, but that is enough.', 'Krišs nods. Just once, but that is enough.'),
-    maybe: S('«Redzēs,» atkārto. «Labi.»', '“We will see,” comes the echo. “All right.”'),
+    yes: B('Ilze pamāj. Tikai vienreiz.', 'Krišs pamāj. Tikai vienreiz.', 'Ilze nods, just once.', 'Krišs nods, just once.'),
+    maybe: B('«Redzēs,» Ilze atkārto. «Labi.»', '«Redzēs,» Krišs atkārto. «Labi.»', '“We’ll see,” Ilze says back. “All right.”', '“We’ll see,” Krišs says back. “All right.”'),
     /** Not close enough. */
     goodnight: S('«Ar labu nakti.» Durvis aizveras.', '“Good night.” The door closes.'),
   },
@@ -204,15 +212,15 @@ export const beloved = {
   idle: {
     beforeField: S('«Lauks gaida. Es arī gribu redzēt, kā tev ies.»', '“The field is waiting. And I want to see how you get on.”'),
     beforeFieldCold: S('«Ej nu, ej.»', '“Go on, then.”'),
-    beforeBog: S('«Purvā naktīs deg ugunis. Neej tām pakaļ.»', '“Lights burn on the bog at night. Do not follow them.”'),
-    after: S('«Rīt. Rīt parunāsim.»', '“Tomorrow. We will talk tomorrow.”'),
+    beforeBog: S('«Purvā naktīs deg ugunis. Neej tām pakaļ.»', '“Lights burn on the bog at night. Don’t follow them.”'),
+    after: S('«Rīt. Rīt parunāsim.»', '“Tomorrow. We’ll talk tomorrow.”'),
   },
 
   /** Things from the bag, shown to them. */
   replies: {
-    sickle: S('«Ar sirpi pie manis nenāk.» Bet asmenim tiek uzmests vērtējošs skatiens. «Ass gan.»', '“You do not come to me with a sickle.” But the blade gets an appraising look. “Sharp, though.”'),
-    cat: S('Kaķis ļauj sevi pakasīt aiz auss un izliekas, ka tas ir viņa labā.', 'The cat allows itself to be scratched behind the ear and pretends it is doing everyone a favour.'),
-    hat: S('«Nes prom! Tā smird pēc purva.» Bet ziņkārība ir lielāka par riebumu.', '“Take it away! It reeks of the bog.” But curiosity is stronger than disgust.'),
+    sickle: B('«Ar sirpi pie manis nenāk.» Bet Ilze uzmet asmenim vērtējošu skatienu. «Ass gan.»', '«Ar sirpi pie manis nenāk.» Bet Krišs uzmet asmenim vērtējošu skatienu. «Ass gan.»', '“You don’t come to me with a sickle.” But Ilze eyes the blade. “Sharp, though.”', '“You don’t come to me with a sickle.” But Krišs eyes the blade. “Sharp, though.”'),
+    cat: S('Kaķis ļauj sevi pakasīt aiz auss un izliekas, ka dara to citiem par prieku.', 'The cat allows itself to be scratched behind the ear and pretends it is doing everyone a favour.'),
+    hat: B('«Nes prom! Tā smird pēc purva.» Tomēr Ilze paskatās uz cepuri vēlreiz, tuvāk.', '«Nes prom! Tā smird pēc purva.» Tomēr Krišs paskatās uz cepuri vēlreiz, tuvāk.', '“Take it away! It reeks of the bog.” All the same, Ilze takes a second, closer look at the hat.', '“Take it away! It reeks of the bog.” All the same, Krišs takes a second, closer look at the hat.'),
   },
 
   /** At the stone, at the end of the year — by how close they came. */

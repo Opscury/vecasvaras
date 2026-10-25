@@ -60,7 +60,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     texture: 'item-hat',
     name: L('Velna cepure', 'The Devil’s hat'),
     note: L(
-      'Veca filca cepure ar diviem caurumiem virsā. Smaržo pēc purva un dūmiem.',
+      'Veca filca cepure ar diviem caurumiem virsā. Ož pēc purva un dūmiem.',
       'An old felt hat with two holes in the crown. It smells of bog and smoke.',
     ),
   },

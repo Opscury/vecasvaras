@@ -40,10 +40,10 @@ export const elder = {
   greet: [
     L(
       'Annas māte joprojām stāv pie durvīm. «Aizver vārtiņus. Vējš nav aicināts.»',
-      'Mother Anna is still standing at her door. “Shut the gate. The wind is not invited.”',
+      'Mother Anna is still standing at her door. “Shut the gate. The wind isn’t invited.”',
     ),
     L(
-      '«Tātad. Lauks, sirpis, tu. Trīs lietas, un divas no tām jau ir savā vietā.»',
+      '«Nu tā. Lauks, sirpis, tu. Trīs lietas, un divas no tām jau ir savā vietā.»',
       '“Right. The field, the sickle, you. Three things, and two of them are already where they should be.”',
     ),
   ],
@@ -54,11 +54,11 @@ export const elder = {
   },
   why: L(
     '«Tāpēc, ka visi citi ciemā ir vai nu par vecu, vai par gudru. Tu esi tieši pa vidu.»',
-    '“Because everyone else in this village is either too old or too clever. You are exactly in between.”',
+    '“Because everyone else in this village is either too old or too clever. You’re exactly in between.”',
   ),
   accepted: L(
     '«Sirpis karājas zem nojumes. Es to tur neliku.»',
-    '“The sickle is hanging under the lean-to. I did not put it there.”',
+    '“Sickle’s under the lean-to. Don’t look at me, I didn’t hang it there.”',
   ),
 
   /** The player heading out of the village before anyone has asked them to. */
@@ -69,9 +69,9 @@ export const elder = {
 
   /** Said when she is spoken to and there is nothing new to say. */
   remind: {
-    takeSickle: L('«Vispirms sirpi, {puis|meit}. Ar rokām nerauj.»', '“The sickle first, {lad|lass}. You do not pull it up by hand.”'),
-    harvest: L('«Lauks pats sevi nenopļaus.»', '“The field will not cut itself.”'),
-    crossBog: L('«Pāreja pār purvu. Un neej tukšām rokām.»', '“The crossing over the bog. And do not go empty-handed.”'),
+    takeSickle: L('«Vispirms sirpi, {puis|meit}. Ar rokām nerauj.»', '“Sickle first, {lad|lass}. Rye doesn’t come up by hand.”'),
+    harvest: L('«Lauks pats sevi nenopļaus.»', '“The field won’t cut itself.”'),
+    crossBog: L('«Pāreja pār purvu. Un neej tukšām rokām.»', '“The crossing over the bog. And don’t go empty-handed.”'),
     done: L('«Tagad ej pie akmens. Tas atceras labāk par mani.»', '“Go to the stone now. It remembers better than I do.”'),
   },
 
@@ -79,8 +79,8 @@ export const elder = {
   harvestBack: {
     // NEW — the cart arrives in her yard.
     cart: L(
-      'Tu iebrauc Annas pagalmā ar vezumu. Viņa skaita kūļus.',
-      'You drive the cart into Anna’s yard. She counts the sheaves.',
+      'Tu iebrauc Annas mātes pagalmā ar vezumu. Viņa skaita kūļus.',
+      'You drive the cart into Old Anna’s yard. She counts the sheaves.',
     ),
     leave: [
       L(
@@ -96,7 +96,7 @@ export const elder = {
     take: [
       L(
         '«Jumi tu atvedi mājās.» Viņa ilgi skatās uz divvārpu. «Tā arī var. Tikai tagad viņš ēdīs no klēts.»',
-        '“You brought Jumis home.” She looks at the double ear a long while. “That is one way. Only now he will eat from the granary.”',
+        '“You brought Jumis home.” She looks at the double ear a long while. “That’s one way. Only now he will eat from the granary.”',
       ),
     ],
     all: [
@@ -121,11 +121,11 @@ export const elder = {
       ),
       jumis: L(
         'Viņa ienes klaipu no krāsns, vēl siltu. «Šajā ir Jumis. Pret tādu neviens nestāv.»',
-        'She brings a loaf from the oven, still warm. “There is Jumis in this one. Nothing stands against that.”',
+        'She brings a loaf from the oven, still warm. “There’s Jumis in this one. Nobody argues with that.”',
       ),
       thin: L(
         'Viņa ienes klaipu no krāsns. Tas ir plakans un smags. «Kāds gads, tāda maize.»',
-        'She brings a loaf from the oven. It is flat and heavy. “As the year, so the bread.”',
+        'She brings a loaf from the oven. It is flat and heavy. “Thin year, thin bread. Don’t blame my oven.”',
       ),
     },
   },
@@ -134,12 +134,12 @@ export const elder = {
   bog: [
     // «Nelabais» — the old way of not saying «velns» out loud.
     L(
-      '«Strauts aiznesa tiltu. Aiz purva sēž tas, kas to var uzcelt — nelabais. Vārdā es viņu nesaukšu.»',
-      '“The stream took the bridge. Out past the bog sits the one who can build it — the Evil One. I will not say his name.”',
+      '«Strauts aiznesa tiltu. Aiz purva sēž tas, kas to var uzcelt: nelabais. Vārdā es viņu nesaukšu.»',
+      '“The stream took the bridge. Out past the bog sits the one who can build it: the Evil One. I won’t say his name.”',
     ),
     // Used to add "And do not go alone" — which was the answer to the bog,
     // given before the question had been asked.
-    L('«Neej tukšām rokām.»', '“Do not go empty-handed.”'),
+    L('«Neej tukšām rokām.»', '“Don’t go empty-handed.”'),
   ],
   bogAsk: L('«Aiziesi arī turp?»', '“Will you go out there as well?”'),
 
@@ -148,13 +148,13 @@ export const elder = {
     good: [
       L(
         '«Pa to tiltu var vest ratus.» Viņa ilgi skatās uz strautu. «Es to vairs necerēju redzēt.»',
-        '“A cart could go over that bridge.” She looks at the stream for a long time. “I did not expect to see that again.”',
+        '“A cart could go over that bridge.” She looks at the stream for a long time. “I didn’t expect to see that again.”',
       ),
     ],
     poor: [
       L(
-        '«Divi baļķi.» Viņa paraustās plecos. «Pa vienam. Uzmanīgi. Tā arī dzīvosim.»',
-        '“Two logs.” She shrugs. “One at a time. Carefully. We will live like that too.”',
+        '«Divi baļķi.» Viņa parausta plecus. «Pa vienam. Uzmanīgi. Tā arī dzīvosim.»',
+        '“Two logs.” She shrugs. “One at a time. Carefully. We’ll manage.”',
       ),
     ],
     // NEW — said after the lines above, when they apply.
@@ -163,16 +163,16 @@ export const elder = {
       '“And the cat?” She looks at the empty doorstep and says nothing more.',
     ),
     devilGone: L(
-      '«Aizgāja?» Viņa iesmejas — pirmo reizi, cik tu atceries. «Līdz Jāņiem. Tādi atgriežas.»',
-      '“He went?” She laughs — for the first time you can remember. “Till Jāņi. That sort comes back.”',
+      '«Aizgāja?» Viņa iesmejas, pirmo reizi, cik tu atceries. «Līdz Jāņiem. Tādi atgriežas.»',
+      '“He went?” She laughs, for the first time that you can remember. “Till Jāņi. That sort comes back.”',
     ),
     dawn: L(
-      '«Gaidīji līdz gaiļiem.» Viņa pašūpo galvu. «Ar velnu nevilcinās.»',
-      '“You waited for the cocks.” She shakes her head. “You do not dawdle with Velns.”',
+      '«Gaidīji līdz gaiļiem.» Viņa pašūpo galvu. «Ar nelabo nevilcinās.»',
+      '“You waited for the cocks.” She shakes her head. “You don’t keep that one waiting.”',
     ),
     hat: L(
       'Viņa ierauga cepuri tavā kulē un ilgi klusē. «Tātad viņš tevi cienīja.» Viņa nopūšas. «Pakar to klētī. Lai redz.»',
-      'She sees the hat in your bag and says nothing for a long while. “So he respected you.” She sighs. “Hang it in the granary. Let it be seen.”',
+      'She sees the hat in your bag and says nothing for a long while. “So he respected you.” She sighs. “Hang it in the granary. Let people see it.”',
     ),
     crumb: L(
       '«Un akmeni tu atcerējies.» Viņa to saka tā, it kā tas būtu pats svarīgākais.',
@@ -206,12 +206,12 @@ export const objectives = {
   meetElder: O(
     L('Ej pie Annas mātes. Viņa gaida.', 'Go to Mother Anna. She is waiting.'),
     L(
-      'Viņa pateiks, kas šodien darāms — un tad vēl daudz ko citu.',
+      'Viņa pateiks, kas šodien darāms, un tad vēl daudz ko citu.',
       'She will tell you what the day needs, and then a good deal more.',
     ),
   ),
   takeSickle: O(
-    L('Sirpis zem nojumes. Kur tu to atstāji.', 'Sickle’s under the lean-to. Where you left it.'),
+    L('Sirpis zem nojumes. Kur vectēvs to atstāja.', 'Sickle’s under the lean-to. Where your grandfather left it.'),
     L(
       'Rudzus ar rokām nerauj. Vectēva sirpis to zina.',
       'Rye does not come up by hand. Your grandfather’s sickle knows that.',
@@ -220,7 +220,7 @@ export const objectives = {
   harvest: O(
     L('Nopļauj rudzus. Trešo dienu stāv gatavi.', 'Cut the rye. It has stood ready three days.'),
     L(
-      'Un atstāj laukam savu daļu — tā, kā tev teica.',
+      'Un atstāj laukam savu daļu, kā tev teica.',
       'And leave the field its share, the way you were told.',
     ),
   ),
@@ -228,7 +228,7 @@ export const objectives = {
     L('Vezumu pie Annas mātes. Viņa skaitīs.', 'The cart to Old Anna. She will count it.'),
     L(
       'Kūļi nav maize. Maize top viņas krāsnī, un to viņa iedos tev rokā.',
-      'Sheaves are not bread. Bread happens in her oven, and she hands it over herself.',
+      'Sheaves are not bread. The bread comes out of her oven, and she hands it to you herself.',
     ),
   ),
   crossBog: O(
